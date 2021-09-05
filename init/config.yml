@@ -1,0 +1,40 @@
+
+# Defines the type of environment for the local instance; cannot be changed.
+local: dev
+
+# Defines the remote environment, this may be altered by CLI arguments.
+remote: production
+
+environments:
+  dev:
+
+    # The localized name for this environment.  Messages and filenames will use
+    # this instead of "dev".
+    id: dev
+    name: ITL
+
+    # Path to where remote files should be saved on fetch.
+    fetch:
+      path: .live_dev_porter/fetch
+
+    reset:
+      plugin: pantheon
+      files:
+        drupal: sites/default/files
+
+#  staging:
+#    id: test
+
+  production:
+    id: live
+    name: OvaGraph Pantheon
+
+    fetch:
+      ignore_files_listed_in:
+        - drupal.ignore.txt
+      plugin: pantheon
+      machine_token: xv1JVRHBa4_4EL56rqNKovqtu0ziUJB2I_iidTFwmsEAf
+      site_name: ovagraph
+      site_uuid: fc43838b-d007-491e-96c5-5cc682f39159
+
+

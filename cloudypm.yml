@@ -1,0 +1,5 @@
+name: aklump/live_dev_porter
+clone_from: https://github.com/aklump/live_dev_porter
+entry_script: live_dev_porter.sh
+entry_symlink: live_dev_porter
+on_install: init

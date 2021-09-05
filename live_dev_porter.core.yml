@@ -1,0 +1,63 @@
+title: "Live Dev Porter"
+name: 'Live Dev Porter'
+description: 'Simplifies the management and transfer of assets between website environments.'
+version: 0.0.1
+author: 'Aaron Klump <sourcecode@intheloftstudios.com>'
+config_path_base: ../../..
+path_to_app: .
+additional_config:
+  - .live_dev_porter/config.yml
+  - .live_dev_porter/config.local.yml
+additional_bootstrap: null
+default_command: help
+commands:
+  info:
+    help: Prints configuration info
+
+  fetch:
+    help: Fetch remote assets to local.
+    options:
+      database:
+        type: boolean
+        help: Indicate the database asset.
+        aliases: [d]
+      files:
+        type: boolean
+        help: Indicate the files asset.
+        aliases: [f]
+  reset:
+    help: Reset dev assets with last fetched.
+    options:
+      database:
+        type: boolean
+        help: Indicate the database asset.
+        aliases: [d]
+      files:
+        type: boolean
+        help: Indicate the files asset.
+        aliases: [f]
+  pull:
+    help: Fetch and reset in one command.
+    options:
+      database:
+        type: boolean
+        help: Indicate the database asset.
+        aliases: [d]
+      files:
+        type: boolean
+        help: Indicate the files asset.
+        aliases: [f]
+  init:
+    help: 'Initialize local configuration files.'
+  help:
+    help: 'Show this help screen.'
+    options: { version: { help: 'Display the current version', type: boolean } }
+  clear-cache:
+    aliases: [clearcache, cc]
+    help: 'Clear all cached data.'
+translate:
+  ids:
+    - 'Completed successfully.'
+    - Failed.
+  strings:
+    en: null
