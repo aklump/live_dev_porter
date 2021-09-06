@@ -83,3 +83,12 @@ function pantheon_reset_files() {
   exit_with_failure_if_config_is_not_path 'drupal_files' "$config_key"
   rsync -a "$PULL_FILES_PATH/drupal/" "$drupal_files/"
 }
+
+function pantheon_info() {
+  eval $(get_config_as 'machine_token' "environments.$REMOTE_ENV_ID.fetch.machine_token")
+  eval $(get_config_as 'site_uuid' "environments.$REMOTE_ENV_ID.fetch.site_uuid")
+  eval $(get_config_as 'site_name' "environments.$REMOTE_ENV_ID.fetch.site_name")
+  echo_key_value "Machine token" "$machine_token"
+  echo_key_value "Site name" "$site_name"
+  echo_key_value "Site UUID" "$site_uuid"
+}

@@ -182,6 +182,14 @@ case $command in
 
     "info")
       source "$SOURCE_DIR/info.sh"
+
+      source "$PLUGINS_DIR/$FETCH_PLUGIN/plugin.sh"
+      ${FETCH_PLUGIN}_info
+
+      if [[ "$FETCH_PLUGIN" != "$RESET_PLUGIN" ]]; then
+        source "$PLUGINS_DIR/$RESET_PLUGIN/plugin.sh"
+        ${RESET_PLUGIN}_info
+      fi
       has_failed && exit_with_failure
       exit_with_success
     ;;

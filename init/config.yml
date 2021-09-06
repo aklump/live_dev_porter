@@ -1,9 +1,5 @@
-
-# Defines the type of environment for the local instance; cannot be changed.
-local: dev
-
-# Defines the remote environment, this may be altered by CLI arguments.
-remote: production
+# By default every environment should be production unless changed in _config.local.yml_.
+local: production
 
 environments:
   dev:
@@ -11,7 +7,7 @@ environments:
     # The localized name for this environment.  Messages and filenames will use
     # this instead of "dev".
     id: dev
-    name: ITL
+    name: local
 
     # Path to where remote files should be saved on fetch.
     fetch:
@@ -33,7 +29,6 @@ environments:
       ignore_files_listed_in:
         - drupal.ignore.txt
       plugin: pantheon
-      machine_token: xv1JVRHBa4_4EL56rqNKovqtu0ziUJB2I_iidTFwmsEAf
       site_name: ovagraph
       site_uuid: fc43838b-d007-491e-96c5-5cc682f39159
 
