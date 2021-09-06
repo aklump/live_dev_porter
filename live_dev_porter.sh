@@ -9,7 +9,7 @@
 CONFIG="live_dev_porter.core.yml";
 
 # Uncomment this line to enable file logging.
-LOGFILE="live_dev_porter.core.log"
+#LOGFILE="live_dev_porter.core.log"
 
 # TODO: Event handlers and other functions go here or register one or more includes in "additional_bootstrap".
 function on_pre_config() {

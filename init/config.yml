@@ -23,13 +23,13 @@ environments:
 
   production:
     id: live
-    name: OvaGraph Pantheon
+    name: Pantheon LIVE
 
     fetch:
       ignore_files_listed_in:
         - drupal.ignore.txt
       plugin: pantheon
-      site_name: ovagraph
-      site_uuid: fc43838b-d007-491e-96c5-5cc682f39159
+      site_name: PANTHEON_SITE_NAME
+      site_uuid: PANTHEON_SITE_UUID
 
 
