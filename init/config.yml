@@ -7,7 +7,6 @@ environments:
     # The localized name for this environment.  Messages and filenames will use
     # this instead of "dev".
     id: dev
-    name: local
 
     # Path to where remote files should be saved on fetch.
     fetch:
@@ -18,12 +17,8 @@ environments:
       files:
         drupal: sites/default/files
 
-#  staging:
-#    id: test
-
   production:
     id: live
-    name: Pantheon LIVE
 
     fetch:
       ignore_files_listed_in:

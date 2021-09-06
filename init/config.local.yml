@@ -1,0 +1,15 @@
+# Defines the type of environment for the local instance; cannot be changed via
+# CLI arguments.
+local: dev
+
+# Defines the remote environment, this may be altered by CLI arguments.  This must be one of the keys defined in config.yml
+remote: production
+
+environments:
+  dev:
+    name: LOCALIZED_TITLE_IF_DESIRED
+
+  production:
+    name: LOCALIZED_TITLE_IF_DESIRED
+    fetch:
+      machine_token: MACHINE_TOKEN_FROM_PANTHEON

@@ -55,9 +55,16 @@ commands:
   clear-cache:
     aliases: [clearcache, cc]
     help: 'Clear all cached data.'
-translate:
-  ids:
-    - 'Completed successfully.'
-    - Failed.
-  strings:
-    en: null
+
+environments:
+  dev:
+    id: dev
+    name: Local development
+
+  staging:
+    id: test
+    name: Staging
+
+  production:
+    id: production
+    name: Production
