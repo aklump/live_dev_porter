@@ -1,0 +1,16 @@
+environments:
+  dev:
+    reset:
+      files:
+
+        # Local path to the Drupal file system.
+        drupal: ''
+
+  production:
+    fetch:
+
+      # These are provided by pantheon.io
+      machine_token: ''
+      site_uuid: ''
+      site_name: ''
+

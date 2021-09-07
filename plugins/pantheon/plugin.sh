@@ -45,7 +45,7 @@ function pantheon_authenticate() {
   eval $(get_config_as 'machine_token' "environments.$REMOTE_ENV_ID.fetch.machine_token")
   exit_with_failure_if_empty_config 'machine_token' 'pantheon.machine_token'
 
-  lando terminus auth:login --machine-token $token
+  lando terminus auth:login --machine-token $machine_token
 }
 
 function pantheon_clear_cache() {
@@ -56,8 +56,11 @@ function pantheon_clear_cache() {
 }
 
 function pantheon_fetch_db() {
-  local lando_path=$(get_container_path "$pull_to_path")/db
-  lando terminus backup:get $SITE_NAME.$(_get_remote_env) --element=database --to="$lando_path" --verbose
+  local lando_path=$(get_container_path "$PULL_DB_PATH")
+  debug "$lando_path;\$lando_path"
+  throw ";$0;$FUNCNAME;$LINENO"
+  eval $(get_config_as 'site_name' "environments.$REMOTE_ENV_ID.fetch.site_name")
+  lando terminus backup:get $site_name.$(_get_remote_env) --element=database --to="$lando_path" --verbose
 }
 
 function pantheon_fetch_files() {

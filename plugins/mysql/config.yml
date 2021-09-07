@@ -1,0 +1,12 @@
+environments:
+  dev:
+    export:
+      mysqldump_options:
+        - xml
+    database:
+      protocol: tcp
+      host: HOST
+      port: PORT
+      name: DB_NAME
+      user: USER
+      pass: PASSWORD

@@ -17,11 +17,14 @@ function get_pulled_db_basename() {
 }
 
 function delete_pulled_db() {
-  basename=$(get_pulled_db_basename)
+  local basename=$(get_pulled_db_basename)
   if [[ "$basename" ]]; then
     path="$PULL_DB_PATH/$(get_pulled_db_basename)"
-    [ -f "$path" ] && rm -v "$path" || exit 1
+    if [ -f "$path" ]; then
+      rm -v "$path" || fail_because "Could not delete $path"
+    fi
   fi
+  has_failed && exit_with_failure
 }
 
 function plugin_reset_db() {
@@ -35,5 +38,5 @@ function plugin_reset_files() {
 function get_container_path() {
   local host_path="$1"
 
-  echo $(cd $host_path && lando ssh -c "pwd"|tr --delete '\r')
+  echo $(cd $host_path && lando ssh -c "pwd"|tr -d '\r')
 }

@@ -4,9 +4,11 @@
     ```
     └── pantheon
         ├── README.md
+        ├── config.yml
         └── plugin.sh
     ```
-2. _plugin.sh_ should contain functions; all that are public must be prefixed by the plugin name:
+2. _config.yml_ should all configuration that the plugin is expecting to use.
+3. _plugin.sh_ should contain functions; all that are public must be prefixed by the plugin name:
     ```bash
     function pantheon_init() {
       eval $(_get_file_ignore_paths)
@@ -18,13 +20,13 @@
       done
     } 
     ```
-3. Plugins must provide the following functions:
+4. Plugins must provide the following functions:
     1. `${PLUGIN}_init`
     1. `${PLUGIN}_authenticate`
     1. `${PLUGIN}_remote_clear_caches`
     1. `${PLUGIN}_fetch`
     1. `${PLUGIN}_reset`
-4. Plugins may define private functions, but they should begin with an underscore.
+5. Plugins may define private functions, but they should begin with an underscore.
     ```bash
     function _get_file_ignore_paths() {
       local snippet=$(get_config_as -a 'ignore_paths' 'pantheon.files.ignore')
@@ -33,3 +35,9 @@
       echo "${snippet//$find/$find$CONFIG_DIR/fetch/$ENV/files/}"
     }
     ```
+
+## Error Conditions
+
+1. Plugins should use `fail_because` && `succeed_because`
+2. Plugins should return non-zeros
+3. Plugins should not use `exit_with_*` methods; those are for the controller.

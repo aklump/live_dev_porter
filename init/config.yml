@@ -5,12 +5,14 @@ environments:
   dev:
 
     # The localized name for this environment.  Messages and filenames will use
-    # this instead of "dev".
+    # this instead of "dev".  You may change this to match your workflow.
     id: dev
 
-    # Path to where remote files should be saved on fetch.
-    fetch:
-      path: .live_dev_porter/fetch
+    export:
+
+      # https://zoomadmin.com/HowToLinux/LinuxCommand/mysqldump
+      mysqldump_options:
+#        - xml
 
     reset:
       plugin: pantheon
@@ -18,6 +20,9 @@ environments:
         drupal: sites/default/files
 
   production:
+
+    # The localized name for this environment.  Messages and filenames will use
+    # this instead of "dev".  You may change this to match your workflow.
     id: live
 
     fetch:

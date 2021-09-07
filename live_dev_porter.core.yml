@@ -14,6 +14,13 @@ commands:
   info:
     help: Prints configuration info
 
+  export:
+    help: Export the local database
+    options:
+      all_tables:
+        type: boolean
+        help: Include this option to ignore all table omissions by exclude files.
+
   fetch:
     help: Fetch remote assets to local.
     options:
@@ -57,9 +64,20 @@ commands:
     help: 'Clear all cached data.'
 
 environments:
+
   dev:
     id: dev
     name: Local development
+    export:
+      path: .live_dev_porter/backups
+      exclude_data_from_tables_listed_in:
+        - table_data_exclusions.txt
+      exclude_tables_listed_in:
+        - table_exclusions.txt
+    fetch:
+
+      # Path to where remote files should be saved on fetch.
+      path: .live_dev_porter/fetch
 
   staging:
     id: test

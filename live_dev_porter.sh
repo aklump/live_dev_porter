@@ -25,12 +25,13 @@ s="${BASH_SOURCE[0]}";while [ -h "$s" ];do dir="$(cd -P "$(dirname "$s")" && pwd
 #@todo remove
 ROOT_DIR="$ROOT"
 
-
 SOURCE_DIR="$ROOT/src"
 source "$SOURCE_DIR/functions.sh"
 
 CONFIG_DIR="$APP_ROOT/.live_dev_porter"
 PLUGINS_DIR="$ROOT/plugins"
+
+TEMP_DIR=$(tempdir $CLOUDY_NAME)
 
 eval $(get_config_path_as 'LOCAL_FETCH_DIR' 'environments.dev.fetch.path')
 exit_with_failure_if_empty_config 'LOCAL_FETCH_DIR' 'environments.dev.fetch.path'
@@ -81,6 +82,7 @@ source "$SOURCE_DIR/hooks.sh"
 
 eval $(get_config_as 'FETCH_PLUGIN' "environments.$REMOTE_ENV_ID.fetch.plugin")
 eval $(get_config_as 'RESET_PLUGIN' "environments.$LOCAL_ENV_ID.reset.plugin")
+EXPORT_PLUGIN="mysql"
 
 # This is a local, non SCM file to overwrite the above hooks
 if [ -f "$CONFIG_DIR/hooks.local.sh" ]; then
@@ -91,14 +93,34 @@ fi
 command=$(get_command)
 case $command in
 
+    "export")
+      eval $(get_config_as "name" "environments.dev.database.name")
+      echo_heading "Export $LOCAL_ENV database \"$name\""
+      eval $(get_config_path_as 'LOCAL_EXPORT_DIR' 'environments.dev.export.path')
+      exit_with_failure_if_empty_config 'LOCAL_EXPORT_DIR' 'environments.dev.export.path'
+      EXPORT_DB_PATH="$LOCAL_EXPORT_DIR/$LOCAL_ENV/db"
+      if ! mkdir -p "$EXPORT_DB_PATH"; then
+        fail_because "Could not create export directory at $EXPORT_DB_PATH"
+      else
+        source "$PLUGINS_DIR/$EXPORT_PLUGIN/plugin.sh"
+        ${EXPORT_PLUGIN}_export_db || fail
+      fi
+      has_failed && exit_with_failure
+      exit_with_success_elapsed
+    ;;
+
     "init")
+      source "$SOURCE_DIR/init.sh"
+      source "$PLUGINS_DIR/$EXPORT_PLUGIN/plugin.sh"
+      ${EXPORT_PLUGIN}_init || fail
       source "$PLUGINS_DIR/$FETCH_PLUGIN/plugin.sh"
-      ${FETCH_PLUGIN}_init
+      ${FETCH_PLUGIN}_init || fail
       if [[ "$FETCH_PLUGIN" != "$RESET_PLUGIN" ]]; then
         source "$PLUGINS_DIR/$RESET_PLUGIN/plugin.sh"
-        ${RESET_PLUGIN}_init
+        ${RESET_PLUGIN}_init || fail
       fi
-      exit_with_success "Initialization complete."
+      has_failed && exit_with_failure
+      exit_with_success
     ;;
 
     "fetch")
@@ -106,11 +128,15 @@ case $command in
 
       if [[ "$do_database" == true ]]; then
         (hook_before_fetch_db)
-        ${FETCH_PLUGIN}_authenticate || exit 1
+        ${FETCH_PLUGIN}_authenticate || fail
         ${FETCH_PLUGIN}_clear_cache
-        echo "Fetching the $REMOTE_ENV database, please wait..."
+        echo "Fetching the $REMOTE_ENV database"
+
+        # todo insert the last fetch time here.
+        echo "Last time this took N minutes, so please be patient"
+
         delete_pulled_db
-        ${FETCH_PLUGIN}_fetch_db
+        ${FETCH_PLUGIN}_fetch_db || fail
         store_timestamp "$PULL_DB_PATH"
         (hook_after_fetch_db)
       fi
@@ -121,9 +147,8 @@ case $command in
         store_timestamp "$PULL_FILES_PATH"
         (hook_after_fetch_files)
       fi
-
       has_failed && exit_with_failure
-      exit_with_success
+      exit_with_success_elapsed
     ;;
 
     "reset")
@@ -138,19 +163,19 @@ case $command in
           exit 1
         fi
         echo "Resetting local database, please wait..."
-        ${RESET_PLUGIN}_reset_db
+        ${RESET_PLUGIN}_reset_db || fail
         (hook_after_reset_db)
       fi
 
       if [[ "$do_files" == true ]]; then
         (hook_before_reset_files)
         echo "Resetting local files to match $REMOTE_ENV"
-        ${RESET_PLUGIN}_reset_files || exit 1
+        ${RESET_PLUGIN}_reset_files || fail
         (hook_after_reset_files)
       fi
 
       has_failed && exit_with_failure
-      exit_with_success
+      exit_with_success_elapsed
     ;;
 
     "pull")
@@ -177,7 +202,7 @@ case $command in
       fi
 
       has_failed && exit_with_failure
-      exit_with_success
+      exit_with_success_elapsed
     ;;
 
     "info")
