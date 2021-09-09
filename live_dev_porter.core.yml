@@ -11,6 +11,7 @@ additional_config:
 additional_bootstrap: null
 default_command: help
 commands:
+
   info:
     help: Prints configuration info
 
@@ -22,6 +23,7 @@ commands:
         help: Include this option to ignore all table omissions by exclude files.
 
   fetch:
+    access_by_env: [dev, staging]
     help: Fetch remote assets to local.
     options:
       database:
@@ -32,7 +34,9 @@ commands:
         type: boolean
         help: Indicate the files asset.
         aliases: [f]
+
   reset:
+    access_by_env: [dev, staging]
     help: Reset dev assets with last fetched.
     options:
       database:
@@ -43,7 +47,9 @@ commands:
         type: boolean
         help: Indicate the files asset.
         aliases: [f]
+
   pull:
+    access_by_env: [dev, staging]
     help: Fetch and reset in one command.
     options:
       database:
@@ -56,9 +62,11 @@ commands:
         aliases: [f]
   init:
     help: 'Initialize local configuration files.'
+
   help:
     help: 'Show this help screen.'
     options: { version: { help: 'Display the current version', type: boolean } }
+
   clear-cache:
     aliases: [clearcache, cc]
     help: 'Clear all cached data.'
@@ -66,6 +74,7 @@ commands:
 environments:
 
   dev:
+    plugin: null
     id: dev
     name: Local development
     export:
@@ -80,9 +89,26 @@ environments:
       path: .live_dev_porter/fetch
 
   staging:
+    plugin: null
     id: test
     name: Staging
 
   production:
+    plugin: null
     id: production
     name: Production
+
+# This maps plugins to exact operations, this can be copied to your
+# configuration and overridden if you want.  It may contain the following
+# tokens: PRODUCTION_PLUGIN and DEV_PLUGIN.
+plugin_assignments:
+  fetch:
+    db: PRODUCTION_PLUGIN
+    files: PRODUCTION_PLUGIN
+  reset:
+    db: DEV_PLUGIN
+    files: DEV_PLUGIN
+  export:
+    db: DEV_PLUGIN
+  import:
+    db: DEV_PLUGIN

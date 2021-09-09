@@ -1,13 +1,13 @@
 # Defines the type of environment for the local instance; cannot be changed via
 # CLI arguments.
-local: dev
+local_environment_is: dev
 
 # Defines the remote environment, this may be altered by CLI arguments.  This must be one of the keys defined in config.yml
-remote: production
+remote_environment_is: production
 
 environments:
   dev:
-    name: LOCALIZED_TITLE_IF_DESIRED
+    label: LOCALIZED_TITLE_IF_DESIRED
 
     database:
       protocol: tcp
