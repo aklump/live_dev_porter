@@ -46,7 +46,7 @@ Refer to the file(s) for documentation about configuration options.
 
 | Filename | Description | VCS |
 |----------|----------|---|
-| _live_dev_porter.yml_ | Configuration shared across all server environments: prod, test, dev  | yes |
+| _live_dev_porter.yml_ | Configuration shared across all server environments: prod, staging, dev  | yes |
 | _live_dev_porter.local.yml_ | Configuration overrides for a single environment; not version controlled. | no |
 
 ## Usage

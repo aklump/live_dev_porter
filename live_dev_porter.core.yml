@@ -1,7 +1,7 @@
-title: "Live Dev Porter"
+title: 'Live Dev Porter'
 name: 'Live Dev Porter'
 description: 'Simplifies the management and transfer of assets between website environments.'
-version: 0.0.1
+version: 0.0.2
 author: 'Aaron Klump <sourcecode@intheloftstudios.com>'
 config_path_base: ../../..
 path_to_app: .
@@ -11,96 +11,46 @@ additional_config:
 additional_bootstrap: null
 default_command: help
 commands:
-
   info:
-    help: Prints configuration info
-
+    help: 'Prints configuration info'
   export:
-    help: Export the local database
-    options:
-      all_tables:
-        type: boolean
-        help: Include this option to ignore all table omissions by exclude files.
-
+    help: 'Export the local database'
+    options: { all_tables: { type: boolean, help: 'Include this option to ignore all table omissions by exclude files.' } }
   fetch:
     access_by_env: [dev, staging]
-    help: Fetch remote assets to local.
-    options:
-      database:
-        type: boolean
-        help: Indicate the database asset.
-        aliases: [d]
-      files:
-        type: boolean
-        help: Indicate the files asset.
-        aliases: [f]
-
+    help: 'Fetch remote assets to local.'
+    options: { database: { type: boolean, help: 'Indicate the database asset.', aliases: [d] }, files: { type: boolean, help: 'Indicate the files asset.', aliases: [f] } }
   reset:
     access_by_env: [dev, staging]
-    help: Reset dev assets with last fetched.
-    options:
-      database:
-        type: boolean
-        help: Indicate the database asset.
-        aliases: [d]
-      files:
-        type: boolean
-        help: Indicate the files asset.
-        aliases: [f]
-
+    help: 'Reset dev assets with last fetched.'
+    options: { database: { type: boolean, help: 'Indicate the database asset.', aliases: [d] }, files: { type: boolean, help: 'Indicate the files asset.', aliases: [f] } }
   pull:
     access_by_env: [dev, staging]
-    help: Fetch and reset in one command.
-    options:
-      database:
-        type: boolean
-        help: Indicate the database asset.
-        aliases: [d]
-      files:
-        type: boolean
-        help: Indicate the files asset.
-        aliases: [f]
+    help: 'Fetch and reset in one command.'
+    options: { database: { type: boolean, help: 'Indicate the database asset.', aliases: [d] }, files: { type: boolean, help: 'Indicate the files asset.', aliases: [f] } }
   init:
     help: 'Initialize local configuration files.'
-
   help:
     help: 'Show this help screen.'
     options: { version: { help: 'Display the current version', type: boolean } }
-
   clear-cache:
     aliases: [clearcache, cc]
     help: 'Clear all cached data.'
-
 environments:
-
   dev:
     plugin: null
     id: dev
-    name: Local development
-    export:
-      path: .live_dev_porter/backups
-      exclude_data_from_tables_listed_in:
-        - data_exclusions.txt
-      exclude_tables_listed_in:
-        - table_exclusions.txt
-    fetch:
-
-      # Path to where remote files should be saved on fetch.
-      path: .live_dev_porter/fetch
-
+    name: 'Local development'
+    export: { path: .live_dev_porter/backups, exclude_data_from_tables_listed_in: [data_exclusions.txt], exclude_tables_listed_in: [table_exclusions.txt] }
+    fetch: { path: .live_dev_porter/fetch }
   staging:
     plugin: null
     id: test
     name: Staging
-
   production:
     plugin: null
     id: production
     name: Production
-
-# This maps plugins to exact operations, this can be copied to your
-# configuration and overridden if you want.  It may contain the following
-# tokens: PRODUCTION_PLUGIN and DEV_PLUGIN.
 plugin_assignments:
   fetch:
     db: PRODUCTION_PLUGIN
