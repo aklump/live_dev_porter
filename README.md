@@ -11,8 +11,8 @@ Simplifies the management and transfer of assets between website environments.
 ## Quick Start
 
 - Install in your repository root using `cloudy pm-install aklump/live_dev_porter`
-- Open _bin/config/live_dev_porter.yml_ and modify as needed.
-- Open _bin/config/live_dev_porter.local.yml_ and ...; be sure to ignore this file in SCM.
+- Open _.live_dev_porter/config.yml_ and modify as needed.
+- Open _.live_dev_porter/config.local.yml_ and ...; be sure to ignore this file in SCM.
 - Try it out with `./bin/live_dev_porter SOME_COMMAND`
 
 ## Requirements
@@ -24,11 +24,21 @@ You must have [Cloudy](https://github.com/aklump/cloudy) installed on your syste
 The installation script above will generate the following structure where `.` is your repository root.
 
     .
+    ├── .live_dev_porter
+    │   ├── backups
+    │   │   └── dev
+    │   │       └── db
+    │   │           ├── data_exclusions.txt
+    │   │           └── table_exclusions.txt
+    │   ├── config.local.yml
+    │   ├── config.yml
+    │   └── fetch
+    │       └── live
+    │           ├── db
+    │           └── files
+    │               └── *.ignore.txt
     ├── bin
     │   ├── live_dev_porter -> ../opt/live_dev_porter/live_dev_porter.sh
-    │   └── config
-    │       ├── live_dev_porter.yml
-    │       └── live_dev_porter.local.yml
     ├── opt
     │   ├── cloudy
     │   └── aklump
@@ -46,8 +56,8 @@ Refer to the file(s) for documentation about configuration options.
 
 | Filename | Description | VCS |
 |----------|----------|---|
-| _live_dev_porter.yml_ | Configuration shared across all server environments: prod, test, dev  | yes |
-| _live_dev_porter.local.yml_ | Configuration overrides for a single environment; not version controlled. | no |
+| _.live_dev_porter/config.yml_ | Configuration shared across all server environments: prod, staging, dev  | yes |
+| _.live_dev_porter/config.local.yml_ | Configuration overrides for a single environment; not version controlled. | no |
 
 ## Usage
 
