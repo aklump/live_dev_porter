@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>Plugins</title>
+  <link href="search/tipuesearch.css" rel="stylesheet">
+  <link href="style.css" rel="stylesheet">
+</head>
+
+<body class="page--plugins">
+<header>
+  <div class="pager"><a href="README.html" class="prev README">&laquo;Live Dev Porter</a><a href="index.html" class="index pager__book-title"></a><a href="index.html" class="next index">Index&raquo;</a></div></header>
+<section class="sub-header">
+  <div class="breadcrumbs"><a href="index.html">Index</a>
+         &raquo
+      </div>      <div class="search__wrapper">
+  <form action="search--results.html">
+    <input type="text" class="search-input" name="q" id="tipue_search_input" autocomplete="off" required>
+  </form>
+</div>
+  </section>
+
+
+<h1>Plugins</h1>
+
+<section>
+
+<ol>
+<li>Plugins are folders saved to the <em>plugins/</em> directory, resembling the following structure.
+<code>└── pantheon
+    ├── README.md
+    ├── config.yml
+    └── plugin.sh</code></li>
+<li><em>config.yml</em> should all configuration that the plugin is expecting to use.</li>
+<li><em>plugin.sh</em> should contain functions; all that are public must be prefixed by the plugin name:
+<code>bash
+function pantheon_init() {
+  eval $(_get_file_ignore_paths)
+  for path in "${ignore_paths[@]}"; do
+    if [ ! -f "$path" ]; then
+      touch "$path"
+      succeed_because "Created: $path"
+    fi
+  done
+}</code></li>
+<li>Plugins must provide the following functions:
+
+<ol>
+<li><code>${PLUGIN}_init</code></li>
+<li><code>${PLUGIN}_authenticate</code></li>
+<li><code>${PLUGIN}_remote_clear_caches</code></li>
+<li><code>${PLUGIN}_fetch</code></li>
+<li><code>${PLUGIN}_reset</code></li>
+</ol></li>
+<li><p>Plugins may define private functions, but they should begin with an underscore.</p>
+
+<pre><code class="bash">function _get_file_ignore_paths() {
+  local snippet=$(get_config_as -a 'ignore_paths' 'pantheon.files.ignore')
+  local find=']="'
+
+  echo "${snippet//$find/$find$CONFIG_DIR/fetch/$ENV/files/}"
+}
+</code></pre></li>
+</ol>
+
+<h2>Error Conditions</h2>
+
+<ol>
+<li>Plugins should use <code>fail_because</code> &amp;&amp; <code>succeed_because</code></li>
+<li>Plugins should return non-zeros</li>
+<li>Plugins should not use <code>exit_with_*</code> methods; those are for the controller.</li>
+</ol>
+</section>
+
+<div class="search__results">
+  <div id="tipue_search_content"></div>
+</div>
+
+<footer>
+  <div class="pager"><a href="README.html" class="prev README">&laquo;Live Dev Porter</a><a href="index.html" class="index pager__book-title"></a><a href="index.html" class="next index">Index&raquo;</a></div>  
+  <div id="footer-legaleeze">
+    <p class="legaleeze center">Version: 0.0.2 &bull; Last Updated: Fri, 10 Sep 2021 13:32:53 -0700</p>
+  </div>
+</footer>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+  <script src="search/tipuesearch_content.js"></script>
+  <script src="search/tipuesearch_set.js"></script>
+  <script src="search/tipuesearch.min.js"></script>
+  <script>
+    $(document).ready(function() {
+      $('#tipue_search_input').tipuesearch()
+    })
+  </script>
+<script src="js/core.js"></script>
+</body>
+</html>
+
