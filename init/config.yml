@@ -21,18 +21,14 @@ environments:
         drupal: web/sites/default/files
 
   production:
-
-    plugin: pantheon
-
-    # The localized name for this environment.  Messages and filenames will use
-    # this instead of "dev".  You may change this to match your workflow.
+    label: ENTER_NAME_OF_HOSTING_COMPANY_ETC
     id: live
+    plugin: pantheon
 
     fetch:
       ignore_files_listed_in:
         - drupal.ignore.txt
-      plugin: pantheon
-      site_name: PANTHEON_SITE_NAME
-      site_uuid: PANTHEON_SITE_UUID
+      site_name: ENTER_PANTHEON_SITE_NAME
+      site_uuid: ENTER_PANTHEON_SITE_UUID
 
 

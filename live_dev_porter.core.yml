@@ -80,7 +80,7 @@ environments:
     export:
       path: .live_dev_porter/backups
       exclude_data_from_tables_listed_in:
-        - table_data_exclusions.txt
+        - data_exclusions.txt
       exclude_tables_listed_in:
         - table_exclusions.txt
     fetch:
@@ -107,7 +107,7 @@ plugin_assignments:
     files: PRODUCTION_PLUGIN
   reset:
     db: DEV_PLUGIN
-    files: DEV_PLUGIN
+    files: PRODUCTION_PLUGIN
   export:
     db: DEV_PLUGIN
   import:

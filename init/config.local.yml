@@ -7,17 +7,16 @@ remote_environment_is: production
 
 environments:
   dev:
-    label: LOCALIZED_TITLE_IF_DESIRED
+    name: ENTER_DEVELOPERS_COMPUTER_OR_BUSINESS_NAME_ETC
 
     database:
       protocol: tcp
-      host: HOST
-      port: PORT
-      name: DB_NAME
-      user: USER
-      pass: PASSWORD
+      host: ENTER_HOST
+      port: ENTER_PORT
+      name: ENTER_DB_NAME
+      user: ENTER_USER
+      pass: ENTER_PASSWORD
 
   production:
-    name: LOCALIZED_TITLE_IF_DESIRED
     fetch:
-      machine_token: MACHINE_TOKEN_FROM_PANTHEON
+      machine_token: ENTER_MACHINE_TOKEN_FROM_PANTHEON

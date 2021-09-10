@@ -37,11 +37,10 @@ eval $(get_config_path_as 'LOCAL_FETCH_DIR' 'environments.dev.fetch.path')
 exit_with_failure_if_empty_config 'LOCAL_FETCH_DIR' 'environments.dev.fetch.path'
 
 eval $(get_config_as 'REMOTE_ENV_ID' 'remote_environment_is')
-exit_with_failure_if_empty_config 'REMOTE_ENV_ID' 'remote_environment_is'
-
-# This is the localized environment name
-eval $(get_config_as 'REMOTE_ENV' "environments.$REMOTE_ENV_ID.id")
-exit_with_failure_if_empty_config 'REMOTE_ENV' "environments.$REMOTE_ENV_ID.id"
+if [[ "$REMOTE_ENV_ID" ]]; then
+  eval $(get_config_as 'REMOTE_ENV' "environments.$REMOTE_ENV_ID.id")
+  exit_with_failure_if_empty_config 'REMOTE_ENV' "environments.$REMOTE_ENV_ID.id"
+fi
 
 eval $(get_config_as 'LOCAL_ENV_ID' 'local_environment_is')
 exit_with_failure_if_empty_config 'LOCAL_ENV_ID' 'local_environment_is'
@@ -177,20 +176,23 @@ case $command in
         call_plugin $PLUGIN_FETCH_DB authenticate || fail
         if ! has_failed; then
           call_plugin $PLUGIN_FETCH_DB clear_cache
-          echo "Fetching the remote database, please wait..."
+          echo_heading "Fetching the remote database, please wait..."
           delete_last_fetched_db
           call_plugin $PLUGIN_FETCH_DB fetch_db || fail
         fi
         if ! has_failed; then
-          echo "Resetting the local database to match remote."
+          echo_heading "Resetting the local database to match remote."
           call_plugin $PLUGIN_RESET_DB reset_db
         fi
       fi
 
       if [[ "$do_files" == true ]]; then
-        echo "Fetching the $REMOTE_ENV files, please wait..."
+        echo_heading "Fetching the $REMOTE_ENV files, please wait..."
         call_plugin $PLUGIN_FETCH_FILES fetch_files || fail
-        ! has_failed && call_plugin $PLUGIN_RESET_FILES reset_files
+        if ! has_failed; then
+          echo_heading "Resetting the local files to match remote."
+          call_plugin $PLUGIN_RESET_FILES reset_files
+        fi
       fi
       has_failed && exit_with_failure
       exit_with_success_elapsed

@@ -87,6 +87,7 @@ function pantheon_reset_files() {
 
   eval $(get_config_as 'drupal_files' "$config_key")
   exit_with_failure_if_config_is_not_path 'drupal_files' "$config_key"
+  succeed_because "$drupal_files has been reset"
   rsync -a "$PULL_FILES_PATH/drupal/" "$drupal_files/"
 }
 
