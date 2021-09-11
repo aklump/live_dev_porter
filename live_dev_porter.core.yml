@@ -9,7 +9,7 @@ additional_config:
   - .live_dev_porter/config.yml
   - .live_dev_porter/config.local.yml
 additional_bootstrap: null
-default_command: help
+default_command: info
 commands:
   help:
     help: 'Show this help screen.'

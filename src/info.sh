@@ -7,9 +7,12 @@
 
 echo_title "Live Dev Porter Configuration"
 
+echo_heading "$(string_ucfirst "$LOCAL_ENV")"
 eval $(get_config_as 'local_label' "environments.$LOCAL_ENV_ID.label")
 echo_key_value 'Local:' "$(string_upper $LOCAL_ENV) - $local_label"
 
+echo
+echo_heading "$(string_ucfirst "$REMOTE_ENV")"
 eval $(get_config_as 'remote_label' "environments.$REMOTE_ENV_ID.label")
 echo_key_value 'Remote:' "$(string_upper $REMOTE_ENV) - $remote_label"
 

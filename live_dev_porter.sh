@@ -139,7 +139,6 @@ case $command in
     ;;
 
     "fetch")
-
       if [[ "$do_database" == true ]]; then
         source "$PLUGINS_DIR/$PLUGIN_FETCH_DB/${PLUGIN_FETCH_DB}.sh"
         echo_heading "Fetching the $REMOTE_ENV database"
@@ -227,7 +226,7 @@ case $command in
         call_plugin $plugin info
       done
       has_failed && exit_with_failure
-      exit_with_success
+      exit_with_success "Use 'help' to see all commands."
     ;;
 esac
 

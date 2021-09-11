@@ -1,9 +1,20 @@
 #!/usr/bin/env bash
 
+# Store a timestamp file.
+#
+# Use yaml_add_line to augment the stored contents.
+#
+# $1 - The path to the directory where to write the file.
+#
 function store_timestamp() {
   local directory="$1"
   rm "$directory/"*.latest.txt 2> /dev/null || true
-  touch "$directory/$(date +"%Y-%m-%dT%H.%M.%S%z").latest.txt"
+
+  local timestamp=$(date +"%Y-%m-%dT%H.%M.%S%z")
+  yaml_add_line "date: $(date +"%b %d, %Y at %I:%M %p")"
+  yaml_add_line "elapsed: $(echo_elapsed)"
+  yaml_get > "$directory/${timestamp}.latest.txt"
+  yaml_clear
 }
 
 #
