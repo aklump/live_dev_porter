@@ -9,10 +9,10 @@ function _get_remote_env() {
   case $REMOTE_ENV_ID in
   production)
     echo 'live' && return 0
-     ;;
+    ;;
   staging)
     echo 'test' && return 0
-     ;;
+    ;;
   esac
   exit_with_failure "Cannot determine Pantheon environment using $REMOTE_ENV_ID"
 }
@@ -48,10 +48,9 @@ function pantheon_authenticate() {
   lando terminus auth:login --machine-token $machine_token
 }
 
-function pantheon_clear_cache() {
+function pantheon_remote_clear_cache() {
   eval $(get_config_as 'site_name' "environments.$REMOTE_ENV_ID.fetch.site_name")
   exit_with_failure_if_empty_config 'site_name' 'pantheon.site_name'
-
   lando terminus env:clear-cache $site_name.$(_get_remote_env)
 }
 

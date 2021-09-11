@@ -11,4 +11,3 @@ function lando_reset_db() {
 function lando_reset_files() {
   return 0
 }
-

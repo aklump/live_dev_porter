@@ -11,18 +11,10 @@ additional_config:
 additional_bootstrap: null
 default_command: help
 commands:
-  config:
-    help: 'Open a configuration file in $EDITOR to make changes.'
-    options:
-      local:
-        type: boolean
-        help: Use this to open config.local.yml instead of config.yml
-        aliases: [ l ]
+  help:
+    help: 'Show this help screen.'
   info:
-    help: 'Prints configuration info'
-  export:
-    help: 'Export the local database'
-    options: { all_tables: { type: boolean, help: 'Include this option to ignore all table omissions by exclude files.' } }
+    help: 'Print the configuration info.'
   fetch:
     access_by_env: [ dev, staging ]
     help: 'Fetch remote assets to local.'
@@ -35,10 +27,22 @@ commands:
     access_by_env: [ dev, staging ]
     help: 'Fetch and reset in one command.'
     options: { database: { type: boolean, help: 'Indicate the database asset.', aliases: [ d ] }, files: { type: boolean, help: 'Indicate the files asset.', aliases: [ f ] } }
+  export:
+    help: 'Export the local database.'
+    options: { all_tables: { type: boolean, help: 'Include this option to ignore all table omissions by exclude files.' } }
+  db:
+    help: Enter the local database shell.
+    aliases: [ mysql ]
+  config:
+    help: 'Open configuration in $EDITOR.'
+    options:
+      local:
+        type: boolean
+        help: Use this to open config.local.yml instead of config.yml
+        aliases: [ l ]
+
   init:
     help: 'Initialize local configuration files.'
-  help:
-    help: 'Show this help screen.'
     options: { version: { help: 'Display the current version', type: boolean } }
   clear-cache:
     aliases: [ clearcache, cc ]
@@ -69,3 +73,5 @@ plugin_assignments:
     db: DEV_PLUGIN
   import:
     db: DEV_PLUGIN
+  shell:
+    db: mysql

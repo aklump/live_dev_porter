@@ -20,12 +20,13 @@
       done
     } 
     ```
-4. Plugins must provide the following functions:
+4. Plugins may provide the following functions:
     1. `${PLUGIN}_init`
     1. `${PLUGIN}_authenticate`
-    1. `${PLUGIN}_remote_clear_caches`
+    1. `${PLUGIN}_remote_clear_cache`
     1. `${PLUGIN}_fetch`
     1. `${PLUGIN}_reset`
+    1. `${PLUGIN}_on_clear_cache`
 5. Plugins may define private functions, but they should begin with an underscore.
     ```bash
     function _get_file_ignore_paths() {

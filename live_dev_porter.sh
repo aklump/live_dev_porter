@@ -18,6 +18,12 @@ function on_pre_config() {
   fi
 }
 
+function on_clear_cache() {
+  for plugin in "${ACTIVE_PLUGINS[@]}"; do
+    call_plugin $plugin on_clear_cache
+  done
+}
+
 # Begin Cloudy Bootstrap
 s="${BASH_SOURCE[0]}";while [ -h "$s" ];do dir="$(cd -P "$(dirname "$s")" && pwd)";s="$(readlink "$s")";[[ $s != /* ]] && s="$dir/$s";done;r="$(cd -P "$(dirname "$s")" && pwd)";source "$r/../../cloudy/cloudy/cloudy.sh";[[ "$ROOT" != "$r" ]] && echo "$(tput setaf 7)$(tput setab 1)Bootstrap failure, cannot load cloudy.sh$(tput sgr0)" && exit 1
 # End Cloudy Bootstrap
@@ -52,8 +58,6 @@ exit_with_failure_if_empty_config 'LOCAL_ENV' "environments.$REMOTE_ENV_ID.id"
 # Input validation.
 validate_input || exit_with_failure "Input validation failed."
 
-implement_cloudy_basic
-
 # Initialize local stash directory.
 pull_to_path="$LOCAL_FETCH_DIR/$REMOTE_ENV/"
 mkdir -p "$pull_to_path/db" || exit 1
@@ -87,9 +91,17 @@ if [ -f "$CONFIG_DIR/hooks.local.sh" ]; then
   source "$CONFIG_DIR/hooks.local.sh"
 fi
 
+implement_cloudy_basic
+
 # Handle other commands.
 command=$(get_command)
 case $command in
+
+    "db")
+      call_plugin $PLUGIN_DB_SHELL db_shell || fail
+      has_failed && exit_with_failure
+      exit_with_success_elapsed
+      ;;
 
     "config")
       if [[ ! "$EDITOR" ]]; then
@@ -134,7 +146,7 @@ case $command in
         (hook_before_fetch_db)
 
         call_plugin $PLUGIN_FETCH_DB authenticate || exit_with_failure
-        call_plugin $PLUGIN_FETCH_DB clear_cache || exit_with_failure
+        call_plugin $PLUGIN_FETCH_DB remote_clear_cach || exit_with_failure
 
         # todo insert the last fetch time here.
         echo "Last time this took N minutes, so please be patient"
@@ -186,7 +198,7 @@ case $command in
       if [[ "$do_database" == true ]]; then
         call_plugin $PLUGIN_FETCH_DB authenticate || fail
         if ! has_failed; then
-          call_plugin $PLUGIN_FETCH_DB clear_cache
+          call_plugin $PLUGIN_FETCH_DB remote_clear_cach
           echo_heading "Fetching the remote database, please wait..."
           delete_last_fetched_db
           call_plugin $PLUGIN_FETCH_DB fetch_db || fail

@@ -4,15 +4,19 @@ function mysql_init() {
   _generate_db_cnf || return 1
 }
 
+function mysql_db_shell() {
+  local defaults_file=$(_get_path_to_credentials)
+  [ -f "$defaults_file" ] || _generate_db_cnf || return 1
+  eval $(get_config_as "name" "environments.dev.database.name")
+  mysql --defaults-file="$defaults_file" "$name"
+}
+
 function mysql_export_db() {
   local path_to_dumpfile="$1"
 
-  eval $(get_config_as "user" "environments.dev.database.user")
-  eval $(get_config_as "pass" "environments.dev.database.pass")
-  eval $(get_config_as "name" "environments.dev.database.name")
   local save_as="$EXPORT_DB_PATH/$name.$(date8601 -c).sql"
   local defaults_file=$(_get_path_to_credentials)
-  [ ! -f "$defaults_file" ] && ! _generate_db_cnf && return 1
+  [ -f "$defaults_file" ] || _generate_db_cnf || return 1
 
   # First make sure the file does not exist.
   if [ -f "$save_as" ]; then
@@ -63,6 +67,14 @@ function mysql_import_db() {
 
 }
 
+# React to the cache clear of live_dev_porter
+#
+function mysql_on_clear_cache() {
+  local path_to_cnf=$(_get_path_to_credentials)
+  [ ! -f "$path_to_cnf" ] || rm -f "$path_to_cnf" || return 1
+  succeed_because $(echo_green "$(path_unresolve "$CONFIG_DIR" "$path_to_cnf")")
+}
+
 ##
 # Generate the local.cnf with db creds.
 #
@@ -97,7 +109,6 @@ function _generate_db_cnf() {
   echo "password=\"$pass\"" >>"$path_to_cnf"
   echo "protocol=\"$protocol\"" >>"$path_to_cnf"
   chmod 400 "$path_to_cnf"
-  succeed_because "Replaced file at $path_to_cnf"
 }
 
 function _get_path_to_credentials() {
@@ -172,13 +183,4 @@ function _build_where_not_query() {
 function mysql_reset_db() {
   local dumpfile=$(get_path_to_fetched_db)
   mysql_import_db "$dumpfile"
-}
-
-
-#function mysql_reset_db() {
-#  (cd "$PULL_DB_PATH" && lando db-import "$(get_path_to_fetched_db)")
-#}
-
-function mysql_reset_files() {
-#  rsync -av "$PULL_FILES_PATH/" "$ROOT_DIR/)"
 }
