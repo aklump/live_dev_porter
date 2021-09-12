@@ -12,10 +12,8 @@ additional_bootstrap: null
 default_command: info
 local_environment_is: production
 commands:
-  configtest:
-    help: 'Run a suite of tests to reveal possible configuration issues.  This is a good step to take after all configuration changes, as it checks your connections to your remote servers, files, databases, etc.'
-    aliases:
-      - ct
+  remote:
+    help: Enter the remote server shell.
   help:
     help: 'Show this help screen.'
   info:
@@ -26,6 +24,10 @@ commands:
       - staging
     help: 'Fetch remote assets to local.'
     options:
+      verbose:
+        type: boolean
+        help: Output additional information.
+        aliases: [ v ]
       database:
         type: boolean
         help: 'Indicate the database asset.'
@@ -42,6 +44,10 @@ commands:
       - staging
     help: 'Reset dev assets with last fetched.'
     options:
+      verbose:
+        type: boolean
+        help: Output additional information.
+        aliases: [ v ]
       database:
         type: boolean
         help: 'Indicate the database asset.'
@@ -58,6 +64,10 @@ commands:
       - staging
     help: 'Fetch and reset in one command.'
     options:
+      verbose:
+        type: boolean
+        help: Output additional information.
+        aliases: [ v ]
       database:
         type: boolean
         help: 'Indicate the database asset.'
@@ -88,9 +98,14 @@ commands:
     options:
       local:
         type: boolean
-        help: 'Use this to open config.local.yml instead of config.yml'
+        help: 'Use this to open config.local.yml instead of config.yml.'
         aliases:
           - l
+  configtest:
+    help: 'Run tests to validate configuration.'
+    aliases:
+      - test
+      - ct
   init:
     help: 'Initialize local configuration files.'
     access_by_env:
@@ -106,7 +121,7 @@ commands:
     help: 'Clear all cached data.'
 environments:
   dev:
-    plugin: null
+    plugin: default
     id: dev
     name: 'Local development'
     export:
@@ -118,14 +133,18 @@ environments:
     fetch:
       path: .live_dev_porter/fetch
   staging:
-    plugin: null
+    plugin: default
     id: test
     name: Staging
   production:
-    plugin: null
+    plugin: default
     id: production
     name: Production
+
 plugin_assignments:
+  shell:
+    db: mysql
+    remote: PRODUCTION_PLUGIN
   fetch:
     db: PRODUCTION_PLUGIN
     files: PRODUCTION_PLUGIN
@@ -136,5 +155,4 @@ plugin_assignments:
     db: mysql
   import:
     db: mysql
-  shell:
-    db: mysql
+

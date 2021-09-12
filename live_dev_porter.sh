@@ -29,7 +29,7 @@ function on_pre_config() {
 
 function on_compile_config() {
   for plugin in "${ALL_PLUGINS[@]}"; do
-    call_plugin $plugin on_compile_config
+    plugin_implements $plugin on_compile_config && call_plugin $plugin on_compile_config
   done
 }
 
@@ -42,7 +42,7 @@ function on_clear_cache() {
   succeed_because $(echo_green "$(path_unresolve "$CACHE_DIR" "$path_to_db_creds")")
 
   for plugin in "${ACTIVE_PLUGINS[@]}"; do
-    call_plugin $plugin on_clear_cache
+    plugin_implements $plugin on_clear_cache && call_plugin $plugin on_clear_cache
   done
 }
 
@@ -114,8 +114,7 @@ case $command in
     "configtest")
       echo_title "CONFIGURATION TESTS"
       for plugin in "${ACTIVE_PLUGINS[@]}"; do
-        plugin_implements $plugin test && echo_heading $(string_ucfirst "$plugin")
-        call_plugin $plugin test
+        plugin_implements $plugin test && echo_heading $(string_ucfirst "$plugin") && call_plugin $plugin test
       done
       has_failed && exit_with_failure "Tests failed."
       exit_with_success "All tests passed."
@@ -124,10 +123,16 @@ case $command in
     "init")
       source "$SOURCE_DIR/init.sh"
       for plugin in "${ACTIVE_PLUGINS[@]}"; do
-        call_plugin $plugin init
+        plugin_implements $plugin init && call_plugin $plugin init
       done
       has_failed && exit_with_failure
       exit_with_success "Initialization complete."
+      ;;
+
+    "remote")
+      call_plugin $PLUGIN_REMOTE_SHELL remote_shell || fail
+      has_failed && exit_with_failure
+      exit_with_success_elapsed
       ;;
 
     "db")
@@ -198,9 +203,10 @@ case $command in
     ;;
 
     "fetch")
+      echo_title "Fetch Remote Assets"
       if [[ "$do_database" == true ]]; then
         source "$PLUGINS_DIR/$PLUGIN_FETCH_DB/${PLUGIN_FETCH_DB}.sh"
-        echo_heading "Fetching the $REMOTE_ENV database"
+        echo_heading "Fetching $REMOTE_ENV database..."
         (hook_before_fetch_db)
 
         call_plugin $PLUGIN_FETCH_DB authenticate || exit_with_failure
@@ -209,36 +215,36 @@ case $command in
         # todo insert the last fetch time here.
         echo "Last time this took N minutes, so please be patient"
         call_plugin $PLUGIN_FETCH_DB fetch_db || fail
-        ! has_failed && store_timestamp "$PULL_DB_PATH"
+        ! has_failed && store_timestamp "$PULL_DB_PATH" && succeed_because "Database fetched."
         (hook_after_fetch_db)
       fi
 
       if [[ "$do_files" == true ]]; then
-        echo_heading "Fetching the $REMOTE_ENV files, please wait..."
+        echo_heading "Fetching $REMOTE_ENV files..."
         (hook_before_fetch_files)
         call_plugin $PLUGIN_FETCH_FILES fetch_files || fail
-        ! has_failed && store_timestamp "$PULL_FILES_PATH"
+        ! has_failed && store_timestamp "$PULL_FILES_PATH" && succeed_because "Files fetched."
         (hook_after_fetch_files)
       fi
       has_failed && exit_with_failure
-      exit_with_success_elapsed
+      exit_with_success_elapsed "Fetch completed"
     ;;
 
     "reset")
       if [[ "$do_database" == true ]]; then
         echo_heading "Resetting local database, please wait..."
         (hook_before_reset_db)
-
         dumpfile=$(ldp_get_fetched_db_path)
         if [[ ! "$dumpfile" ]]; then
-          fail_because "Missing database file (did you pull -d?)"
-        fi
-        if [ ! -f "$dumpfile" ]; then
+          fail_because "Missing dumpfile."
+          fail_because "Try fetching the remote database with fetch."
+        elif [ ! -f "$dumpfile" ]; then
           fail_because "Dumpfile does not exist \"$dumpfile\"."
         fi
-        has_failed && exit_with_failure
-        call_plugin $PLUGIN_RESET_DB reset_db "$dumpfile" || fail
-        (hook_after_reset_db)
+        if ! has_failed; then
+          call_plugin $PLUGIN_RESET_DB reset_db "$dumpfile" || fail
+          (hook_after_reset_db)
+        fi
       fi
 
       if [[ "$do_files" == true ]]; then
@@ -282,7 +288,7 @@ case $command in
     "info")
       source "$SOURCE_DIR/info.sh"
       for plugin in "${ACTIVE_PLUGINS[@]}"; do
-        call_plugin $plugin info
+        plugin_implements $plugin info && call_plugin $plugin info
       done
       has_failed && exit_with_failure
       exit_with_success "Use 'help' to see all commands."

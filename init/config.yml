@@ -1,3 +1,15 @@
+files_sync:
+  private:
+    - private/default/files
+  public:
+    - web/sites/default/files
+
+files_copy:
+  config:
+    -
+      local: install/default/.env.$ENV
+      remote: .env
+
 # By default every environment should be production unless changed in _config.local.yml_.
 local_environment_is: production
 

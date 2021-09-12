@@ -49,9 +49,9 @@ function call_plugin() {
 
   [ -f "$PLUGINS_DIR/$plugin/$plugin.sh" ] || return 1
   source "$PLUGINS_DIR/$plugin/$plugin.sh"
-  if function_exists "${plugin}_${function_tail}"; then
-    ${plugin}_${function_tail} "${args[@]}"
-  fi
+  local function="${plugin}_${function_tail}"
+  ! function_exists $function && fail_because "Plugin \"$plugin\" does not support \"$function_tail\"" && return 1
+  $function "${args[@]}"
 }
 
 function plugin_implements() {
@@ -77,4 +77,14 @@ function implement_route_access() {
   fail_because "\"$command\" can be used only in ${csv#, } environments."
   fail_because "Current environment is \"$LOCAL_ENV\"."
   exit_with_failure "Command not allowed"
+}
+
+# Echo the ssh user@host string for the remote environment.
+#
+function get_remote() {
+  eval $(get_config_as remote_user "environments.$REMOTE_ENV_ID.ssh.user")
+  exit_with_failure_if_empty_config remote_user "environments.$REMOTE_ENV_ID.ssh.user"
+  eval $(get_config_as remote_host "environments.$REMOTE_ENV_ID.ssh.host")
+  exit_with_failure_if_empty_config remote_host "environments.$REMOTE_ENV_ID.ssh.host"
+  echo "$remote_user@$remote_host"
 }

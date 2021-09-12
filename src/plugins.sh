@@ -39,6 +39,9 @@ PLUGIN_IMPORT_DB=$(_token_expand $PLUGIN_IMPORT_DB)
 eval $(get_config_as PLUGIN_DB_SHELL 'plugin_assignments.shell.db')
 PLUGIN_DB_SHELL=$(_token_expand $PLUGIN_DB_SHELL)
 
+eval $(get_config_as PLUGIN_REMOTE_SHELL 'plugin_assignments.shell.remote')
+PLUGIN_REMOTE_SHELL=$(_token_expand $PLUGIN_REMOTE_SHELL)
+
 # Create a unique list of active plugins.
-declare -a ACTIVE_PLUGINS=($PLUGIN_FETCH_DB $PLUGIN_FETCH_FILES $PLUGIN_RESET_DB $PLUGIN_RESET_FILES $PLUGIN_EXPORT_DB $PLUGIN_IMPORT_DB $PLUGIN_DB_SHELL)
+declare -a ACTIVE_PLUGINS=($PLUGIN_FETCH_DB $PLUGIN_FETCH_FILES $PLUGIN_RESET_DB $PLUGIN_RESET_FILES $PLUGIN_EXPORT_DB $PLUGIN_IMPORT_DB $PLUGIN_DB_SHELL $PLUGIN_REMOTE_SHELL)
 ACTIVE_PLUGINS=($(echo "$(printf "%s\n" "${ACTIVE_PLUGINS[@]}")" | sort -u))
