@@ -105,6 +105,7 @@ else
 fi
 
 implement_cloudy_basic
+implement_route_access
 
 # Handle other commands.
 command=$(get_command)
