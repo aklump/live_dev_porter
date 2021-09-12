@@ -17,27 +17,6 @@ function store_timestamp() {
   yaml_clear
 }
 
-#
-# Echo the basename of the last pulled database file.
-#
-function get_path_to_fetched_db() {
-  path=$(ls "$PULL_DB_PATH/"*.sql* 2> /dev/null)
-  if [[ "$path" ]]; then
-    echo "$path"
-  fi
-}
-
-function delete_last_fetched_db() {
-  local dumpfile=$(get_path_to_fetched_db)
-  if [[ "$dumpfile" ]]; then
-    if [ -f "$dumpfile" ]; then
-      rm -v "$dumpfile" || fail_because "Could not delete $dumpfile"
-    fi
-  fi
-  has_failed && return 1
-  return 0
-}
-
 function get_container_path() {
   local host_path="$1"
   local directory=$(dirname $host_path)
@@ -68,8 +47,17 @@ function call_plugin() {
   local function_tail=$2
   local args=("${@:3}")
 
+  [ -f "$PLUGINS_DIR/$plugin/$plugin.sh" ] || return 1
   source "$PLUGINS_DIR/$plugin/$plugin.sh"
   if function_exists "${plugin}_${function_tail}"; then
     ${plugin}_${function_tail} "${args[@]}"
   fi
+}
+
+function plugin_implements() {
+  local plugin=$1
+
+  [ -f "$PLUGINS_DIR/$plugin/$plugin.sh" ] || return 1
+  source "$PLUGINS_DIR/$plugin/$plugin.sh"
+  function_exists "${plugin}_$2"
 }

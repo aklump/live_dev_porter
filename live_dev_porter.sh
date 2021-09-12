@@ -11,14 +11,36 @@ CONFIG="live_dev_porter.core.yml";
 # Uncomment this line to enable file logging.
 #LOGFILE="live_dev_porter.core.log"
 
-# TODO: Event handlers and other functions go here or register one or more includes in "additional_bootstrap".
 function on_pre_config() {
   if [[ "$(get_command)" == "init" ]]; then
     handle_init || exit_with_failure "${CLOUDY_FAILED:-Initialization failed.}"
   fi
+
+  SOURCE_DIR="$ROOT/src"
+  TEMP_DIR=$(tempdir $CLOUDY_NAME)
+  PLUGINS_DIR="$ROOT/plugins"
+  ALL_PLUGINS=()
+  for i in $(cd $PLUGINS_DIR && find . -maxdepth 1 -type d); do
+     [[ "$i" != '.' ]] && ALL_PLUGINS=("${ALL_PLUGINS[@]}" "$(basename "$i")")
+  done
+  source "$SOURCE_DIR/functions.sh"
+  source "$SOURCE_DIR/database.sh"
+}
+
+function on_compile_config() {
+  for plugin in "${ALL_PLUGINS[@]}"; do
+    call_plugin $plugin on_compile_config
+  done
 }
 
 function on_clear_cache() {
+  # Delete the generated DB credentials file.
+  local path_to_db_creds=$(ldp_get_db_creds_path)
+  if [ -f "$path_to_db_creds" ]; then
+    rm -f "$path_to_db_creds" || return 1
+  fi
+  succeed_because $(echo_green "$(path_unresolve "$CACHE_DIR" "$path_to_db_creds")")
+
   for plugin in "${ACTIVE_PLUGINS[@]}"; do
     call_plugin $plugin on_clear_cache
   done
@@ -28,16 +50,18 @@ function on_clear_cache() {
 s="${BASH_SOURCE[0]}";while [ -h "$s" ];do dir="$(cd -P "$(dirname "$s")" && pwd)";s="$(readlink "$s")";[[ $s != /* ]] && s="$dir/$s";done;r="$(cd -P "$(dirname "$s")" && pwd)";source "$r/../../cloudy/cloudy/cloudy.sh";[[ "$ROOT" != "$r" ]] && echo "$(tput setaf 7)$(tput setab 1)Bootstrap failure, cannot load cloudy.sh$(tput sgr0)" && exit 1
 # End Cloudy Bootstrap
 
-#@todo remove
-ROOT_DIR="$ROOT"
-
-SOURCE_DIR="$ROOT/src"
-source "$SOURCE_DIR/functions.sh"
-
 CONFIG_DIR="$APP_ROOT/.live_dev_porter"
-PLUGINS_DIR="$ROOT/plugins"
 
-TEMP_DIR=$(tempdir $CLOUDY_NAME)
+# Bootstrap the plugin configuration.
+source "$SOURCE_DIR/plugins.sh"
+
+# Define all hooks, which can be overwritten by the plugin or config/hooks.local.
+source "$SOURCE_DIR/hooks.sh"
+
+# This is a local, non SCM file to overwrite the above hooks
+if [ -f "$CONFIG_DIR/hooks.local.sh" ]; then
+  source "$CONFIG_DIR/hooks.local.sh"
+fi
 
 eval $(get_config_path_as 'LOCAL_FETCH_DIR' 'environments.dev.fetch.path')
 exit_with_failure_if_empty_config 'LOCAL_FETCH_DIR' 'environments.dev.fetch.path'
@@ -80,22 +104,30 @@ else
   do_files=true
 fi
 
-# Define all hooks, which can be overwritten by the plugin or config/hooks.local.
-source "$SOURCE_DIR/hooks.sh"
-
-# Bootstrap the plugin configuration.
-source "$SOURCE_DIR/plugins.sh"
-
-# This is a local, non SCM file to overwrite the above hooks
-if [ -f "$CONFIG_DIR/hooks.local.sh" ]; then
-  source "$CONFIG_DIR/hooks.local.sh"
-fi
-
 implement_cloudy_basic
 
 # Handle other commands.
 command=$(get_command)
 case $command in
+
+    "configtest")
+      echo_title "CONFIGURATION TESTS"
+      for plugin in "${ACTIVE_PLUGINS[@]}"; do
+        plugin_implements $plugin test && echo_heading $(string_ucfirst "$plugin")
+        call_plugin $plugin test
+      done
+      has_failed && exit_with_failure "Tests failed."
+      exit_with_success "All tests passed."
+      ;;
+
+    "init")
+      source "$SOURCE_DIR/init.sh"
+      for plugin in "${ACTIVE_PLUGINS[@]}"; do
+        call_plugin $plugin init
+      done
+      has_failed && exit_with_failure
+      exit_with_success "Initialization complete."
+      ;;
 
     "db")
       call_plugin $PLUGIN_DB_SHELL db_shell || fail
@@ -114,18 +146,9 @@ case $command in
       $EDITOR $config_file && exit_with_cache_clear
       ;;
 
-    "init")
-      source "$SOURCE_DIR/init.sh"
-      for plugin in "${ACTIVE_PLUGINS[@]}"; do
-        call_plugin $plugin init
-      done
-      has_failed && exit_with_failure
-      exit_with_success
-    ;;
-
     "export")
       eval $(get_config_as "name" "environments.dev.database.name")
-      echo_heading "Export $LOCAL_ENV database \"$name\""
+      echo_heading "Export $LOCAL_ENV database \"$name\" (via $PLUGIN_EXPORT_DB)"
       eval $(get_config_path_as 'LOCAL_EXPORT_DIR' 'environments.dev.export.path')
       exit_with_failure_if_empty_config 'LOCAL_EXPORT_DIR' 'environments.dev.export.path'
       EXPORT_DB_PATH="$LOCAL_EXPORT_DIR/$LOCAL_ENV/db"
@@ -135,7 +158,8 @@ case $command in
         call_plugin $PLUGIN_EXPORT_DB export_db || fail
       fi
       has_failed && exit_with_failure
-      exit_with_success_elapsed
+      store_timestamp "$EXPORT_DB_PATH"
+      exit_with_success_elapsed "Database exported"
     ;;
 
     "fetch")
@@ -170,7 +194,7 @@ case $command in
         echo_heading "Resetting local database, please wait..."
         (hook_before_reset_db)
 
-        dumpfile=$(get_path_to_fetched_db)
+        dumpfile=$(ldp_get_fetched_db_path)
         if [[ ! "$dumpfile" ]]; then
           fail_because "Missing database file (did you pull -d?)"
         fi
@@ -199,7 +223,7 @@ case $command in
         if ! has_failed; then
           call_plugin $PLUGIN_FETCH_DB remote_clear_cach
           echo_heading "Fetching the remote database, please wait..."
-          delete_last_fetched_db
+          ldp_delete_fetched_db
           call_plugin $PLUGIN_FETCH_DB fetch_db || fail
         fi
         if ! has_failed; then

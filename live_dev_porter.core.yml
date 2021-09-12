@@ -11,6 +11,9 @@ additional_config:
 additional_bootstrap: null
 default_command: info
 commands:
+  configtest:
+    help: 'Run a suite of tests to reveal possible configuration issues.  This is a good step to take after all configuration changes, as it checks your connections to your remote servers, files, databases, etc.'
+    aliases: [ct]
   help:
     help: 'Show this help screen.'
   info:
@@ -65,8 +68,8 @@ plugin_assignments:
     db: DEV_PLUGIN
     files: PRODUCTION_PLUGIN
   export:
-    db: DEV_PLUGIN
+    db: mysql
   import:
-    db: DEV_PLUGIN
+    db: mysql
   shell:
     db: mysql

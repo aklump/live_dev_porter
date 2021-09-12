@@ -55,7 +55,7 @@ function pantheon_remote_clear_cache() {
 }
 
 function pantheon_fetch_db() {
-  delete_last_fetched_db
+  ldp_delete_fetched_db
   local lando_path=$(get_container_path "$PULL_DB_PATH")
   if [[ ! "$lando_path" ]]; then
     fail_because "Cannot determine \$lando_path for $PULL_DB_PATH"
