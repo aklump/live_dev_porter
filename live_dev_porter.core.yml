@@ -30,9 +30,11 @@ commands:
     access_by_env: [dev, staging]
     help: 'Fetch and reset in one command.'
     options: { database: { type: boolean, help: 'Indicate the database asset.', aliases: [d] }, files: { type: boolean, help: 'Indicate the files asset.', aliases: [f] } }
+  import:
+    help: 'Import a dumpfile to the local database.'
   export:
     help: 'Export the local database.'
-    options: { all_tables: { type: boolean, help: 'Include this option to ignore all table omissions by exclude files.' } }
+    options: { all: { type: boolean, help: 'Include this option to ignore all table omissions by exclude files.' } }
   db:
     help: 'Enter the local database shell.'
     aliases: [mysql]

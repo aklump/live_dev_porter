@@ -74,14 +74,15 @@ function mysql_import_db() {
   if [[ ! "$path_to_dumpfile" ]]; then
     fail_because "No import filename given." && return 1
   fi
-
-  if [ -f "$path_to_dumpfile" ]; then
+  if [ ! -f "$path_to_dumpfile" ]; then
     fail_because "Import file \"$path_to_dumpfile\" does not exist." && return 1
   fi
 
+  eval $(get_config_as "db_name" "environments.dev.database.name")
+  local path_to_db_creds=$(ldp_get_db_creds_path)
+  [ -f "$path_to_db_creds" ] || _generate_db_cnf || return 1
 
-  throw "$path_to_dumpfile;$0;in function ${FUNCNAME}();$LINENO"
-
+  mysql --defaults-file="$path_to_db_creds" $db_name < $path_to_dumpfile
 }
 
 function mysql_reset_db() {

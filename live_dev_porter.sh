@@ -146,6 +146,39 @@ case $command in
       $EDITOR $config_file && exit_with_cache_clear
       ;;
 
+    "import")
+      eval $(get_config_as "name" "environments.dev.database.name")
+      echo_heading "Replace $LOCAL_ENV database \"$name\" with import (via $PLUGIN_IMPORT_DB)"
+      eval $(get_config_path_as 'LOCAL_EXPORT_DIR' 'environments.dev.export.path')
+      exit_with_failure_if_empty_config 'LOCAL_EXPORT_DIR' 'environments.dev.export.path'
+      EXPORT_DB_PATH="$LOCAL_EXPORT_DIR/$LOCAL_ENV/db"
+      if [ ! -d $EXPORT_DB_PATH ]; then
+        fail_because "Missing directory $EXPORT_DB_PATH"
+      else
+        dumpfiles=()
+        for i in $(cd "$EXPORT_DB_PATH" && find . -maxdepth 1 -type f -name '*.sql*'); do
+           [[ "$i" != '.' ]] && dumpfiles=("${dumpfiles[@]}" "$(basename "$i")")
+        done
+        echo
+        PS3="Which dumpfile? (CTRL-C to cancel) "
+        select dumpfile in ${dumpfiles[@]}; do
+          echo_heading "Preparing..."
+          ldp_db_drop_tables
+          echo_heading "Importing..."
+          call_plugin $PLUGIN_IMPORT_DB import_db "$EXPORT_DB_PATH/$dumpfile" || fail
+          message="import $dumpfile"
+          if has_failed; then
+            echo_fail "$message"
+          else
+            echo_pass "$message"
+          fi
+          break
+        done
+      fi
+      has_failed && exit_with_failure "The import failed"
+      exit_with_success_elapsed "The import was successful"
+      ;;
+
     "export")
       eval $(get_config_as "name" "environments.dev.database.name")
       echo_heading "Export $LOCAL_ENV database \"$name\" (via $PLUGIN_EXPORT_DB)"
@@ -157,7 +190,8 @@ case $command in
       else
         call_plugin $PLUGIN_EXPORT_DB export_db || fail
       fi
-      has_failed && exit_with_failure
+      has_failed && exit_with_failure "Failed to export database"
+      has_option all && succeed_because "All tables and data exported."
       store_timestamp "$EXPORT_DB_PATH"
       exit_with_success_elapsed "Database exported"
     ;;
