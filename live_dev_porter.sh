@@ -46,6 +46,23 @@ function on_clear_cache() {
   done
 }
 
+function on_boot() {
+  [[ "$(get_command)" == "tests" ]] || return 0
+  source "$CLOUDY_ROOT/inc/cloudy.testing.sh"
+  echo_heading "Testing core"
+  do_tests_in "$SOURCE_DIR/live_dev_porter.tests.sh"
+  for plugin in "${ALL_PLUGINS[@]}"; do
+    local testfile="$PLUGINS_DIR/$plugin/$plugin.tests.sh"
+    if [ -f "$testfile" ]; then
+      echo_heading "Testing plugin: $(string_ucfirst $plugin)"
+      source "$PLUGINS_DIR/$plugin/$plugin.sh"
+      do_tests_in --continue "$testfile"
+    fi
+  done
+  echo
+  exit_with_test_results
+}
+
 # Begin Cloudy Bootstrap
 s="${BASH_SOURCE[0]}";while [ -h "$s" ];do dir="$(cd -P "$(dirname "$s")" && pwd)";s="$(readlink "$s")";[[ $s != /* ]] && s="$dir/$s";done;r="$(cd -P "$(dirname "$s")" && pwd)";source "$r/../../cloudy/cloudy/cloudy.sh";[[ "$ROOT" != "$r" ]] && echo "$(tput setaf 7)$(tput setab 1)Bootstrap failure, cannot load cloudy.sh$(tput sgr0)" && exit 1
 # End Cloudy Bootstrap
@@ -54,6 +71,9 @@ CONFIG_DIR="$APP_ROOT/.live_dev_porter"
 
 # Bootstrap the plugin configuration.
 source "$SOURCE_DIR/plugins.sh"
+for plugin in "${ACTIVE_PLUGINS[@]}"; do
+  plugin_implements $plugin on_boot && call_plugin $plugin on_boot
+done
 
 # Define all hooks, which can be overwritten by the plugin or config/hooks.local.
 source "$SOURCE_DIR/hooks.sh"
@@ -86,8 +106,8 @@ validate_input || exit_with_failure "Input validation failed."
 pull_to_path="$LOCAL_FETCH_DIR/$REMOTE_ENV/"
 mkdir -p "$pull_to_path/db" || exit 1
 mkdir -p "$pull_to_path/files" || exit 1
-PULL_DB_PATH=$(cd "$pull_to_path/db" && pwd)
-PULL_FILES_PATH=$(cd "$pull_to_path/files" && pwd)
+FETCH_DB_PATH=$(cd "$pull_to_path/db" && pwd)
+FETCH_FILES_PATH=$(cd "$pull_to_path/files" && pwd)
 
 # Determine if we are going to operate on database, files, or both.
 if has_option d && has_option f; then
@@ -114,9 +134,9 @@ case $command in
     "configtest")
       echo_title "CONFIGURATION TESTS"
       for plugin in "${ACTIVE_PLUGINS[@]}"; do
-        plugin_implements $plugin test && echo_heading $(string_ucfirst "$plugin") && call_plugin $plugin test
+        plugin_implements $plugin configtest && echo_heading $(string_ucfirst "$plugin") && call_plugin $plugin configtest
       done
-      has_failed && exit_with_failure "Tests failed."
+      has_failed && exit_with_failure "Tests failed (try clearing caches and retesting)."
       exit_with_success "All tests passed."
       ;;
 
@@ -215,15 +235,15 @@ case $command in
         # todo insert the last fetch time here.
         echo "Last time this took N minutes, so please be patient"
         call_plugin $PLUGIN_FETCH_DB fetch_db || fail
-        ! has_failed && store_timestamp "$PULL_DB_PATH" && succeed_because "Database fetched."
+        ! has_failed && store_timestamp "$FETCH_DB_PATH" && succeed_because "Database fetched."
         (hook_after_fetch_db)
       fi
 
       if [[ "$do_files" == true ]]; then
-        echo_heading "Fetching $REMOTE_ENV files..."
+#        echo_heading "Fetching $REMOTE_ENV files..."
         (hook_before_fetch_files)
         call_plugin $PLUGIN_FETCH_FILES fetch_files || fail
-        ! has_failed && store_timestamp "$PULL_FILES_PATH" && succeed_because "Files fetched."
+        ! has_failed && store_timestamp "$FETCH_FILES_PATH" && succeed_because "Files fetched."
         (hook_after_fetch_files)
       fi
       has_failed && exit_with_failure
@@ -248,7 +268,7 @@ case $command in
       fi
 
       if [[ "$do_files" == true ]]; then
-        echo_heading "Resetting local files to match $REMOTE_ENV"
+#        echo_heading "Resetting local files to match $REMOTE_ENV"
         (hook_before_reset_files)
         call_plugin $PLUGIN_RESET_FILES reset_files || fail
         (hook_after_reset_files)
@@ -274,10 +294,10 @@ case $command in
       fi
 
       if [[ "$do_files" == true ]]; then
-        echo_heading "Fetching the $REMOTE_ENV files, please wait..."
+#        echo_heading "Fetching the $REMOTE_ENV files, please wait..."
         call_plugin $PLUGIN_FETCH_FILES fetch_files || fail
         if ! has_failed; then
-          echo_heading "Resetting the local files to match remote."
+#          echo_heading "Resetting the local files to match remote."
           call_plugin $PLUGIN_RESET_FILES reset_files
         fi
       fi

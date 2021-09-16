@@ -1,14 +1,12 @@
 files_sync:
-  private:
-    - private/default/files
-  public:
-    - web/sites/default/files
+#  public:
+#    - web/sites/default/files files
+#  private:
+#    - private/default/files files/private
 
 files_copy:
-  config:
-    -
-      local: install/default/.env.$ENV
-      remote: .env
+#  config:
+#    - install/default/.env.$ENV .env
 
 # By default every environment should be production unless changed in _config.local.yml_.
 local_environment_is: production
@@ -28,18 +26,12 @@ environments:
       mysqldump_options:
 #        - xml
 
-    reset:
-      files:
-        drupal: web/sites/default/files
-
   production:
     label: ENTER_NAME_OF_HOSTING_COMPANY_ETC
     id: live
     plugin: pantheon
 
     fetch:
-      ignore_files_listed_in:
-        - drupal.ignore.txt
       site_name: ENTER_PANTHEON_SITE_NAME
       site_uuid: ENTER_PANTHEON_SITE_UUID
 

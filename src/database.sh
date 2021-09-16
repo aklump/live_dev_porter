@@ -9,7 +9,7 @@
 # Echo the basename of the last pulled database file.
 #
 function ldp_get_fetched_db_path() {
-  path=$(ls "$PULL_DB_PATH/"*.sql* 2> /dev/null)
+  path=$(ls "$FETCH_DB_PATH/"*.sql* 2> /dev/null)
   if [[ "$path" ]]; then
     echo "$path"
   fi

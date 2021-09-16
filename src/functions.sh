@@ -88,3 +88,55 @@ function get_remote() {
   exit_with_failure_if_empty_config remote_host "environments.$REMOTE_ENV_ID.ssh.host"
   echo "$remote_user@$remote_host"
 }
+
+# Echo the local part of a file path config value.
+#
+# $1 - A string in this pattern PATH or LOCAL:REMOTE or LOCAL REMOTE. Be sure to
+# wrap in double quotes or this may fail.
+#
+# @code
+#   local local_path=$(combo_path_get_local "$subdir")
+# @endcode
+#
+function combo_path_get_local() {
+  local data=$1
+
+  parts=(${data/:/ })
+  echo ${parts[0]}
+}
+
+# Echo the remote part of a file path config value.
+#
+# $1 - A string in this pattern PATH or LOCAL:REMOTE or LOCAL REMOTE. Be sure to
+# wrap in double quotes or this may fail.
+#
+# @code
+#   local remote_path=$(combo_path_get_remote "$subdir")
+# @endcode
+function combo_path_get_remote() {
+  local data=$1
+
+  parts=(${data/:/ })
+  local remote=${parts[1]}
+  if [[ "$remote" ]]; then
+    echo $remote
+  else
+    echo ${parts[0]}
+  fi
+}
+
+# Make sure all file_sync local directories and files are created.
+#
+# Returns 0 if successful, 1 otherwise.
+function ensure_files_sync_local_directories() {
+  if [[ ! "$FETCH_FILES_PATH" ]]; then
+    fail_because "FETCH_FILES_PATH cannot be empty" && return 1
+  fi
+
+  # Create the base directories and the exclude-from files.
+  eval $(get_config_keys_as -a sync_groups files_sync)
+  for group in "${sync_groups[@]}"; do
+    [ -d "$FETCH_FILES_PATH/$group" ] || mkdir -p "$FETCH_FILES_PATH/$group" || fail
+    touch "$FETCH_FILES_PATH/$group.ignore.txt" || fail
+  done
+}

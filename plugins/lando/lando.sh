@@ -1,14 +1,36 @@
 #!/usr/bin/env bash
 
+function lando_on_boot() {
+  local name=$(grep name: < "$APP_ROOT/.lando.yml")
+  LANDO_APP_NAME=${name/name: /}
+}
+
+function lando_configtest() {
+  local running
+  local assert
+
+  # Assert we have a lando app name.
+  assert="Lando app identified as \"$LANDO_APP_NAME\"."
+  if [[ ! "$LANDO_APP_NAME" ]]; then
+    echo_fail "$assert" && fail
+  else
+    echo_pass "$assert"
+  fi
+
+  # Assert that app is running.
+  local message="\"$LANDO_APP_NAME\" is running"
+  if [[ ! "$LANDO_APP_NAME" ]] || [[ "$(lando list --app $LANDO_APP_NAME)" == "[]" ]]; then
+    echo_fail "$message" && fail
+  else
+    echo_pass "$message"
+  fi
+}
+
 function lando_reset_db() {
   local dumpfile="$1"
   local lando_path=$(get_container_path "$dumpfile")
   has_failed && return 1
   lando db-import "$lando_path" || return 1
-  return 0
-}
-
-function lando_reset_files() {
   return 0
 }
 

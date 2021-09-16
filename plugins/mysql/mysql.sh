@@ -4,7 +4,7 @@ function mysql_init() {
   _generate_db_cnf || return 1
 }
 
-function mysql_test() {
+function mysql_configtest() {
   local defaults_file=$(ldp_get_db_creds_path)
   [ -f "$defaults_file" ] || _generate_db_cnf || return 1
   eval $(get_config_as "db_name" "environments.dev.database.name")

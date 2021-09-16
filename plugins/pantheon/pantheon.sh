@@ -17,28 +17,8 @@ function _get_remote_env() {
   exit_with_failure "Cannot determine Pantheon environment using $REMOTE_ENV_ID"
 }
 
-# Get eval snippet for rsync file exclude-from argument.
-#
-# @code
-#   eval $(_get_file_ignore_paths)
-# @endcode
-#
-# Returns 0 if .
-function _get_file_ignore_paths() {
-  local snippet=$(get_config_as -a 'ignore_paths' "environments.$REMOTE_ENV_ID.fetch.ignore_files_listed_in")
-  local find=']="'
-
-  echo "${snippet//$find/$find$CONFIG_DIR/fetch/$REMOTE_ENV/files/}"
-}
-
 function pantheon_init() {
-  eval $(_get_file_ignore_paths)
-  for path in "${ignore_paths[@]}"; do
-    if [ ! -f "$path" ]; then
-      touch "$path"
-      succeed_because "Created: $path"
-    fi
-  done
+  ensure_files_sync_local_directories && succeed_because "Updated fetch structure at $(path_unresolve "$APP_ROOT" "$FETCH_FILES_PATH")"
 }
 
 function pantheon_authenticate() {
@@ -56,38 +36,52 @@ function pantheon_remote_clear_cache() {
 
 function pantheon_fetch_db() {
   ldp_delete_fetched_db
-  local lando_path=$(get_container_path "$PULL_DB_PATH")
+  local lando_path=$(get_container_path "$FETCH_DB_PATH")
   if [[ ! "$lando_path" ]]; then
-    fail_because "Cannot determine \$lando_path for $PULL_DB_PATH"
+    fail_because "Cannot determine \$lando_path for $FETCH_DB_PATH"
     return 1
   fi
   eval $(get_config_as 'site_name' "environments.$REMOTE_ENV_ID.fetch.site_name")
   lando terminus backup:get $site_name.$(_get_remote_env) --element=database --to="$lando_path"
 }
 
-function pantheon_fetch_files() {
-  local local_path="$PULL_FILES_PATH/drupal"
-  local exclude_from
+function pantheon_remote_shell() {
+  eval $(get_config_as 'site_uuid' "environments.$REMOTE_ENV_ID.fetch.site_uuid")
+  exit_with_failure_if_empty_config 'site_uuid' 'pantheon.site_uuid'
+  sftp -o Port=2222 $(_get_remote_env).$site_uuid@appserver.$(_get_remote_env).$site_uuid.drush.in
+}
 
+function pantheon_fetch_files() {
   eval $(get_config_as 'site_uuid' "environments.$REMOTE_ENV_ID.fetch.site_uuid")
   exit_with_failure_if_empty_config 'site_uuid' 'pantheon.site_uuid'
 
-  mkdir -pv "$local_path" || return 1
-  eval $(_get_file_ignore_paths)
-  for path in "${ignore_paths[@]}"; do
-    exclude_from=" --exclude-from=$path"
+  # @link https://linux.die.net/man/1/rsync
+  local rsync_options="-rlz --copy-unsafe-links --size-only --checksum --ipv4"
+  has_option v && rsync_options="$rsync_options --progress"
+
+  eval $(get_config_keys_as -a sync_groups files_sync)
+  ensure_files_sync_local_directories
+  for group in "${sync_groups[@]}"; do
+    has_option group && [[ "$(get_option group)" != "$group" ]] && continue
+    echo_heading "Fetching \"$group\" files..."
+    eval $(get_config_as -a subdirs files_sync.$group)
+    [ -d "$FETCH_FILES_PATH/$group" ] || mkdir -p "$FETCH_FILES_PATH/$group"
+    for subdir in "${subdirs[@]}"; do
+      local local_path=$(combo_path_get_local "$subdir")
+      local_path=$(path_resolve "$FETCH_FILES_PATH/$group" "$local_path")
+      [ -d "$local_path" ] || mkdir -p "$local_path"
+      local remote_path=$(combo_path_get_remote "$subdir")
+
+      local exclude_from="$FETCH_FILES_PATH/$group.ignore.txt"
+      rsync $rsync_options -e 'ssh -p 2222' $(_get_remote_env).$site_uuid@appserver.$(_get_remote_env).$site_uuid.drush.in:$remote_path/ "$local_path/" --exclude-from="$exclude_from" || fail
+
+      local message="📦 $(combo_path_get_local "$subdir") ⬅️ 🌎 $(combo_path_get_remote "$subdir")"
+      ! has_failed && echo_pass "$message"
+      has_failed && echo_fail "$message"
+    done
   done
-
-  rsync -rlz --copy-unsafe-links --size-only --checksum --ipv4 --progress -e 'ssh -p 2222' $(_get_remote_env).$site_uuid@appserver.$(_get_remote_env).$site_uuid.drush.in:files/ "$local_path"$exclude_from
-}
-
-function pantheon_reset_files() {
-  local config_key="environments.$LOCAL_ENV_ID.reset.files.drupal"
-
-  eval $(get_config_as 'drupal_files' "$config_key")
-  exit_with_failure_if_config_is_not_path 'drupal_files' "$config_key"
-  succeed_because "$drupal_files has been reset"
-  rsync -a "$PULL_FILES_PATH/drupal/" "$drupal_files/"
+  has_failed && return 1
+  return 0
 }
 
 function pantheon_info() {
