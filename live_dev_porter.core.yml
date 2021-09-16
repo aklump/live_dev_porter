@@ -1,7 +1,7 @@
 title: 'Live Dev Porter'
 name: 'Live Dev Porter'
 description: 'Simplifies the management and transfer of assets between website environments.'
-version: 0.0.8
+version: 0.0.9
 author: 'Aaron Klump <sourcecode@intheloftstudios.com>'
 config_path_base: ../../..
 path_to_app: .
@@ -19,131 +19,46 @@ commands:
   info:
     help: 'Print the configuration info.'
   fetch:
-    access_by_env:
-      - dev
-      - staging
+    access_by_env: [dev, staging]
     help: 'Fetch remote assets to local.'
-    options:
-      verbose:
-        type: boolean
-        help: 'Output additional information.'
-        aliases:
-          - v
-      database:
-        type: boolean
-        help: 'Indicate the database asset.'
-        aliases:
-          - d
-      files:
-        type: boolean
-        help: 'Indicate the files asset.'
-        aliases:
-          - f
-      group:
-        type: string
-        help: 'Limit the operation by group'
-
+    options: { verbose: { type: boolean, help: 'Output additional information.', aliases: [v] }, database: { type: boolean, help: 'Indicate the database asset.', aliases: [d] }, files: { type: boolean, help: 'Indicate the files asset.', aliases: [f] }, group: { type: string, help: 'Limit the operation by group' } }
   reset:
-    access_by_env:
-      - dev
-      - staging
+    access_by_env: [dev, staging]
     help: 'Reset dev assets with last fetched.'
-    options:
-      verbose:
-        type: boolean
-        help: 'Output additional information.'
-        aliases:
-          - v
-      database:
-        type: boolean
-        help: 'Indicate the database asset.'
-        aliases:
-          - d
-      files:
-        type: boolean
-        help: 'Indicate the files asset.'
-        aliases:
-          - f
-      group:
-        type: string
-        help: 'Limit the operation by group'
+    options: { verbose: { type: boolean, help: 'Output additional information.', aliases: [v] }, database: { type: boolean, help: 'Indicate the database asset.', aliases: [d] }, files: { type: boolean, help: 'Indicate the files asset.', aliases: [f] }, group: { type: string, help: 'Limit the operation by group' } }
   pull:
-    access_by_env:
-      - dev
-      - staging
+    access_by_env: [dev, staging]
     help: 'Fetch and reset in one command.'
-    options:
-      verbose:
-        type: boolean
-        help: 'Output additional information.'
-        aliases:
-          - v
-      database:
-        type: boolean
-        help: 'Indicate the database asset.'
-        aliases:
-          - d
-      files:
-        type: boolean
-        help: 'Indicate the files asset.'
-        aliases:
-          - f
-      group:
-        type: string
-        help: 'Limit the operation by group'
+    options: { verbose: { type: boolean, help: 'Output additional information.', aliases: [v] }, database: { type: boolean, help: 'Indicate the database asset.', aliases: [d] }, files: { type: boolean, help: 'Indicate the files asset.', aliases: [f] }, group: { type: string, help: 'Limit the operation by group' } }
   import:
-    access_by_env:
-      - dev
-      - staging
+    access_by_env: [dev, staging]
     help: 'Import a dumpfile to the local database.'
   export:
     help: 'Export the local database.'
-    options:
-      all:
-        type: boolean
-        help: 'Include this option to ignore all table omissions by exclude files.'
+    options: { all: { type: boolean, help: 'Include this option to ignore all table omissions by exclude files.' } }
   db:
     help: 'Enter the local database shell.'
-    aliases:
-      - mysql
+    aliases: [mysql]
   config:
     help: 'Open configuration in $EDITOR.'
-    options:
-      local:
-        type: boolean
-        help: 'Use this to open config.local.yml instead of config.yml.'
-        aliases:
-          - l
+    options: { local: { type: boolean, help: 'Use this to open config.local.yml instead of config.yml.', aliases: [l] } }
   configtest:
     help: 'Run tests to validate configuration.'
-    aliases:
-      - health
+    aliases: [health]
   init:
     help: 'Initialize local configuration files.'
-    access_by_env:
-      - dev
-    options:
-      version:
-        help: 'Display the current version'
-        type: boolean
+    access_by_env: [dev]
+    options: { version: { help: 'Display the current version', type: boolean } }
   clear-cache:
-    aliases:
-      - clearcache
-      - cc
+    aliases: [clearcache, cc]
     help: 'Clear all cached data.'
 environments:
   dev:
     plugin: default
     id: dev
     name: 'Local development'
-    export:
-      path: .live_dev_porter/backups
-      exclude_data_from_tables_listed_in:
-        - data_exclusions.txt
-      exclude_tables_listed_in:
-        - table_exclusions.txt
-    fetch:
-      path: .live_dev_porter/fetch
+    export: { path: .live_dev_porter/backups, exclude_data_from_tables_listed_in: [data_exclusions.txt], exclude_tables_listed_in: [table_exclusions.txt] }
+    fetch: { path: .live_dev_porter/fetch }
   staging:
     plugin: default
     id: test
