@@ -8,6 +8,21 @@
 function default_configtest() {
   eval $(get_config_keys_as -a array_csv__array files_sync)
   local assert
+
+  # Test remote connection
+  assert="Connect to $REMOTE_ENV server"
+  local did_connect=false
+
+  # @link https://unix.stackexchange.com/a/264477
+  ssh -o BatchMode=yes "$(get_remote)" pwd &> /dev/null && did_connect=true
+  if [[ false == "$did_connect" ]]; then
+    fail_because "Check $REMOTE_ENV environment config."
+    echo_fail "$assert"
+  else
+    echo_pass "$assert"
+  fi
+
+  # Test for file sync groups.
   assert="File sync groups defined as: $(array_csv --prose --quotes)"
   if [ ${#array_csv__array[@]} -lt 1 ]; then
     echo_fail "$assert" && fail
