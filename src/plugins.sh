@@ -16,7 +16,9 @@ function _token_expand() {
 }
 
 eval $(get_config_as DEV_PLUGIN 'environments.dev.plugin')
+[[ "$DEV_PLUGIN" ]] || DEV_PLUGIN="default"
 eval $(get_config_as PRODUCTION_PLUGIN 'environments.production.plugin')
+[[ "$PRODUCTION_PLUGIN" ]] || PRODUCTION_PLUGIN="default"
 
 eval $(get_config_as PLUGIN_FETCH_DB 'plugin_assignments.fetch.db')
 PLUGIN_FETCH_DB=$(_token_expand $PLUGIN_FETCH_DB)

@@ -7,7 +7,7 @@ remote_environment_is: production
 
 environments:
   dev:
-    name: ENTER_DEVELOPERS_COMPUTER_OR_BUSINESS_NAME_ETC
+    label: ENTER_DEVELOPERS_COMPUTER_OR_BUSINESS_NAME_ETC
 
     database:
       protocol: tcp
