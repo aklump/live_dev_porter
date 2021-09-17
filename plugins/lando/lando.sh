@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 function lando_on_boot() {
+  [ -e "$APP_ROOT/.lando.yml" ] || return 0
   local name=$(grep name: < "$APP_ROOT/.lando.yml")
   LANDO_APP_NAME=${name/name: /}
 }

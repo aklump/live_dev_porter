@@ -9,7 +9,7 @@ additional_config:
   - .live_dev_porter/config.yml
   - .live_dev_porter/config.local.yml
 additional_bootstrap: null
-default_command: info
+default_command: configtest
 local_environment_is: production
 commands:
   remote:
@@ -47,7 +47,6 @@ commands:
     aliases: [health]
   init:
     help: 'Initialize local configuration files.'
-    access_by_env: [dev]
     options: { version: { help: 'Display the current version', type: boolean } }
   clear-cache:
     aliases: [clearcache, cc]

@@ -14,7 +14,7 @@ local_environment_is: production
 environments:
   dev:
 
-    plugin: lando
+    plugin: default
 
     # The localized name for this environment.  Messages and filenames will use
     # this instead of "dev".  You may change this to match your workflow.

@@ -140,3 +140,19 @@ function ensure_files_sync_local_directories() {
     touch "$FETCH_FILES_PATH/$group.ignore.txt" || fail
   done
 }
+
+function implement_configtest() {
+  echo_heading "Core"
+
+  eval $(get_config_path -a "additional_config")
+  local message
+  for i in "${additional_config[@]}"; do
+    message="Configuration file exists: $(basename "$i")"
+    if [ -e "$i" ]; then
+      echo_pass "$message"
+    else
+      echo_fail "$message" && fail
+    fi
+  done
+  has_failed && fail_because "Use 'init' to create configuration files"
+}

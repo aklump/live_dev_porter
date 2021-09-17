@@ -133,10 +133,11 @@ case $command in
 
     "configtest")
       echo_title "CONFIGURATION TESTS"
+      implement_configtest
       for plugin in "${ACTIVE_PLUGINS[@]}"; do
-        plugin_implements $plugin configtest && echo_heading $(string_ucfirst "$plugin") && call_plugin $plugin configtest
+        plugin_implements $plugin configtest && echo_heading "Plugin: $(string_ucfirst "$plugin")" && call_plugin $plugin configtest
       done
-      has_failed && exit_with_failure "Tests failed (try clearing caches and retesting)."
+      has_failed && fail_because "Try clearing caches." && exit_with_failure "Tests failed."
       exit_with_success "All tests passed."
       ;;
 
