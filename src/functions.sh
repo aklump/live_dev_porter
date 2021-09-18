@@ -79,15 +79,49 @@ function implement_route_access() {
   exit_with_failure "Command not allowed"
 }
 
-# Echo the ssh user@host string for the remote environment.
+# Echo authorization portion of a path, e.g. user@host.
 #
-function get_remote() {
-  eval $(get_config_as remote_user "environments.$REMOTE_ENV_ID.ssh.user")
-  exit_with_failure_if_empty_config remote_user "environments.$REMOTE_ENV_ID.ssh.user"
-  eval $(get_config_as remote_host "environments.$REMOTE_ENV_ID.ssh.host")
-  exit_with_failure_if_empty_config remote_host "environments.$REMOTE_ENV_ID.ssh.host"
-  echo "$remote_user@$remote_host"
+# $1 - The environment id, e.g. dev, production
+function echo_env_auth() {
+  local env_id=$1
+
+  eval $(get_config_as user "environments.$env_id.user")
+  exit_with_failure_if_empty_config user "environments.$env_id.user"
+  eval $(get_config_as host "environments.$env_id.host")
+  exit_with_failure_if_empty_config host "environments.$env_id.host"
+  echo "$user@$host"
 }
+
+# Echo a path resolved to an environment base path.
+#
+# $1 - The environment id, e.g. dev, production.
+# $2 - Relative path to be resolved to the environment base.  Omit this to
+# return the environment base path itself.
+#
+# Returns 1 if the path is absolute.
+function path_relative_to_env() {
+  local env_id="$1"
+  local path="$2"
+
+  if [[ '/' == "${path:0:1}" ]]; then
+    fail_because "The path argument must not begin with /"
+    return 1
+  fi
+
+  local base_path
+  if [[ "$env_id" == "$LOCAL_ENV_ID" ]]; then
+    base_path="$APP_ROOT"
+  else
+    eval $(get_config_as "base_path" "environments.$env_id.base_path")
+    if [[ ! "$base_path" ]]; then
+      fail_because "Missing configuration value for environments.$env_id.base_path"
+      return 1
+    fi
+  fi
+
+  echo "$(path_resolve "$base_path" "$path")"
+}
+
 
 # Echo the local part of a file path config value.
 #

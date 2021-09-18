@@ -12,15 +12,26 @@ function default_configtest() {
   # Test remote connection
   assert="Connect to $REMOTE_ENV server"
   local did_connect=false
-
   # @link https://unix.stackexchange.com/a/264477
-  ssh -o BatchMode=yes "$(get_remote)" pwd &> /dev/null && did_connect=true
+  ssh -o BatchMode=yes "$(echo_env_auth $REMOTE_ENV_ID)" pwd &> /dev/null && did_connect=true
   if [[ false == "$did_connect" ]]; then
-    fail_because "Check $REMOTE_ENV environment config."
+    fail_because "Check $REMOTE_ENV host and user config."
     echo_fail "$assert"
   else
     echo_pass "$assert"
   fi
+
+  # Test remote base_path
+    assert="$REMOTE_ENV base_path exists"
+    local exists=false
+    local remote_base_path=$(path_relative_to_env $REMOTE_ENV_ID)
+    ssh -o BatchMode=yes "$(echo_env_auth $REMOTE_ENV_ID)" cd $remote_base_path &> /dev/null && exists=true
+    if [[ false == "$exists" ]]; then
+      fail_because "Check \"$remote_base_path\" on $REMOTE_ENV."
+      echo_fail "$assert"
+    else
+      echo_pass "$assert"
+    fi
 
   # Test for file sync groups.
   assert="File sync groups defined as: $(array_csv --prose --quotes)"
@@ -32,17 +43,17 @@ function default_configtest() {
 }
 
 function default_remote_shell() {
-  eval $(get_config_as remote_app_root "environments.$REMOTE_ENV_ID.app_root")
-
   # @link https://stackoverflow.com/a/14703291/3177610
   # @link https://www.man7.org/linux/man-pages/man1/ssh.1.html
-  ssh -t "$(get_remote)" "cd $remote_app_root && bash -i"
+  # @link https://github.com/fraction/sshcd/blob/master/sshcd
+  local remote_base_path="$(path_relative_to_env $REMOTE_ENV_ID)"
+  ssh -t $(echo_env_auth $REMOTE_ENV_ID) "(cd $remote_base_path; exec \$SHELL -l)"
 }
 
 function default_info() {
-  eval $(get_config_as remote_app_root "environments.$REMOTE_ENV_ID.app_root")
+  eval $(get_config_as remote_app_root "environments.$REMOTE_ENV_ID.base_path")
 
-  echo_key_value "SSH" "$(get_remote)"
+  echo_key_value "SSH" "$(echo_env_auth $REMOTE_ENV_ID)"
   echo_key_value "$REMOTE_ENV app root" "$remote_app_root"
 }
 
@@ -51,8 +62,8 @@ function default_init() {
 }
 
 function default_fetch_files() {
-  eval $(get_config_as remote_app_root "environments.$REMOTE_ENV_ID.app_root")
-  exit_with_failure_if_empty_config remote_app_root "environments.$REMOTE_ENV_ID.app_root"
+  eval $(get_config_as remote_app_root "environments.$REMOTE_ENV_ID.base_path")
+  exit_with_failure_if_empty_config remote_app_root "environments.$REMOTE_ENV_ID.base_path"
 
   # @link https://linux.die.net/man/1/rsync
   local rsync_options="-az --copy-unsafe-links --size-only"
@@ -73,7 +84,7 @@ function default_fetch_files() {
       remote_path=$(path_resolve "$remote_app_root" "$remote_path")
 
       local exclude_from="$FETCH_FILES_PATH/$group.ignore.txt"
-      rsync $rsync_options "$(get_remote):$remote_path/" "$local_path/" --exclude-from="$exclude_from" || fail
+      rsync $rsync_options "$(echo_env_auth $REMOTE_ENV_ID):$remote_path/" "$local_path/" --exclude-from="$exclude_from" || fail
 
       local message="📦 $(combo_path_get_local "$subdir") ⬅️ 🌎 $(combo_path_get_remote "$subdir")"
       ! has_failed && echo_pass "$message"

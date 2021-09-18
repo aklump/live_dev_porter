@@ -29,10 +29,12 @@ environments:
   production:
     label: ENTER_NAME_OF_HOSTING_COMPANY_ETC
     id: live
-    plugin: pantheon
+    user: USERNAME
+    host: REMOTE_HOST
+    base_path: PATH_TO_APP
 
-    fetch:
-      site_name: ENTER_PANTHEON_SITE_NAME
-      site_uuid: ENTER_PANTHEON_SITE_UUID
+#    fetch:
+#      site_name: ENTER_PANTHEON_SITE_NAME
+#      site_uuid: ENTER_PANTHEON_SITE_UUID
 
 
