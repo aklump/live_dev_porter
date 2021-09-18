@@ -34,15 +34,8 @@ function on_compile_config() {
 }
 
 function on_clear_cache() {
-  # Delete the generated DB credentials file.
-  local path_to_db_creds=$(ldp_get_db_creds_path)
-  if [ -f "$path_to_db_creds" ]; then
-    rm -f "$path_to_db_creds" || return 1
-  fi
-  succeed_because $(echo_green "$(path_unresolve "$CACHE_DIR" "$path_to_db_creds")")
-
   for plugin in "${ACTIVE_PLUGINS[@]}"; do
-    plugin_implements $plugin on_clear_cache && call_plugin $plugin on_clear_cache
+    plugin_implements "$plugin" on_clear_cache && call_plugin "$plugin" on_clear_cache
   done
 }
 
@@ -126,6 +119,11 @@ fi
 
 implement_cloudy_basic
 implement_route_access
+
+# Trigger a custom event for plugins.
+for plugin in "${ACTIVE_PLUGINS[@]}"; do
+  plugin_implements "$plugin" on_before_command && call_plugin "$plugin" on_before_command
+done
 
 # Handle other commands.
 command=$(get_command)
@@ -243,7 +241,7 @@ case $command in
       if [[ "$do_files" == true ]]; then
 #        echo_heading "Fetching $REMOTE_ENV files..."
         (hook_before_fetch_files)
-        call_plugin $PLUGIN_FETCH_FILES fetch_files || fail
+        call_plugin "$PLUGIN_FETCH_FILES" fetch_files || fail
         ! has_failed && store_timestamp "$FETCH_FILES_PATH" && succeed_because "Files fetched."
         (hook_after_fetch_files)
       fi

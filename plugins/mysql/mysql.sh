@@ -1,12 +1,35 @@
 #!/usr/bin/env bash
 
-function mysql_init() {
-  _generate_db_cnf || return 1
+function mysql_on_clear_cache() {
+  local environments=("$LOCAL_ENV_ID" "$REMOTE_ENV_ID")
+  for env in "${environments[@]}"; do
+    local outfile=$(ldp_get_db_creds_path "$env")
+    if [ -f "$outfile" ]; then
+      rm -f "$outfile" || return 1
+    fi
+    succeed_because $(echo_green "$(path_unresolve "$CACHE_DIR" "$outfile")")
+  done
+  return 0
+}
+
+function mysql_on_before_command() {
+  # Generate DB credentials for all environments that indicate a db name.
+  local environments=("$LOCAL_ENV_ID" "$REMOTE_ENV_ID")
+  for env_id in "${environments[@]}"; do
+    local outfile=$(ldp_get_db_creds_path "$env_id")
+    if [ ! -f "$outfile" ]; then
+      eval $(get_config_as "name" "environments.$env_id.database.name")
+      if [[ "$name" ]] && ! _generate_db_cnf "$env_id"; then
+        fail_because "Could not generate \"$outfile\"."
+        return 1
+      fi
+    fi
+  done
+  return 0
 }
 
 function mysql_configtest() {
-  local defaults_file=$(ldp_get_db_creds_path)
-  [ -f "$defaults_file" ] || _generate_db_cnf || return 1
+  local defaults_file=$(ldp_get_db_creds_path dev)
   eval $(get_config_as "db_name" "environments.dev.database.name")
   local message="Connect to local database \"$db_name\""
   if mysql --defaults-file="$defaults_file" "$db_name" -e ";" 2> /dev/null ; then
@@ -17,9 +40,9 @@ function mysql_configtest() {
 }
 
 function mysql_db_shell() {
-  local defaults_file=$(ldp_get_db_creds_path)
-  [ -f "$defaults_file" ] || _generate_db_cnf || return 1
+  local defaults_file=$(ldp_get_db_creds_path dev)
   eval $(get_config_as "db_name" "environments.dev.database.name")
+
   mysql --defaults-file="$defaults_file" "$db_name"
 }
 
@@ -27,8 +50,7 @@ function mysql_export_db() {
   local path_to_dumpfile="$1"
   eval $(get_config_as "db_name" "environments.dev.database.name")
   local save_as="$EXPORT_DB_PATH/$db_name.$(date8601 -c).sql"
-  local path_to_db_creds=$(ldp_get_db_creds_path)
-  [ -f "$path_to_db_creds" ] || _generate_db_cnf || return 1
+  local path_to_db_creds=$(ldp_get_db_creds_path dev)
 
   # First make sure the file does not exist.
   if [ -f "$save_as" ]; then
@@ -79,8 +101,7 @@ function mysql_import_db() {
   fi
 
   eval $(get_config_as "db_name" "environments.dev.database.name")
-  local path_to_db_creds=$(ldp_get_db_creds_path)
-  [ -f "$path_to_db_creds" ] || _generate_db_cnf || return 1
+  local path_to_db_creds=$(ldp_get_db_creds_path dev)
 
   mysql --defaults-file="$path_to_db_creds" $db_name < $path_to_dumpfile
 }
@@ -93,22 +114,34 @@ function mysql_reset_db() {
 ##
 # Generate the local.cnf with db creds.
 #
+# $1 - the environment id, e.g. 'dev', 'production'.
+#
 function _generate_db_cnf() {
-  eval $(get_config_as "host" "environments.dev.database.host")
-  eval $(get_config_as "port" "environments.dev.database.port")
-  eval $(get_config_as "user" "environments.dev.database.user")
-  eval $(get_config_as "pass" "environments.dev.database.pass")
+  local env_id=$1
+
+  eval $(get_config_as "host" "environments.$env_id.database.host")
+  [[  "$host" ]] || host="localhost"
+
+  eval $(get_config_as "port" "environments.$env_id.database.port")
+  [[  "$port" ]] || port="3306"
+
+  eval $(get_config_as "user" "environments.$env_id.database.user")
+  exit_with_failure_if_empty_config "user" "environments.$env_id.database.user"
+
+  eval $(get_config_as "password" "environments.$env_id.database.password")
+  exit_with_failure_if_empty_config "password" "environments.$env_id.database.user"
 
   # Handle the mysql protocol.
-  eval $(get_config_as "protocol" "environments.dev.database.protocol")
+  eval $(get_config_as "protocol" "environments.$env_id.database.protocol")
   if [[ ! "$protocol" ]]; then
     protocol='tcp'
-    if [[ "$host" == 'localhost' ]] || [[ "$host" == '127.0.0.1' ]]; then
-      protocol='socket'
-    fi
+    # TODO Need to do more research on this. Sep 17, 2021, aklump.
+#    if [[ "$host" == 'localhost' ]] || [[ "$host" == '127.0.0.1' ]]; then
+#      protocol='socket'
+#    fi
   fi
 
-  local path_to_db_creds=$(ldp_get_db_creds_path)
+  local path_to_db_creds=$(ldp_get_db_creds_path "$env_id")
   if ! touch "$path_to_db_creds" || ! chmod 0600 "$path_to_db_creds"; then
     fail_because "Could not create $path_to_db_creds"
     return 1
@@ -120,7 +153,7 @@ function _generate_db_cnf() {
   echo "host=\"$host\"" >>"$path_to_db_creds"
   [ "$port" ] && echo "port=\"$port\"" >>"$path_to_db_creds"
   echo "user=\"$user\"" >>"$path_to_db_creds"
-  echo "password=\"$pass\"" >>"$path_to_db_creds"
+  echo "password=\"$password\"" >>"$path_to_db_creds"
   echo "protocol=\"$protocol\"" >>"$path_to_db_creds"
   chmod 400 "$path_to_db_creds"
 }

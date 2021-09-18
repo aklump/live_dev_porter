@@ -1,9 +1,3 @@
-files_sync:
-#  public:
-#    - web/sites/default/files files
-#  private:
-#    - private/default/files files/private
-
 files_copy:
 #  config:
 #    - install/default/.env.$ENV .env
@@ -20,11 +14,17 @@ environments:
     # this instead of "dev".  You may change this to match your workflow.
     id: dev
 
+    files_sync:
+      public:
+        - web/sites/default/files
+      private:
+        - private/default/files
+
     export:
 
       # https://zoomadmin.com/HowToLinux/LinuxCommand/mysqldump
       mysqldump_options:
-#        - xml
+  #        - xml
 
   production:
     label: ENTER_NAME_OF_HOSTING_COMPANY_ETC
@@ -32,6 +32,12 @@ environments:
     user: USERNAME
     host: REMOTE_HOST
     base_path: PATH_TO_APP
+
+    files_sync:
+      public:
+        - files
+      private:
+        - files/private
 
 #    fetch:
 #      site_name: ENTER_PANTHEON_SITE_NAME

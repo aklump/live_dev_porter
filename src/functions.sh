@@ -168,7 +168,7 @@ function ensure_files_sync_local_directories() {
   fi
 
   # Create the base directories and the exclude-from files.
-  eval $(get_config_keys_as -a sync_groups files_sync)
+  eval $(get_config_keys_as -a sync_groups "environments.$LOCAL_ENV_ID.files_sync")
   for group in "${sync_groups[@]}"; do
     [ -d "$FETCH_FILES_PATH/$group" ] || mkdir -p "$FETCH_FILES_PATH/$group" || fail
     touch "$FETCH_FILES_PATH/$group.ignore.txt" || fail

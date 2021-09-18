@@ -31,8 +31,7 @@ function ldp_delete_fetched_db() {
 #
 function ldp_db_drop_tables() {
   eval $(get_config_as "db_name" "environments.dev.database.name")
-  local path_to_db_creds=$(ldp_get_db_creds_path)
-  [ -f "$path_to_db_creds" ] || _generate_db_cnf || return 1
+  local path_to_db_creds=$(ldp_get_db_creds_path dev)
   tables=$(mysql --defaults-file="$path_to_db_creds" $db_name -e 'SHOW TABLES' | awk '{ print $1}' | grep -v '^Tables')
   sql="DROP TABLE "
   for t in $tables; do
@@ -49,8 +48,17 @@ function ldp_db_drop_tables() {
   return 0
 }
 
+# Get the absolute path the the db creds for an environment.
+#
+# $1 - The environment ID.
+#
 function ldp_get_db_creds_path() {
-  echo "$CACHE_DIR/_cached.$(path_filename $SCRIPT).$LOCAL_ENV.cnf"
+  local env_id=$1
+
+  local env
+  eval $(get_config_as "env" "environments.$env_id.id")
+  exit_with_failure_if_empty_config "env" "environments.$env_id.id"
+  echo "$CACHE_DIR/_cached.$(path_filename $SCRIPT).$env.cnf"
 }
 
 # These are the tables whose structure only should be dumped.
@@ -70,7 +78,7 @@ function ldp_get_db_export_structure_and_data_tables() {
     table_query="${table_query}$(_build_where_not_query $path)"
   fi
 
-  mysql --defaults-file="$(ldp_get_db_creds_path)" -AN -e"$table_query"
+  mysql --defaults-file="$(ldp_get_db_creds_path dev)" -AN -e"$table_query"
 }
 
 # These are the tables whose content only should be dumped
@@ -94,7 +102,7 @@ function ldp_get_db_export_data_only_tables() {
     table_query="${table_query}$(_build_where_not_query $path)"
   fi
 
-  mysql --defaults-file="$(ldp_get_db_creds_path)" -AN -e"$table_query"
+  mysql --defaults-file="$(ldp_get_db_creds_path dev)" -AN -e"$table_query"
 }
 
 # Build a tablename query expanding wildcards from a file of tablenames
