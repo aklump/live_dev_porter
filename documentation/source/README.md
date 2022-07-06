@@ -10,7 +10,9 @@ Simplifies the management and transfer of assets between website environments.
 
 ## Quick Start
 
-- Install in your repository root using `cloudy pm-install aklump/live_dev_porter`
+- Install using `composer require aklump/live-dev-porter`
+- Now initialize your project `./vendor/bin/ldp init`
+- And update the configuration `./vendor/bin/ldp config`
 - Open _.live_dev_porter/config.yml_ and modify as needed.
 - Open _.live_dev_porter/config.local.yml_ and ...; be sure to ignore this file in SCM.
 - Try it out with `./bin/live_dev_porter SOME_COMMAND`
@@ -45,7 +47,6 @@ The installation script above will generate the following structure where `.` is
     │       └── live_dev_porter
     └── {public web root}
 
-    
 ### To Update
 
 - Update to the latest version from your repo root: `cloudy pm-update aklump/live_dev_porter`
