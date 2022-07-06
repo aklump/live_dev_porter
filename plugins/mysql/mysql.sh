@@ -16,12 +16,14 @@ function mysql_on_before_command() {
   # Generate DB credentials for all environments that indicate a db name.
   local environments=("$LOCAL_ENV_ID" "$REMOTE_ENV_ID")
   for env_id in "${environments[@]}"; do
-    local outfile=$(ldp_get_db_creds_path "$env_id")
-    if [ ! -f "$outfile" ]; then
-      eval $(get_config_as "name" "environments.$env_id.database.name")
-      if [[ "$name" ]] && ! _generate_db_cnf "$env_id"; then
-        fail_because "Could not generate \"$outfile\"."
-        return 1
+    if [[ "$env_id" ]]; then
+      local outfile=$(ldp_get_db_creds_path "$env_id")
+      if [ ! -f "$outfile" ]; then
+        eval $(get_config_as "name" "environments.$env_id.database.name")
+        if [[ "$name" ]] && ! _generate_db_cnf "$env_id"; then
+          fail_because "Could not generate \"$outfile\"."
+          return 1
+        fi
       fi
     fi
   done
