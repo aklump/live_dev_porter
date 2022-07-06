@@ -6,7 +6,7 @@
     ],
     "license": "BSD-3-Clause",
     "require": {
-        "symfony/yaml": "~3.4",
+        "symfony/yaml": "^3.4|^4|^5",
         "justinrainbow/json-schema": "^5.2",
         "aklump/data": "^0.0.28",
         "aklump/loft-lib": "^1.1",
