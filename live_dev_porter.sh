@@ -16,7 +16,7 @@ function on_pre_config() {
     handle_init || exit_with_failure "${CLOUDY_FAILED:-Initialization failed.}"
   fi
 
-  SOURCE_DIR="$ROOT/src"
+  SOURCE_DIR="$ROOT/scripts"
   TEMP_DIR=$(tempdir $CLOUDY_NAME)
   PLUGINS_DIR="$ROOT/plugins"
   ALL_PLUGINS=()
