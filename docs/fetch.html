@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>Fetch</title>
+  <link href="search/tipuesearch.css" rel="stylesheet">
+  <link href="style.css" rel="stylesheet">
+</head>
+
+<body class="page--fetch">
+<header>
+  <div class="pager"><a href="export.html" class="prev export">&laquo;Export</a><a href="index.html" class="index pager__book-title"></a><a href="files.html" class="next files">Files&raquo;</a></div></header>
+<section class="sub-header">
+  <div class="breadcrumbs"><a href="index.html">Index</a>
+         &raquo
+      </div>      <div class="search__wrapper">
+  <form action="search--results.html">
+    <input type="text" class="search-input" name="q" id="tipue_search_input" autocomplete="off" required>
+  </form>
+</div>
+  </section>
+
+<section>
+  <h1>Fetch</h1>
+  
+
+<h2>Fetch Files</h2>
+
+<p>You may fetch a single group of files like this:</p>
+
+<pre><code class="shell">ldp fetch -f --group=public
+</code></pre>
+
+<p>where the group is the key of the <code>files_sync</code> array as shown here:</p>
+
+<pre><code class="yaml">environments:
+  dev:
+    files_sync:
+      public:
+        - web/sites/default/files
+      private:
+        - private/default/files
+</code></pre>
+
+<h3>Exclude Files</h3>
+
+<p>Use <em>.live_dev_porter/fetch/REMOTE_ENV/files/GROUP.ignore.txt</em> as you would <em>.gitignore</em> to skip certain files from the fetch.</p>
+
+<p>Example from <em>public.ignore.txt</em></p>
+
+<pre><code class="text">css/
+js/
+php/
+avatars/
+design-guide/
+stream/
+</code></pre>
+
+</section>
+
+<div class="search__results">
+  <div id="tipue_search_content"></div>
+</div>
+
+<footer>
+  <div class="pager"><a href="export.html" class="prev export">&laquo;Export</a><a href="index.html" class="index pager__book-title"></a><a href="files.html" class="next files">Files&raquo;</a></div>  
+  <div id="footer-legaleeze">
+    <p class="legaleeze center">Version: 0.0.9 &bull; Last Updated: Tue, 05 Jul 2022 22:12:02 -0700</p>
+  </div>
+</footer>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+  <script src="search/tipuesearch_content.js"></script>
+  <script src="search/tipuesearch_set.js"></script>
+  <script src="search/tipuesearch.min.js"></script>
+  <script>
+    $(document).ready(function() {
+      $('#tipue_search_input').tipuesearch()
+    })
+  </script>
+<script src="js/core.js"></script>
+</body>
+</html>

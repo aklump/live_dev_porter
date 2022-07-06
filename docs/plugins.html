@@ -9,7 +9,7 @@
 
 <body class="page--plugins">
 <header>
-  <div class="pager"><a href="README.html" class="prev README">&laquo;Live Dev Porter</a><a href="index.html" class="index pager__book-title"></a><a href="index.html" class="next index">Index&raquo;</a></div></header>
+  <div class="pager"><a href="README.html" class="prev README">&laquo;Live Dev Porter</a><a href="index.html" class="index pager__book-title"></a><a href="remote.html" class="next remote">Remote Environment&raquo;</a></div></header>
 <section class="sub-header">
   <div class="breadcrumbs"><a href="index.html">Index</a>
          &raquo
@@ -20,10 +20,9 @@
 </div>
   </section>
 
-
-<h1>Plugins</h1>
-
 <section>
+  <h1>Plugins</h1>
+  
 
 <ol>
 <li>Plugins are folders saved to the <em>plugins/</em> directory, resembling the following structure.
@@ -49,6 +48,7 @@ function pantheon_init() {
 <li><code>${PLUGIN}_fetch</code></li>
 <li><code>${PLUGIN}_reset</code></li>
 <li><code>${PLUGIN}_on_clear_cache</code></li>
+<li><code>${PLUGIN}_on_before_command</code></li>
 <li>Plugins may define private functions, but they should begin with an underscore.
 <code>bash
 function _get_remote_env() {
@@ -82,6 +82,7 @@ function _get_remote_env() {
 <li>Follow the Cloudy testing framework.</li>
 <li>Run tests with <code>./live_dev_porter tests</code></li>
 </ol>
+
 </section>
 
 <div class="search__results">
@@ -89,9 +90,9 @@ function _get_remote_env() {
 </div>
 
 <footer>
-  <div class="pager"><a href="README.html" class="prev README">&laquo;Live Dev Porter</a><a href="index.html" class="index pager__book-title"></a><a href="index.html" class="next index">Index&raquo;</a></div>  
+  <div class="pager"><a href="README.html" class="prev README">&laquo;Live Dev Porter</a><a href="index.html" class="index pager__book-title"></a><a href="remote.html" class="next remote">Remote Environment&raquo;</a></div>  
   <div id="footer-legaleeze">
-    <p class="legaleeze center">Version: 0.0.9 &bull; Last Updated: Wed, 15 Sep 2021 22:23:22 -0700</p>
+    <p class="legaleeze center">Version: 0.0.9 &bull; Last Updated: Tue, 05 Jul 2022 22:12:03 -0700</p>
   </div>
 </footer>
 
@@ -107,4 +108,3 @@ function _get_remote_env() {
 <script src="js/core.js"></script>
 </body>
 </html>
-

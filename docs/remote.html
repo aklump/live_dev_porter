@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>Remote Environment</title>
+  <link href="search/tipuesearch.css" rel="stylesheet">
+  <link href="style.css" rel="stylesheet">
+</head>
+
+<body class="page--remote">
+<header>
+  <div class="pager"><a href="plugins.html" class="prev plugins">&laquo;Plugins</a><a href="index.html" class="index pager__book-title"></a><a href="index.html" class="next index">Index&raquo;</a></div></header>
+<section class="sub-header">
+  <div class="breadcrumbs"><a href="index.html">Index</a>
+         &raquo
+      </div>      <div class="search__wrapper">
+  <form action="search--results.html">
+    <input type="text" class="search-input" name="q" id="tipue_search_input" autocomplete="off" required>
+  </form>
+</div>
+  </section>
+
+<section>
+  <h1>Remote Environment</h1>
+  
+
+<p>The remote environment will usually be either production/live or staging/test.</p>
+
+<p>You should use key-based authentication to avoid password prompts.</p>
+
+<h2>Default Configuration</h2>
+
+<pre><code class="yaml">environments:
+  production:
+    host: 123.mygreathost.com
+    user: foobar
+    base_path: /var/www/site.com/app
+</code></pre>
+
+<h2>Troubleshooting</h2>
+
+<p><code>ldp remote</code> will connect you to the remote environment and <code>cd</code> to the base path.  It you do not land in the base path, check <em>~/.bashrc</em> and <em>~/.bash_profile</em> for the presence of a <code>cd</code> command in there.  You will need to comment that out or remove that line if you wish for LDP to land you in the basepath.</p>
+
+</section>
+
+<div class="search__results">
+  <div id="tipue_search_content"></div>
+</div>
+
+<footer>
+  <div class="pager"><a href="plugins.html" class="prev plugins">&laquo;Plugins</a><a href="index.html" class="index pager__book-title"></a><a href="index.html" class="next index">Index&raquo;</a></div>  
+  <div id="footer-legaleeze">
+    <p class="legaleeze center">Version: 0.0.9 &bull; Last Updated: Tue, 05 Jul 2022 22:12:04 -0700</p>
+  </div>
+</footer>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+  <script src="search/tipuesearch_content.js"></script>
+  <script src="search/tipuesearch_set.js"></script>
+  <script src="search/tipuesearch.min.js"></script>
+  <script>
+    $(document).ready(function() {
+      $('#tipue_search_input').tipuesearch()
+    })
+  </script>
+<script src="js/core.js"></script>
+</body>
+</html>
