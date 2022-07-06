@@ -13,6 +13,11 @@ function mysql_on_clear_cache() {
 }
 
 function mysql_on_before_command() {
+
+  # This should be ignored for these due to volatile config.
+  [[ "$(get_command)" == "init" ]] && return 0
+  [[ "$(get_command)" == "config" ]] && return 0
+
   # Generate DB credentials for all environments that indicate a db name.
   local environments=("$LOCAL_ENV_ID" "$REMOTE_ENV_ID")
   for env_id in "${environments[@]}"; do
