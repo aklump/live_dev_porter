@@ -2,7 +2,8 @@
     "name": "aklump/live-dev-porter",
     "description": "Simplifies the management and transfer of assets between website environments.",
     "bin": [
-        "live_dev_porter"
+        "bin/live_dev_porter",
+        "bin/ldp"
     ],
     "license": "BSD-3-Clause",
     "require": {
