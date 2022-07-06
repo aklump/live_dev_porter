@@ -1,2 +1,6 @@
-documentation/core/
-documentation/README.md
+/documentation/core/
+/documentation/README.md
+/vendor/
+/composer.lock
+/cloudy/vendor/
+/cloudy/cache/

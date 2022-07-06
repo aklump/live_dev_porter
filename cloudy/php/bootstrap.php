@@ -15,7 +15,7 @@ use Jasny\DotKey;
  */
 define('ROOT', getenv('ROOT'));
 
-require_once __DIR__ . '/vendor/autoload.php';
+require_once __DIR__ . '/../../vendor/autoload.php';
 
 $g = new Data();
 
