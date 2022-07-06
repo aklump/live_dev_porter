@@ -20,10 +20,10 @@
         "ckr/arraymerger": "^2.0"
     },
     "scripts": {
-        "post-package-install": [
+        "post-install-cmd": [
             "live-dev-porter init"
         ],
-        "pre-package-uninstall": [
+        "pre-uninstall-cmd": [
             "AKlump\\LiveDevPorter\\Composer::uninstall"
         ]
     }
