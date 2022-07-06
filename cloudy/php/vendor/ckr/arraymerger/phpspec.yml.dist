@@ -1,4 +1,0 @@
-suites:
-  default:
-     namespace: Ckr\Util
-     psr4_prefix: Ckr\Util
