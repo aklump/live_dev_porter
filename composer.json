@@ -3,5 +3,6 @@
     "description": "Simplifies the management and transfer of assets between website environments.",
     "bin": [
         "live_dev_porter.sh"
-    ]
+    ],
+    "license": "BSD-3-Clause"
 }
