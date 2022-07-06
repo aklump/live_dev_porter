@@ -136,7 +136,7 @@ function _generate_db_cnf() {
   exit_with_failure_if_empty_config "user" "environments.$env_id.database.user"
 
   eval $(get_config_as "password" "environments.$env_id.database.password")
-  exit_with_failure_if_empty_config "password" "environments.$env_id.database.user"
+  exit_with_failure_if_empty_config "password" "environments.$env_id.database.password"
 
   # Handle the mysql protocol.
   eval $(get_config_as "protocol" "environments.$env_id.database.protocol")

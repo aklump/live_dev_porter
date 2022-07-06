@@ -15,7 +15,7 @@ environments:
       port: ENTER_PORT
       name: ENTER_DB_NAME
       user: ENTER_USER
-      pass: ENTER_PASSWORD
+      password: ENTER_PASSWORD
 
   production:
     fetch:

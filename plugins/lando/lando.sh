@@ -54,7 +54,7 @@ function lando_on_compile_config() {
     yaml_add_line "      port: $(json_get_value '0.external_connection.port')"
     yaml_add_line "      name: $(json_get_value '0.creds.database')"
     yaml_add_line "      user: $(json_get_value '0.creds.user')"
-    yaml_add_line "      pass: $(json_get_value '0.creds.password')"
+    yaml_add_line "      password: $(json_get_value '0.creds.password')"
     yaml_get > "$path_to_dynamic_config"
   fi
 

@@ -17,10 +17,6 @@ Simplifies the management and transfer of assets between website environments.
 - Open _.live_dev_porter/config.local.yml_ and ...; be sure to ignore this file in SCM.
 - Try it out with `./bin/live_dev_porter SOME_COMMAND`
 
-## Requirements
-
-You must have [Cloudy](https://github.com/aklump/cloudy) installed on your system to install this package.
-
 ## Installation
 
 The installation script above will generate the following structure where `.` is your repository root.
