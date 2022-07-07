@@ -36,7 +36,7 @@
 <li><em>plugin.sh</em> should contain functions; all that are public must be prefixed by the plugin name:
 <code>bash
 function pantheon_init() {
- ensure_files_sync_local_directories &amp;&amp; succeed_because "Updated fetch structure at $(path_unresolve "$APP_ROOT" "$FETCH_FILES_PATH")"
+ ensure_files_local_directories &amp;&amp; succeed_because "Updated fetch structure at $(path_unresolve "$APP_ROOT" "$FETCH_FILES_PATH")"
 }</code></li>
 </ol></li>
 <li>Plugins may provide the following functions:
@@ -92,7 +92,7 @@ function _get_remote_env() {
 <footer>
   <div class="pager"><a href="README.html" class="prev README">&laquo;Live Dev Porter</a><a href="index.html" class="index pager__book-title"></a><a href="remote.html" class="next remote">Remote Environment&raquo;</a></div>  
   <div id="footer-legaleeze">
-    <p class="legaleeze center">Version: 0.0.9 &bull; Last Updated: Tue, 05 Jul 2022 22:12:03 -0700</p>
+    <p class="legaleeze center">Version: 0.0.9 &bull; Last Updated: Wed, 06 Jul 2022 19:47:10 -0700</p>
   </div>
 </footer>
 

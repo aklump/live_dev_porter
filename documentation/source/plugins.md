@@ -11,7 +11,7 @@
    1. _plugin.sh_ should contain functions; all that are public must be prefixed by the plugin name:
        ```bash
        function pantheon_init() {
-         ensure_files_sync_local_directories && succeed_because "Updated fetch structure at $(path_unresolve "$APP_ROOT" "$FETCH_FILES_PATH")"
+         ensure_files_local_directories && succeed_because "Updated fetch structure at $(path_unresolve "$APP_ROOT" "$FETCH_FILES_PATH")"
        }
        ```
 3. Plugins may provide the following functions:

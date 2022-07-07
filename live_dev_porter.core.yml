@@ -129,7 +129,7 @@ commands:
       - clearcache
       - cc
     help: 'Clear all cached data.'
-environments:
+old.environments:
   dev:
     plugin: default
     id: dev

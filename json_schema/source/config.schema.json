@@ -1,0 +1,216 @@
+{
+    "type": "object",
+    "$defs": {
+        "id": {
+            "type": "string",
+            "minLength": 3
+        },
+        "label": {
+            "type": "string",
+            "minLength": 1
+        }
+    },
+    "properties": {
+        "environment": {
+            "type": "object",
+            "required": [
+                "id",
+                "plugin"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "enum": []
+                },
+                "label": {
+                    "type": "string",
+                    "pattern": ".+"
+                },
+                "plugin": {
+                    "type": "string",
+                    "enum": []
+                },
+                "databases": {
+                    "type": "object",
+                    "propertyNames": {
+                        "type": "string",
+                        "enum": [
+                            "default"
+                        ]
+                    },
+                    "patternProperties": {
+                        ".+": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                                "user",
+                                "password"
+                            ],
+                            "properties": {
+                                "user": {
+                                    "type": "string",
+                                    "minLength": 1
+                                },
+                                "password": {
+                                    "type": "string",
+                                    "minLength": 1
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "environment_roles": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "id": {
+                        "$ref": "#/$defs/id"
+                    },
+                    "read_access": {
+                        "type": "boolean"
+                    },
+                    "write_access": {
+                        "type": "boolean"
+                    }
+                }
+            }
+        },
+        "environments": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "id",
+                    "role",
+                    "plugin"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                    "id": {
+                        "$ref": "#/$defs/id"
+                    },
+                    "label": {
+                        "$ref": "#/$defs/label"
+                    },
+                    "role": {
+                        "type": "string",
+                        "enum": []
+                    },
+                    "plugin": {
+                        "type": "string",
+                        "enum": []
+                    },
+                    "files": {
+                        "type": "object",
+                        "propertyNames": {
+                            "type": "string",
+                            "enum": []
+                        },
+                        "patternProperties": {
+                            ".+": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "databases": {
+                        "type": "object",
+                        "propertyNames": {
+                            "type": "string",
+                            "enum": []
+                        },
+                        "patternProperties": {
+                            ".+": {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                    "host": {
+                                        "type": "string",
+                                        "minLength": 1
+                                    },
+                                    "port": {
+                                        "type": "string",
+                                        "minLength": 1
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "minLength": 1
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "databases": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "id"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                    "id": {
+                        "$ref": "#/$defs/id"
+                    },
+                    "exclude_tables": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "minLength": 1
+                        }
+                    },
+                    "exclude_table_data": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "minLength": 1
+                        }
+                    },
+                    "mysqldump_options": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "minLength": 1
+                        }
+                    }
+                }
+            }
+        },
+        "file_groups": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "id"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                    "id": {
+                        "$ref": "#/$defs/id"
+                    },
+                    "include": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "minLength": 1
+                        }
+                    },
+                    "exclude": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "minLength": 1
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

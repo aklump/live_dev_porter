@@ -24,18 +24,18 @@
   <h1>Files</h1>
   
 
-<p>File sync uses one or more file "groups", e.g. <code>files_sync.public</code>.</p>
+<p>File sync uses one or more file "groups", e.g. <code>files.public</code>.</p>
 
 <p>If the local and remote paths are the same then do like this:</p>
 
-<pre><code class="yaml">files_sync:
+<pre><code class="yaml">files:
   public:
     - web/sites/default/files
 </code></pre>
 
 <p>If the local and remote paths are different then use this pattern <code>LOCAL:REMOTE</code>, e.g.,</p>
 
-<pre><code class="yaml">files_sync:
+<pre><code class="yaml">files:
   public:
     - web/sites/default/files:/files
 </code></pre>
@@ -49,7 +49,7 @@
 <footer>
   <div class="pager"><a href="fetch.html" class="prev fetch">&laquo;Fetch</a><a href="index.html" class="index pager__book-title"></a><a href="README.html" class="next readme">Live Dev Porter&raquo;</a></div>  
   <div id="footer-legaleeze">
-    <p class="legaleeze center">Version: 0.0.9 &bull; Last Updated: Tue, 05 Jul 2022 22:12:03 -0700</p>
+    <p class="legaleeze center">Version: 0.0.9 &bull; Last Updated: Wed, 06 Jul 2022 19:47:09 -0700</p>
   </div>
 </footer>
 

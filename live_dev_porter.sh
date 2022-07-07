@@ -37,7 +37,16 @@ function on_clear_cache() {
   for plugin in "${ACTIVE_PLUGINS[@]}"; do
     plugin_implements "$plugin" on_clear_cache && call_plugin "$plugin" on_clear_cache
   done
+  export CLOUDY_CONFIG_JSON
+  $CLOUDY_PHP "$ROOT/php/caller.php"  "\AKlump\LiveDevPorter\Config\SchemaBuilder::build"
 }
+
+
+function on_config_changed() {
+  export CLOUDY_CONFIG_JSON
+  $CLOUDY_PHP "$ROOT/php/caller.php"  "\AKlump\LiveDevPorter\Config\Validator::validate"
+}
+
 
 function on_boot() {
   [[ "$(get_command)" == "tests" ]] || return 0
@@ -76,21 +85,21 @@ if [ -f "$CONFIG_DIR/hooks.local.sh" ]; then
   source "$CONFIG_DIR/hooks.local.sh"
 fi
 
-eval $(get_config_path_as 'LOCAL_FETCH_DIR' 'environments.dev.fetch.path')
-exit_with_failure_if_empty_config 'LOCAL_FETCH_DIR' 'environments.dev.fetch.path'
+eval $(get_config_path_as 'LOCAL_FETCH_DIR' 'old.environments.dev.fetch.path')
+exit_with_failure_if_empty_config 'LOCAL_FETCH_DIR' 'old.environments.dev.fetch.path'
 
 eval $(get_config_as 'REMOTE_ENV_ID' 'remote_environment_is')
 if [[ "$REMOTE_ENV_ID" ]]; then
-  eval $(get_config_as 'REMOTE_ENV' "environments.$REMOTE_ENV_ID.id")
-  exit_with_failure_if_empty_config 'REMOTE_ENV' "environments.$REMOTE_ENV_ID.id"
+  eval $(get_config_as 'REMOTE_ENV' "old.environments.$REMOTE_ENV_ID.id")
+  exit_with_failure_if_empty_config 'REMOTE_ENV' "old.environments.$REMOTE_ENV_ID.id"
 fi
 
 eval $(get_config_as 'LOCAL_ENV_ID' 'local_environment_is')
 exit_with_failure_if_empty_config 'LOCAL_ENV_ID' 'local_environment_is'
 
 # This is the localized environment id
-eval $(get_config_as 'LOCAL_ENV' "environments.$LOCAL_ENV_ID.id")
-exit_with_failure_if_empty_config 'LOCAL_ENV' "environments.$REMOTE_ENV_ID.id"
+eval $(get_config_as 'LOCAL_ENV' "old.environments.$LOCAL_ENV_ID.id")
+exit_with_failure_if_empty_config 'LOCAL_ENV' "old.environments.$REMOTE_ENV_ID.id"
 
 # Input validation.
 validate_input || exit_with_failure "Input validation failed."

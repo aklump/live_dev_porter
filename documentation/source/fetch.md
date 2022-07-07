@@ -8,12 +8,12 @@ You may fetch a single group of files like this:
 ldp fetch -f --group=public
 ```
 
-where the group is the key of the `files_sync` array as shown here:
+where the group is the key of the `files` array as shown here:
 
 ```yaml
 environments:
   dev:
-    files_sync:
+    files:
       public:
         - web/sites/default/files
       private:

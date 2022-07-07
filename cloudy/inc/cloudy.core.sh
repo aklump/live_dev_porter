@@ -870,6 +870,7 @@ if [[ ! -f "$CACHED_CONFIG_FILEPATH" ]]; then
 
     write_log_notice "$(basename $CONFIG) configuration compiled to $CACHED_CONFIG_FILEPATH."
   fi
+  event_dispatch "config_changed"
 fi
 
 # Import the cached config variables at this top scope into memory.
