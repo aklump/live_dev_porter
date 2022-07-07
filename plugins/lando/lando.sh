@@ -44,7 +44,7 @@ function lando_on_compile_config() {
 
   local path_to_dynamic_config="$CACHE_DIR/$(path_filename $SCRIPT).lando.config.yml"
   if [ !  -f "$path_to_dynamic_config" ]; then
-    json_set "$(lando info -s database --format=json | tail -1)" || return 1
+    json_set "$(lando info -s database --format=json >/dev/null 2>&1 | tail -1)" || return 1
     yaml_clear
     yaml_add_line "environments:"
     yaml_add_line "  dev:"
