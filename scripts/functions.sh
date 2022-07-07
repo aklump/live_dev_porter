@@ -64,19 +64,17 @@ function plugin_implements() {
 
 function implement_route_access() {
   command=$(get_command)
-  eval $(get_config_as 'allowed_routes' "commands.$command.access_by_env")
-  [[ "" == "$allowed_routes" ]] && return 0
 
-  local csv
-  for i in "${allowed_routes[@]}"; do
-     [ "$i" == "$LOCAL_ENV_ID" ] && return 0
-     eval $(get_config_as env_alias "environments.$i.id")
-     csv="$csv, \"$env_alias\""
-  done
+  eval $(get_config_as requirement "commands.${command}.require_write_access")
+  [[ ! "$requirement" ]] && return 0
+  [[ false == "$requirement" ]] && return 0
 
-  fail_because "\"$command\" can be used only in ${csv#, } environments."
-  fail_because "Current environment is \"$LOCAL_ENV\"."
-  exit_with_failure "Command not allowed"
+  local write_access=$(get_environment_config_by_id "$LOCAL_ENV_ID" "write_access")
+  [[ $write_access == true ]] && return 0
+  
+  fail_because "write_access is false for this environment ($LOCAL_ENV_ID)."
+  fail_because "set to true in the configuration, to allow this command."
+  exit_with_failure "\"$command\" not allowed"
 }
 
 # Echo authorization portion of a path, e.g. user@host.

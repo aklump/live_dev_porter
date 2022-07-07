@@ -20,9 +20,7 @@ commands:
   info:
     help: 'Print the configuration info.'
   fetch:
-    access_by_env:
-      - dev
-      - staging
+    require_write_access: true
     help: 'Fetch remote assets to local.'
     options:
       verbose:
@@ -44,9 +42,7 @@ commands:
         type: string
         help: 'Limit the operation by group'
   reset:
-    access_by_env:
-      - dev
-      - staging
+    require_write_access: true
     help: 'Reset dev assets with last fetched.'
     options:
       verbose:
@@ -68,9 +64,7 @@ commands:
         type: string
         help: 'Limit the operation by group'
   pull:
-    access_by_env:
-      - dev
-      - staging
+    require_write_access: true
     help: 'Fetch and reset in one command.'
     options:
       verbose:
@@ -92,9 +86,7 @@ commands:
         type: string
         help: 'Limit the operation by group'
   import:
-    access_by_env:
-      - dev
-      - staging
+    require_write_access: true
     help: 'Import a dumpfile to the local database.'
   export:
     help: 'Export the local database.'
