@@ -11,13 +11,27 @@ final class Validator {
   private $jsonSchema;
 
   public function __construct(array $config) {
-    $this->config = array_intersect_key($config, array_flip([
-      'environment_roles',
-      'environments',
-      'file_groups',
-      'databases',
+    $this->config = array_diff_key($config, array_flip([
+
+      // Remove known keys that are okay, but will invalidate the schema.
+      '__cloudy',
+      'title',
+      'name',
+      'description',
+      'version',
+      'author',
+      'config_path_base',
+      'path_to_app',
+      'additional_config',
+      'additional_bootstrap',
+      'default_command',
+      'commands',
+      'plugin_assignments',
+      'CACHE_DIR',
+      'CONFIG_DIR',
+      'PLUGINS_DIR',
     ]));
-    $this->jsonSchema = __DIR__ . '/../../json_schema/dist';
+    $this->jsonSchema = $config['CACHE_DIR'] . '/config.schema.json';
   }
 
   public function validate() {
@@ -41,10 +55,10 @@ final class Validator {
 
       return $value;
     };
-    $path_to_schema = $this->jsonSchema . '/config.schema.json';
+
     $validator = new \JsonSchema\Validator();
     $to_validate = $js_like_array($this->config);
-    $validator->validate($to_validate, (object) ['$ref' => 'file://' . $path_to_schema]);
+    $validator->validate($to_validate, (object) ['$ref' => 'file://' . $this->jsonSchema]);
     if (!$validator->isValid()) {
       $message = ['Invalid configuration:'];
       foreach ($validator->getErrors() as $error) {

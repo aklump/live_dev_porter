@@ -1,4 +1,6 @@
 {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "User configuration schema",
     "type": "object",
     "$defs": {
         "id": {
@@ -10,75 +12,15 @@
             "minLength": 1
         }
     },
+    "additionalProperties": false,
     "properties": {
         "environment": {
-            "type": "object",
-            "required": [
-                "id",
-                "plugin"
-            ],
-            "properties": {
-                "id": {
-                    "type": "string",
-                    "enum": []
-                },
-                "label": {
-                    "type": "string",
-                    "pattern": ".+"
-                },
-                "plugin": {
-                    "type": "string",
-                    "enum": []
-                },
-                "databases": {
-                    "type": "object",
-                    "propertyNames": {
-                        "type": "string",
-                        "enum": [
-                            "default"
-                        ]
-                    },
-                    "patternProperties": {
-                        ".+": {
-                            "type": "object",
-                            "additionalProperties": false,
-                            "required": [
-                                "user",
-                                "password"
-                            ],
-                            "properties": {
-                                "user": {
-                                    "type": "string",
-                                    "minLength": 1
-                                },
-                                "password": {
-                                    "type": "string",
-                                    "minLength": 1
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            "type": "string",
+            "enum": []
         },
-        "environment_roles": {
-            "type": "array",
-            "minItems": 1,
-            "items": {
-                "type": "object",
-                "additionalProperties": false,
-                "properties": {
-                    "id": {
-                        "$ref": "#/$defs/id"
-                    },
-                    "read_access": {
-                        "type": "boolean"
-                    },
-                    "write_access": {
-                        "type": "boolean"
-                    }
-                }
-            }
+        "fetch_environment": {
+            "type": "string",
+            "enum": []
         },
         "environments": {
             "type": "array",
@@ -86,7 +28,8 @@
                 "type": "object",
                 "required": [
                     "id",
-                    "role",
+                    "write_access",
+                    "base_path",
                     "plugin"
                 ],
                 "additionalProperties": false,
@@ -97,13 +40,20 @@
                     "label": {
                         "$ref": "#/$defs/label"
                     },
-                    "role": {
-                        "type": "string",
-                        "enum": []
+                    "write_access": {
+                        "type": "boolean"
                     },
                     "plugin": {
                         "type": "string",
                         "enum": []
+                    },
+                    "base_path": {
+                        "type": "string",
+                        "pattern": "APP_ROOT|/.+"
+                    },
+                    "ssh": {
+                        "type": "string",
+                        "pattern": ".+@.+"
                     },
                     "files": {
                         "type": "object",
@@ -187,29 +137,57 @@
             "type": "array",
             "items": {
                 "type": "object",
-                "required": [
-                    "id"
-                ],
-                "additionalProperties": false,
-                "properties": {
-                    "id": {
-                        "$ref": "#/$defs/id"
+                "oneOf": [
+                    {
+                        "additionalProperties": false,
+                        "properties": {
+                            "id": {
+                                "$ref": "#/$defs/id"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ]
                     },
-                    "include": {
-                        "type": "array",
-                        "items": {
-                            "type": "string",
-                            "minLength": 1
-                        }
+                    {
+                        "additionalProperties": false,
+                        "properties": {
+                            "id": {
+                                "$ref": "#/$defs/id"
+                            },
+                            "include": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1
+                                }
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "include"
+                        ]
                     },
-                    "exclude": {
-                        "type": "array",
-                        "items": {
-                            "type": "string",
-                            "minLength": 1
-                        }
+                    {
+                        "additionalProperties": false,
+                        "properties": {
+                            "id": {
+                                "$ref": "#/$defs/id"
+                            },
+                            "exclude": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1
+                                }
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "exclude"
+                        ]
                     }
-                }
+                ]
             }
         }
     }

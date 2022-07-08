@@ -17,8 +17,8 @@ final class SchemaBuilder {
 
   public function __construct(array $config) {
     $this->config = $config;
-    $this->jsonSchemaSource = __DIR__ . '/../../json_schema/source';
-    $this->jsonSchemaDist = __DIR__ . '/../../json_schema/dist';
+    $this->jsonSchemaSource = __DIR__ . '/../../json_schema';
+    $this->jsonSchemaDist = $config['CACHE_DIR'];
   }
 
   public function build() {
@@ -30,21 +30,38 @@ final class SchemaBuilder {
     }
     $path = '/config.schema.json';
     $data = json_decode(file_get_contents($this->jsonSchemaSource . $path), TRUE);
-    $data['properties']['environment']['properties']['id']['enum'] = $this->getEnvironmentRoles();
-    $data['properties']['environment']['properties']['plugin']['enum'] = $this->getPluginIds();
-    $data['properties']['environments']['items']['properties']['role']['enum'] = $this->getEnvironmentRoles();
+    $data['properties']['fetch_environment']['enum'] = $this->getEnvironmentIds();
+
+    $data['properties']['environment']['enum'] = $this->getEnvironmentIds();
+
     $data['properties']['environments']['items']['properties']['plugin']['enum'] = $this->getPluginIds();
     $data['properties']['environments']['items']['properties']['files']['propertyNames']['enum'] = $this->getFileGroups();
     $data['properties']['environments']['items']['properties']['databases']['propertyNames']['enum'] = $this->getDatabaseIds();
+    $this->removeEmptyEnum($data);
+
     file_put_contents($this->jsonSchemaDist . $path, json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
 
     return "JSON Schema has been compiled.";
   }
 
-  private function getEnvironmentRoles(): array {
+  private function removeEmptyEnum(&$value) {
+    if (!is_array($value)) {
+      return;
+    }
+    foreach (array_keys($value) as $k) {
+      if ('enum' === $k && empty($value[$k])) {
+        unset($value[$k]);
+      }
+      else {
+        $this->removeEmptyEnum($value[$k]);
+      }
+    }
+  }
+
+  private function getEnvironmentIds(): array {
     return array_filter(array_map(function ($data) {
       return $data['id'] ?? NULL;
-    }, $this->config['environment_roles'] ?? []));
+    }, $this->config['environments'] ?? []));
   }
 
   private function getPluginIds(): array {

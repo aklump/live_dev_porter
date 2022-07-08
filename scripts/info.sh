@@ -14,7 +14,7 @@ echo_key_value Plugin "$DEV_PLUGIN"
 
 echo
 eval $(get_config_as 'remote_label' "environments.$REMOTE_ENV_ID.label")
-echo_heading "$remote_label (remote/$REMOTE_ENV)"
+echo_heading "$remote_label (remote/$REMOTE_ENV_ID)"
 echo_key_value Plugin "$PRODUCTION_PLUGIN"
 
 echo_key_value 'Fetch DB' $(path_unresolve $APP_ROOT $FETCH_DB_PATH)

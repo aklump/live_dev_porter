@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-
 #
 # @file
 # Simplifies the management and transfer of assets between website environments.
@@ -9,7 +8,24 @@
 CONFIG="live_dev_porter.core.yml";
 
 # Uncomment this line to enable file logging.
-#LOGFILE="live_dev_porter.core.log"
+LOGFILE="live_dev_porter.core.log"
+
+function php_call() {
+  local callback="$1"
+
+  export CLOUDY_CONFIG_JSON
+  local query="CACHE_DIR=$CONFIG_DIR/.cache&PLUGINS_DIR=$PLUGINS_DIR&CONFIG_DIR=$CONFIG_DIR"
+  local args=("$query" "$@")
+  result="$($CLOUDY_PHP "$ROOT/php/caller.php" ${args[@]})"
+  status="${result:0:1}"
+  message="${result:1}"
+  if [[ $status -ne 0 ]]; then
+    fail_because "$message"
+    exit_with_failure "$callback() failed."
+  elif [[ "$message" ]]; then
+    succeed_because "$message"
+  fi
+}
 
 function on_pre_config() {
   if [[ "$(get_command)" == "init" ]]; then
@@ -37,18 +53,12 @@ function on_clear_cache() {
   for plugin in "${ACTIVE_PLUGINS[@]}"; do
     plugin_implements "$plugin" on_clear_cache && call_plugin "$plugin" on_clear_cache
   done
-  export CLOUDY_CONFIG_JSON
-  $CLOUDY_PHP "$ROOT/php/caller.php"  "\AKlump\LiveDevPorter\Config\SchemaBuilder::build"
 }
-
-
-function on_config_changed() {
-  export CLOUDY_CONFIG_JSON
-  $CLOUDY_PHP "$ROOT/php/caller.php"  "\AKlump\LiveDevPorter\Config\Validator::validate"
-}
-
 
 function on_boot() {
+  CONFIG_DIR="$APP_ROOT/.live_dev_porter"
+  CACHE_DIR="$CONFIG_DIR/.cache"
+
   [[ "$(get_command)" == "tests" ]] || return 0
   source "$CLOUDY_ROOT/inc/cloudy.testing.sh"
   echo_heading "Testing core"
@@ -65,11 +75,18 @@ function on_boot() {
   exit_with_test_results
 }
 
+function on_config_changed() {
+  php_call "\AKlump\LiveDevPorter\Config\RsyncHelper::createFiles"
+  php_call "\AKlump\LiveDevPorter\Config\SchemaBuilder::build"
+  php_call "\AKlump\LiveDevPorter\Config\Validator::validate"
+}
+
 # Begin Cloudy Bootstrap
-s="${BASH_SOURCE[0]}";while [ -h "$s" ];do dir="$(cd -P "$(dirname "$s")" && pwd)";s="$(readlink "$s")";[[ $s != /* ]] && s="$dir/$s";done;r="$(cd -P "$(dirname "$s")" && pwd)";source "$r/cloudy/cloudy.sh";[[ "$ROOT" != "$r" ]] && echo "$(tput setaf 7)$(tput setab 1)Bootstrap failure, cannot load cloudy.sh$(tput sgr0)" && exit 1
+s="${BASH_SOURCE[0]}";while [ -h "$s" ];do dir="$(cd -P "$(dirname "$s")" && pwd)";s="$(readlink "$s")";[[ $s != /* ]] && s="$dir/$s";done;r="$(cd -P "$(dirname "$s")" && pwd)";source "$r/cloudy/cloudy.sh";[[ "$ROOT" != "$r" ]] && echo "$(tput setaf 7)$(tput setab 1)Bootstrap failure, cannot load cloudy.sh$
+}
+}(tput sgr0)" && exit 1
 # End Cloudy Bootstrap
 
-CONFIG_DIR="$APP_ROOT/.live_dev_porter"
 
 # Bootstrap the plugin configuration.
 source "$SOURCE_DIR/plugins.sh"
@@ -85,31 +102,41 @@ if [ -f "$CONFIG_DIR/hooks.local.sh" ]; then
   source "$CONFIG_DIR/hooks.local.sh"
 fi
 
-eval $(get_config_path_as 'LOCAL_FETCH_DIR' 'old.environments.dev.fetch.path')
-exit_with_failure_if_empty_config 'LOCAL_FETCH_DIR' 'old.environments.dev.fetch.path'
-
-eval $(get_config_as 'REMOTE_ENV_ID' 'remote_environment_is')
-if [[ "$REMOTE_ENV_ID" ]]; then
-  eval $(get_config_as 'REMOTE_ENV' "old.environments.$REMOTE_ENV_ID.id")
-  exit_with_failure_if_empty_config 'REMOTE_ENV' "old.environments.$REMOTE_ENV_ID.id"
-fi
-
-eval $(get_config_as 'LOCAL_ENV_ID' 'local_environment_is')
-exit_with_failure_if_empty_config 'LOCAL_ENV_ID' 'local_environment_is'
-
-# This is the localized environment id
-eval $(get_config_as 'LOCAL_ENV' "old.environments.$LOCAL_ENV_ID.id")
-exit_with_failure_if_empty_config 'LOCAL_ENV' "old.environments.$REMOTE_ENV_ID.id"
-
 # Input validation.
 validate_input || exit_with_failure "Input validation failed."
 
+command=$(get_command)
+case $command in
+    "init")
+      source "$SOURCE_DIR/init.sh"
+      for plugin in "${ACTIVE_PLUGINS[@]}"; do
+        plugin_implements $plugin init && call_plugin $plugin init
+      done
+      has_failed && exit_with_failure
+      exit_with_success "Initialization complete."
+      ;;
+esac
+
+eval $(get_config_as 'LOCAL_ENV_ID' 'environment')
+exit_with_failure_if_empty_config 'LOCAL_ENV_ID' 'environment'
+eval $(get_config_as 'REMOTE_ENV_ID' 'fetch_environment')
+
+eval $(get_config_keys_as 'keys' "environments")
+for key in "${keys[@]}"; do
+  eval $(get_config_as "id" "environments.${key}.id")
+  if [[ "$id" == "$LOCAL_ENV_ID" ]]; then
+    LOCAL_ENV_LOOKUP=$key
+  elif [[ "$REMOTE_ENV_ID" ]] && [[ "$id" == "$REMOTE_ENV_ID" ]]; then
+    REMOTE_ENV_LOOKUP=$key
+  fi
+done
+
 # Initialize local stash directory.
-pull_to_path="$LOCAL_FETCH_DIR/$REMOTE_ENV/"
-mkdir -p "$pull_to_path/db" || exit 1
-mkdir -p "$pull_to_path/files" || exit 1
-FETCH_DB_PATH=$(cd "$pull_to_path/db" && pwd)
-FETCH_FILES_PATH=$(cd "$pull_to_path/files" && pwd)
+#pull_to_path="$LOCAL_FETCH_DIR/$REMOTE_ENV_ID/"
+#mkdir -p "$pull_to_path/db" || exit 1
+#mkdir -p "$pull_to_path/files" || exit 1
+#FETCH_DB_PATH=$(cd "$pull_to_path/db" && pwd)
+#FETCH_FILES_PATH=$(cd "$pull_to_path/files" && pwd)
 
 # Determine if we are going to operate on database, files, or both.
 if has_option d && has_option f; then
@@ -135,7 +162,6 @@ for plugin in "${ACTIVE_PLUGINS[@]}"; do
 done
 
 # Handle other commands.
-command=$(get_command)
 case $command in
 
     "configtest")
@@ -146,15 +172,6 @@ case $command in
       done
       has_failed && fail_because "Try clearing caches." && exit_with_failure "Tests failed."
       exit_with_success "All tests passed."
-      ;;
-
-    "init")
-      source "$SOURCE_DIR/init.sh"
-      for plugin in "${ACTIVE_PLUGINS[@]}"; do
-        plugin_implements $plugin init && call_plugin $plugin init
-      done
-      has_failed && exit_with_failure
-      exit_with_success "Initialization complete."
       ;;
 
     "remote")
@@ -230,70 +247,70 @@ case $command in
       exit_with_success_elapsed "Database exported"
     ;;
 
-    "fetch")
-      echo_title "Fetch Remote Assets"
-      if [[ "$do_database" == true ]]; then
-        source "$PLUGINS_DIR/$PLUGIN_FETCH_DB/${PLUGIN_FETCH_DB}.sh"
-        echo_heading "Fetching $REMOTE_ENV database..."
-        (hook_before_fetch_db)
-
-        call_plugin $PLUGIN_FETCH_DB authenticate || exit_with_failure
-        call_plugin $PLUGIN_FETCH_DB remote_clear_cach || exit_with_failure
-
-        # todo insert the last fetch time here.
-        echo "Last time this took N minutes, so please be patient"
-        call_plugin $PLUGIN_FETCH_DB fetch_db || fail
-        ! has_failed && store_timestamp "$FETCH_DB_PATH" && succeed_because "Database fetched."
-        (hook_after_fetch_db)
-      fi
-
-      if [[ "$do_files" == true ]]; then
-#        echo_heading "Fetching $REMOTE_ENV files..."
-        (hook_before_fetch_files)
-        call_plugin "$PLUGIN_FETCH_FILES" fetch_files || fail
-        ! has_failed && store_timestamp "$FETCH_FILES_PATH" && succeed_because "Files fetched."
-        (hook_after_fetch_files)
-      fi
-      has_failed && exit_with_failure
-      exit_with_success_elapsed "Fetch completed"
-    ;;
-
-    "reset")
-      if [[ "$do_database" == true ]]; then
-        echo_heading "Resetting local database, please wait..."
-        (hook_before_reset_db)
-        dumpfile=$(ldp_get_fetched_db_path)
-        if [[ ! "$dumpfile" ]]; then
-          fail_because "Missing dumpfile."
-          fail_because "Try fetching the remote database with fetch."
-        elif [ ! -f "$dumpfile" ]; then
-          fail_because "Dumpfile does not exist \"$dumpfile\"."
-        fi
-        if ! has_failed; then
-          call_plugin $PLUGIN_RESET_DB reset_db "$dumpfile" || fail
-          (hook_after_reset_db)
-        fi
-      fi
-
-      if [[ "$do_files" == true ]]; then
-#        echo_heading "Resetting local files to match $REMOTE_ENV"
-        (hook_before_reset_files)
-        call_plugin $PLUGIN_RESET_FILES reset_files || fail
-        (hook_after_reset_files)
-      fi
-
-      has_failed && exit_with_failure
-      exit_with_success_elapsed
-    ;;
+#    "fetch")
+#      echo_title "Fetch Remote Assets"
+#      if [[ "$do_database" == true ]]; then
+#        source "$PLUGINS_DIR/$PLUGIN_PULL_DB/${PLUGIN_PULL_DB}.sh"
+#        echo_heading "Fetching $REMOTE_ENV_ID database..."
+#        (hook_before_fetch_db)
+#
+#        call_plugin $PLUGIN_PULL_DB authenticate || exit_with_failure
+#        call_plugin $PLUGIN_PULL_DB remote_clear_cach || exit_with_failure
+#
+#        # todo insert the last fetch time here.
+#        echo "Last time this took N minutes, so please be patient"
+#        call_plugin $PLUGIN_PULL_DB fetch_db || fail
+#        ! has_failed && store_timestamp "$FETCH_DB_PATH" && succeed_because "Database fetched."
+#        (hook_after_fetch_db)
+#      fi
+#
+#      if [[ "$do_files" == true ]]; then
+##        echo_heading "Fetching $REMOTE_ENV_ID files..."
+#        (hook_before_fetch_files)
+#        call_plugin "$PLUGIN_PULL_FILES" fetch_files || fail
+#        ! has_failed && store_timestamp "$FETCH_FILES_PATH" && succeed_because "Files fetched."
+#        (hook_after_fetch_files)
+#      fi
+#      has_failed && exit_with_failure
+#      exit_with_success_elapsed "Fetch completed"
+#    ;;
+#
+#    "reset")
+#      if [[ "$do_database" == true ]]; then
+#        echo_heading "Resetting local database, please wait..."
+#        (hook_before_reset_db)
+#        dumpfile=$(ldp_get_fetched_db_path)
+#        if [[ ! "$dumpfile" ]]; then
+#          fail_because "Missing dumpfile."
+#          fail_because "Try fetching the remote database with fetch."
+#        elif [ ! -f "$dumpfile" ]; then
+#          fail_because "Dumpfile does not exist \"$dumpfile\"."
+#        fi
+#        if ! has_failed; then
+#          call_plugin $PLUGIN_RESET_DB reset_db "$dumpfile" || fail
+#          (hook_after_reset_db)
+#        fi
+#      fi
+#
+#      if [[ "$do_files" == true ]]; then
+##        echo_heading "Resetting local files to match $REMOTE_ENV_ID"
+#        (hook_before_reset_files)
+#        call_plugin $PLUGIN_RESET_FILES reset_files || fail
+#        (hook_after_reset_files)
+#      fi
+#
+#      has_failed && exit_with_failure
+#      exit_with_success_elapsed
+#    ;;
 
     "pull")
       if [[ "$do_database" == true ]]; then
-        call_plugin $PLUGIN_FETCH_DB authenticate || fail
+        call_plugin $PLUGIN_PULL_DB authenticate || fail
         if ! has_failed; then
-          call_plugin $PLUGIN_FETCH_DB remote_clear_cach
+          call_plugin $PLUGIN_PULL_DB remote_clear_cach
           echo_heading "Fetching the remote database, please wait..."
           ldp_delete_fetched_db
-          call_plugin $PLUGIN_FETCH_DB fetch_db || fail
+          call_plugin $PLUGIN_PULL_DB fetch_db || fail
         fi
         if ! has_failed; then
           echo_heading "Resetting the local database to match remote."
@@ -302,12 +319,7 @@ case $command in
       fi
 
       if [[ "$do_files" == true ]]; then
-#        echo_heading "Fetching the $REMOTE_ENV files, please wait..."
-        call_plugin $PLUGIN_FETCH_FILES fetch_files || fail
-        if ! has_failed; then
-#          echo_heading "Resetting the local files to match remote."
-          call_plugin $PLUGIN_RESET_FILES reset_files
-        fi
+        call_plugin $PLUGIN_PULL_FILES pull_files || fail
       fi
       has_failed && exit_with_failure
       exit_with_success_elapsed
