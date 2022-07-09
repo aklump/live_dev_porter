@@ -17,10 +17,6 @@ function _get_remote_env() {
   exit_with_failure "Cannot determine Pantheon environment using $REMOTE_ENV_ID"
 }
 
-function pantheon_init() {
-  ensure_files_sync_local_directories && succeed_because "Updated fetch structure at $(path_unresolve "$APP_ROOT" "$FETCH_FILES_PATH")"
-}
-
 function pantheon_authenticate() {
   eval $(get_config_as 'machine_token' "environments.$REMOTE_ENV_ID.fetch.machine_token")
   exit_with_failure_if_empty_config 'machine_token' 'pantheon.machine_token'
@@ -59,12 +55,11 @@ function pantheon_fetch_files() {
   local rsync_options="-rlz --copy-unsafe-links --size-only --checksum --ipv4"
   has_option v && rsync_options="$rsync_options --progress"
 
-  eval $(get_config_keys_as -a sync_groups files_sync)
-  ensure_files_sync_local_directories
+  eval $(get_config_keys_as -a sync_groups files)
   for group in "${sync_groups[@]}"; do
     has_option group && [[ "$(get_option group)" != "$group" ]] && continue
     echo_heading "Fetching \"$group\" files..."
-    eval $(get_config_as -a subdirs files_sync.$group)
+    eval $(get_config_as -a subdirs files.$group)
     [ -d "$FETCH_FILES_PATH/$group" ] || mkdir -p "$FETCH_FILES_PATH/$group"
     for subdir in "${subdirs[@]}"; do
       local local_path=$(combo_path_get_local "$subdir")
@@ -92,6 +87,6 @@ function pantheon_info() {
   echo
   echo_heading "Pantheon"
   echo_key_value "Machine token" "$machine_token"
-  echo_key_value "$(string_ucfirst "$REMOTE_ENV") Site name" "$site_name"
-  echo_key_value "$(string_ucfirst "$REMOTE_ENV") Site UUID" "$site_uuid"
+  echo_key_value "$(string_ucfirst "$REMOTE_ENV_ID") Site name" "$site_name"
+  echo_key_value "$(string_ucfirst "$REMOTE_ENV_ID") Site UUID" "$site_uuid"
 }
