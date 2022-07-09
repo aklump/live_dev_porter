@@ -41,7 +41,7 @@ final class SchemaBuilder {
 
     file_put_contents($this->jsonSchemaDist . $path, json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
 
-    return "JSON Schema has been compiled.";
+    return "JSON Schema has been rebuilt.";
   }
 
   private function removeEmptyEnum(&$value) {

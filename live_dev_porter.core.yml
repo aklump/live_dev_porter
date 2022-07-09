@@ -10,8 +10,6 @@ additional_config:
   - .live_dev_porter/config.local.yml
 additional_bootstrap: null
 default_command: configtest
-# Every environment should be production unless changed in _config.local.yml_.
-local_environment_is: production
 commands:
   remote:
     help: 'Enter the remote server shell.'
@@ -19,53 +17,53 @@ commands:
     help: 'Show this help screen.'
   info:
     help: 'Print the configuration info.'
-  fetch:
-    require_write_access: true
-    help: 'Fetch remote assets to local.'
-    options:
-      verbose:
-        type: boolean
-        help: 'Output additional information.'
-        aliases:
-          - v
-      database:
-        type: boolean
-        help: 'Indicate the database asset.'
-        aliases:
-          - d
-      files:
-        type: boolean
-        help: 'Indicate the files asset.'
-        aliases:
-          - f
-      group:
-        type: string
-        help: 'Limit the operation by group'
-  reset:
-    require_write_access: true
-    help: 'Reset dev assets with last fetched.'
-    options:
-      verbose:
-        type: boolean
-        help: 'Output additional information.'
-        aliases:
-          - v
-      database:
-        type: boolean
-        help: 'Indicate the database asset.'
-        aliases:
-          - d
-      files:
-        type: boolean
-        help: 'Indicate the files asset.'
-        aliases:
-          - f
-      group:
-        type: string
-        help: 'Limit the operation by group'
+  #  fetch:
+  #    require_write_access: true
+  #    help: 'Fetch the database without resetting.'
+  #    options:
+  #      verbose:
+  #        type: boolean
+  #        help: 'Output additional information.'
+  #        aliases:
+  #          - v
+  #      database:
+  #        type: boolean
+  #        help: 'Indicate the database asset.'
+  #        aliases:
+  #          - d
+  #      files:
+  #        type: boolean
+  #        help: 'Indicate the files asset.'
+  #        aliases:
+  #          - f
+  #      group:
+  #        type: string
+  #        help: 'Limit the operation by group'
+  #  reset:
+  #    require_write_access: true
+  #    help: 'Reset your database with the most recently pulled version.'
+  #    options:
+  #      verbose:
+  #        type: boolean
+  #        help: 'Output additional information.'
+  #        aliases:
+  #          - v
+  #      database:
+  #        type: boolean
+  #        help: 'Indicate the database asset.'
+  #        aliases:
+  #          - d
+  #      files:
+  #        type: boolean
+  #        help: 'Indicate the files asset.'
+  #        aliases:
+  #          - f
+  #      group:
+  #        type: string
+  #        help: 'Limit the operation by group'
   pull:
     require_write_access: true
-    help: 'Fetch and reset in one command.'
+    help: 'Pull remote database and files to local.'
     options:
       verbose:
         type: boolean
@@ -74,17 +72,20 @@ commands:
           - v
       database:
         type: boolean
-        help: 'Indicate the database asset.'
+        help: 'Only pull the database.'
         aliases:
           - d
       files:
         type: boolean
-        help: 'Indicate the files asset.'
+        help: 'Only pull the files.'
         aliases:
           - f
       group:
         type: string
         help: 'Limit the operation by group'
+      dry-run:
+        type: boolean
+        help: 'Preview which files will be copied.'
   import:
     require_write_access: true
     help: 'Import a dumpfile to the local database.'
@@ -121,38 +122,27 @@ commands:
       - clearcache
       - cc
     help: 'Clear all cached data.'
-old.environments:
-  dev:
-    plugin: default
-    id: dev
-    name: 'Local development'
-    export:
-      path: .live_dev_porter/backups
-      exclude_data_from_tables_listed_in:
-        - data_exclusions.txt
-      exclude_tables_listed_in:
-        - table_exclusions.txt
-    fetch:
-      path: .live_dev_porter/fetch
-  staging:
-    plugin: default
-    id: test
-    name: Staging
-  production:
-    plugin: default
-    id: production
-    name: Production
 plugin_assignments:
   shell:
     db: mysql
     remote: PRODUCTION_PLUGIN
-  fetch:
+  pull:
     db: PRODUCTION_PLUGIN
     files: PRODUCTION_PLUGIN
-  reset:
-    db: DEV_PLUGIN
-    files: default
+  #  fetch:
+  #    db: PRODUCTION_PLUGIN
+  #    files: PRODUCTION_PLUGIN
+  #  reset:
+  #    db: DEV_PLUGIN
+  #    files: default
   export:
     db: mysql
   import:
     db: mysql
+#environments:
+#  -
+#    id: production
+#    label: Production
+#    write_access: false
+#    plugin: default
+#environment: production

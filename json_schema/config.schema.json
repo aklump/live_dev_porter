@@ -10,6 +10,13 @@
         "label": {
             "type": "string",
             "minLength": 1
+        },
+        "rsync_ruleset": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "minLength": 1
+            }
         }
     },
     "additionalProperties": false,
@@ -155,12 +162,17 @@
                             "id": {
                                 "$ref": "#/$defs/id"
                             },
-                            "include": {
+                            "processors": {
                                 "type": "array",
+                                "minItems": 1,
                                 "items": {
                                     "type": "string",
-                                    "minLength": 1
+                                    "minLength": 1,
+                                    "pattern": "\\.(php|sh)$"
                                 }
+                            },
+                            "include": {
+                                "$ref": "#/$defs/rsync_ruleset"
                             }
                         },
                         "required": [
@@ -175,11 +187,7 @@
                                 "$ref": "#/$defs/id"
                             },
                             "exclude": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string",
-                                    "minLength": 1
-                                }
+                                "$ref": "#/$defs/rsync_ruleset"
                             }
                         },
                         "required": [

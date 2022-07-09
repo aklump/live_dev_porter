@@ -1,22 +1,2 @@
-# Defines the type of environment for the local instance; cannot be changed via
-# CLI arguments.
-local_environment_is: dev
-
-# Defines the remote environment, this may be altered by CLI arguments.  This must be one of the keys defined in config.yml
-remote_environment_is: production
-
-environments:
-  dev:
-    label: ENTER_DEVELOPERS_COMPUTER_OR_BUSINESS_NAME_ETC
-
-    database:
-      protocol: tcp
-      host: ENTER_HOST
-      port: ENTER_PORT
-      name: ENTER_DB_NAME
-      user: ENTER_USER
-      password: ENTER_PASSWORD
-
-  production:
-    fetch:
-      machine_token: ENTER_MACHINE_TOKEN_FROM_PANTHEON
+environment: local
+fetch_environment: live

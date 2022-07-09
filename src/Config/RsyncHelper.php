@@ -34,16 +34,46 @@ class RsyncHelper {
       $ruleset = [];
       if (!empty($group_data[$filter_type])) {
         $path = sprintf('%s/rsync_ruleset.%s.txt', $this->dist, $group_data['id']);
-        $ruleset = array_map(function ($item) use ($filter_type) {
-          return ($filter_type === 'include' ? '+ ' : '- ') . $item;
-        }, $group_data[$filter_type]);
+        foreach ($group_data[$filter_type] as $rule) {
+          $rules = $this->inflateRule($rule);
+          $rules = array_map(function ($item) use ($filter_type) {
+            return ($filter_type === 'include' ? '+ ' : '- ') . $item;
+          }, $rules);
+          $ruleset = array_merge($ruleset, $rules);
+        }
       }
-      $ruleset[] = ($filter_type === 'include' ? '- /*' : '+ /*');
+      $ruleset[] = ($filter_type === 'include' ? '- *' : '+ *');
       $result = file_put_contents($path, implode(PHP_EOL, $ruleset));
       if (!$result) {
         throw new \RuntimeException(sprintf('Failed to save %s', $path));
       }
     }
+  }
+
+  /**
+   * @param string $rule
+   *
+   * @return array
+   *
+   * @link https://www.man7.org/linux/man-pages/man1/rsync.1.html#INCLUDE/EXCLUDE_PATTERN_RULES
+   */
+  public static function inflateRule(string $rule): array {
+    if (substr_count(rtrim($rule, '/'), '/') < 2) {
+      return [$rule];
+    }
+    $rule = explode('/', $rule);
+    for ($i = 0; $i < count($rule) - 1; ++$i) {
+      $rule[$i] .= '/';
+    }
+    $rules = [];
+    while ($rule) {
+      if (count($rule) !== 1 || $rule[0] !== '/') {
+        $rules[] = implode('', $rule);
+      }
+      array_pop($rule);
+    }
+
+    return array_reverse($rules);
   }
 
 }

@@ -1,43 +1,70 @@
-files_copy:
-#  config:
-#    - install/default/.env.$ENV .env
-
 environments:
-  dev:
+  -
+    id: local
+    label: Local
+    write_access: true
+    plugin: lando
+    files:
+      secrets: private/default/secrets
+      install: install/default
+      public: web/sites/default/files
+      private: private/default/files
+    databases:
+      default:
+        host: TODO
+        port: TODO
+        name: TODO
 
-    plugin: default
-
-    # The localized name for this environment.  Messages and filenames will use
-    # this instead of "dev".  You may change this to match your workflow.
-    id: dev
-
-    files_sync:
-      public:
-        - web/sites/default/files
-      private:
-        - private/default/files
-
-    export:
-
-      # https://zoomadmin.com/HowToLinux/LinuxCommand/mysqldump
-      mysqldump_options:
-  #        - xml
-
-  production:
-    label: ENTER_NAME_OF_HOSTING_COMPANY_ETC
+  -
     id: live
-    user: USERNAME
-    host: REMOTE_HOST
-    base_path: PATH_TO_APP
+    label: Dreamhost
+    write_access: false
+    plugin: default
+    files:
+      public: web/sites/default/files
+      private: private/default/files
 
-    files_sync:
-      public:
-        - files
-      private:
-        - files/private
+databases:
+  -
+    id: default
+    exclude_tables:
+      - cache*
+    exclude_table_data:
+      - batch
+      - config_import
+      - config
+      - config_snapshot
+      - key_value_expire
+      - sessions
+      - watchdog
+    # https://zoomadmin.com/HowToLinux/LinuxCommand/mysqldump
+#    mysqldump_options:
+#      - xml
 
-#    fetch:
-#      site_name: ENTER_PANTHEON_SITE_NAME
-#      site_uuid: ENTER_PANTHEON_SITE_UUID
-
-
+file_groups:
+  -
+    id: secrets
+    include:
+      - /.env
+      - /bin/config/*.local.*
+      - /.loft_deploy/config.yml
+  -
+    id: install
+    include:
+      - /web/.htaccess
+      - /.env
+      - /bin/config/*.local.*
+      - /.loft_deploy/config.yml
+  -
+    id: public
+    exclude:
+      - .DS_Store
+      - config_*
+      - css/
+      - imagecache/
+      - js/
+      - php/
+      - styles/
+      - tmp
+  -
+    id: private
