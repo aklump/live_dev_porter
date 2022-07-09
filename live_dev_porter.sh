@@ -8,7 +8,7 @@
 CONFIG="live_dev_porter.core.yml";
 
 # Uncomment this line to enable file logging.
-LOGFILE="live_dev_porter.core.log"
+#LOGFILE="live_dev_porter.core.log"
 
 function php_call() {
   local callback="$1"
@@ -117,17 +117,21 @@ case $command in
       ;;
 esac
 
-eval $(get_config_as 'LOCAL_ENV_ID' 'environment')
+eval $(get_config_as LOCAL_ENV_ID 'environment')
 exit_with_failure_if_empty_config 'LOCAL_ENV_ID' 'environment'
-eval $(get_config_as 'REMOTE_ENV_ID' 'fetch_environment')
+eval $(get_config_as REMOTE_ENV_ID 'fetch_environment')
 
 eval $(get_config_keys_as 'keys' "environments")
 for key in "${keys[@]}"; do
   eval $(get_config_as "id" "environments.${key}.id")
   if [[ "$id" == "$LOCAL_ENV_ID" ]]; then
     LOCAL_ENV_LOOKUP=$key
+
+  # Configure remote variables if we have that environment.
   elif [[ "$REMOTE_ENV_ID" ]] && [[ "$id" == "$REMOTE_ENV_ID" ]]; then
     REMOTE_ENV_LOOKUP=$key
+    eval $(get_config_as REMOTE_ENV_AUTH "environments.${key}.ssh")
+    exit_with_failure_if_empty_config REMOTE_ENV_AUTH "environments.${key}.ssh"
   fi
 done
 
@@ -199,10 +203,10 @@ case $command in
 
     "import")
       eval $(get_config_as "name" "environments.dev.database.name")
-      echo_heading "Replace $LOCAL_ENV database \"$name\" with import (via $PLUGIN_IMPORT_DB)"
+      echo_heading "Replace $LOCAL_ENV_ID database \"$name\" with import (via $PLUGIN_IMPORT_DB)"
       eval $(get_config_path_as 'LOCAL_EXPORT_DIR' 'environments.dev.export.path')
       exit_with_failure_if_empty_config 'LOCAL_EXPORT_DIR' 'environments.dev.export.path'
-      EXPORT_DB_PATH="$LOCAL_EXPORT_DIR/$LOCAL_ENV/db"
+      EXPORT_DB_PATH="$LOCAL_EXPORT_DIR/$LOCAL_ENV_ID/db"
       if [ ! -d $EXPORT_DB_PATH ]; then
         fail_because "Missing directory $EXPORT_DB_PATH"
       else
@@ -232,10 +236,10 @@ case $command in
 
     "export")
       eval $(get_config_as "name" "environments.dev.database.name")
-      echo_heading "Export $LOCAL_ENV database \"$name\" (via $PLUGIN_EXPORT_DB)"
+      echo_heading "Export $LOCAL_ENV_ID database \"$name\" (via $PLUGIN_EXPORT_DB)"
       eval $(get_config_path_as 'LOCAL_EXPORT_DIR' 'environments.dev.export.path')
       exit_with_failure_if_empty_config 'LOCAL_EXPORT_DIR' 'environments.dev.export.path'
-      EXPORT_DB_PATH="$LOCAL_EXPORT_DIR/$LOCAL_ENV/db"
+      EXPORT_DB_PATH="$LOCAL_EXPORT_DIR/$LOCAL_ENV_ID/db"
       if ! mkdir -p "$EXPORT_DB_PATH"; then
         fail_because "Could not create export directory at $EXPORT_DB_PATH"
       else
@@ -328,8 +332,10 @@ case $command in
     "info")
       source "$SOURCE_DIR/info.sh"
       for plugin in "${ACTIVE_PLUGINS[@]}"; do
+        # Note: use table_add_row() to add to the more info.
         plugin_implements $plugin info && call_plugin $plugin info
       done
+      echo_slim_table
       has_failed && exit_with_failure
       exit_with_success "Use 'help' to see all commands."
     ;;

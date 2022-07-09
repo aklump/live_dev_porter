@@ -125,13 +125,13 @@ commands:
 plugin_assignments:
   shell:
     db: mysql
-    remote: PRODUCTION_PLUGIN
+    remote: REMOTE_PLUGIN
   pull:
-    db: PRODUCTION_PLUGIN
-    files: PRODUCTION_PLUGIN
+    db: REMOTE_PLUGIN
+    files: REMOTE_PLUGIN
   #  fetch:
-  #    db: PRODUCTION_PLUGIN
-  #    files: PRODUCTION_PLUGIN
+  #    db: REMOTE_PLUGIN
+  #    files: REMOTE_PLUGIN
   #  reset:
   #    db: DEV_PLUGIN
   #    files: default

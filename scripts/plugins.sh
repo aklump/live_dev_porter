@@ -11,14 +11,14 @@
 function _token_expand() {
   local value="$1"
   value=${value//DEV_PLUGIN/$DEV_PLUGIN}
-  value=${value//PRODUCTION_PLUGIN/$PRODUCTION_PLUGIN}
+  value=${value//REMOTE_PLUGIN/$REMOTE_PLUGIN}
   echo "$value"
 }
 
 eval $(get_config_as DEV_PLUGIN 'environments.dev.plugin')
 [[ "$DEV_PLUGIN" ]] || DEV_PLUGIN="default"
-eval $(get_config_as PRODUCTION_PLUGIN 'environments.production.plugin')
-[[ "$PRODUCTION_PLUGIN" ]] || PRODUCTION_PLUGIN="default"
+eval $(get_config_as REMOTE_PLUGIN 'environments.production.plugin')
+[[ "$REMOTE_PLUGIN" ]] || REMOTE_PLUGIN="default"
 
 eval $(get_config_as PLUGIN_PULL_DB 'plugin_assignments.pull.db')
 PLUGIN_PULL_DB=$(_token_expand $PLUGIN_PULL_DB)

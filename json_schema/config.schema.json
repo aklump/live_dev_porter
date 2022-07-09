@@ -56,7 +56,7 @@
                     },
                     "base_path": {
                         "type": "string",
-                        "pattern": "APP_ROOT|/.+"
+                        "pattern": "^(\.|/).+"
                     },
                     "ssh": {
                         "type": "string",

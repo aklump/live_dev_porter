@@ -14,19 +14,18 @@ function _test_remote_path() {
   local remote_path="$1"
 
   remote_path=$(path_relative_to_env "$REMOTE_ENV_ID" "$remote_path")
-  ssh -o BatchMode=yes "$(echo_env_auth "$REMOTE_ENV_ID")" [ -e "$remote_path" ] &> /dev/null && return 0
+  ssh -o BatchMode=yes "$REMOTE_ENV_AUTH" [ -e "$remote_path" ] &> /dev/null && return 0
   return 1
 }
 
 function default_configtest() {
-
   local assert
 
   # Test remote connection
   assert="Connect to $REMOTE_ENV_ID server"
   local did_connect=false
   # @link https://unix.stackexchange.com/a/264477
-  ssh -o BatchMode=yes "$(echo_env_auth $REMOTE_ENV_ID)" pwd &> /dev/null && did_connect=true
+  ssh -o BatchMode=yes "$REMOTE_ENV_AUTH" pwd &> /dev/null && did_connect=true
   if [[ false == "$did_connect" ]]; then
     fail_because "Check $REMOTE_ENV_ID host and user config."
     echo_fail "$assert"
@@ -74,14 +73,7 @@ function default_remote_shell() {
   # @link https://www.man7.org/linux/man-pages/man1/ssh.1.html
   # @link https://github.com/fraction/sshcd/blob/master/sshcd
   local remote_base_path="$(path_relative_to_env $REMOTE_ENV_ID)"
-  ssh -t $(echo_env_auth $REMOTE_ENV_ID) "(cd $remote_base_path; exec \$SHELL -l)"
-}
-
-function default_info() {
-  eval $(get_config_as remote_app_root "environments.$REMOTE_ENV_ID.base_path")
-
-  echo_key_value "SSH" "$(echo_env_auth $REMOTE_ENV_ID)"
-  echo_key_value "$REMOTE_ENV_ID app root" "$remote_app_root"
+  ssh -t $REMOTE_ENV_AUTH "(cd $remote_base_path; exec \$SHELL -l)"
 }
 
 function default_pull_files() {
@@ -98,12 +90,8 @@ function default_pull_files() {
     base_rsync_options="$base_rsync_options --dry-run -v"
   fi
 
-  eval $(get_config_as source_ssh "environments.${REMOTE_ENV_LOOKUP}.ssh")
   eval $(get_config_as source_base "environments.${REMOTE_ENV_LOOKUP}.base_path")
-  eval $(get_config_as destination_base "environments.${LOCAL_ENV_LOOKUP}.base_path")
-  if [[ "APP_ROOT" == "$destination_base" ]]; then
-    destination_base="$APP_ROOT"
-  fi
+  eval $(get_config_path_as destination_base "environments.${LOCAL_ENV_LOOKUP}.base_path")
 
   local group_filter=$(get_option group)
   eval $(get_config_keys_as -a group_ids "environments.${LOCAL_ENV_LOOKUP}.files")
@@ -148,8 +136,8 @@ function default_pull_files() {
       has_failed && return 1
 
       has_option v && echo "$rsync_options"
-      write_log "rsync $rsync_options "$source_ssh:$source/" "$destination/""
-      rsync $rsync_options "$source_ssh:$source/" "$destination/" || fail
+      write_log "rsync $rsync_options "$REMOTE_ENV_AUTH:$source/" "$destination/""
+      rsync $rsync_options "$REMOTE_ENV_AUTH:$source/" "$destination/" || fail
 
       if has_failed; then
         echo_fail "Files group \"$group_id\" failed to download."
@@ -161,7 +149,7 @@ function default_pull_files() {
           eval $(get_config_as id "file_groups.${key}.id")
           if [[ "$id" == "$group_id" ]]; then
 
-            # Determine if this group has an processors
+            # Determine if this group has any processors.
             eval $(get_config_as -a processors "file_groups.${key}.processors")
             [[ ${#processors[@]} -eq 0 ]] && continue
 

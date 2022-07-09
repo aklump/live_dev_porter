@@ -134,19 +134,6 @@ function implement_route_access() {
   exit_with_failure "\"$command\" not allowed"
 }
 
-# Echo authorization portion of a path, e.g. user@host.
-#
-# $1 - The environment id, e.g. dev, production
-function echo_env_auth() {
-  local env_id=$1
-
-  eval $(get_config_as user "environments.$env_id.user")
-  exit_with_failure_if_empty_config user "environments.$env_id.user"
-  eval $(get_config_as host "environments.$env_id.host")
-  exit_with_failure_if_empty_config host "environments.$env_id.host"
-  echo "$user@$host"
-}
-
 # Echo a path resolved to an environment base path.
 #
 # $1 - The environment id, e.g. dev, production.
