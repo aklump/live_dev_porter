@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>Databases</title>
+  <link href="search/tipuesearch.css" rel="stylesheet">
+  <link href="style.css" rel="stylesheet">
+</head>
+
+<body class="page--rw--databases">
+<header>
+  <div class="pager"><a href="index.html" class="prev index">&laquo;Index</a><a href="index.html" class="index pager__book-title"></a><a href="rw--environment_roles.html" class="next rw--environment_roles">Environment Roles&raquo;</a></div></header>
+<section class="sub-header">
+  <div class="breadcrumbs"><a href="index.html">Index</a>
+         &raquo
+                        <a href="rw--databases.html">Rw</a>
+         &raquo
+      </div>      <div class="search__wrapper">
+  <form action="search--results.html">
+    <input type="text" class="search-input" name="q" id="tipue_search_input" autocomplete="off" required>
+  </form>
+</div>
+  </section>
+
+<section>
+  <h1>Databases</h1>
+  
+
+<p>If a project uses at least one database, it must be defined in configuration for it to be included in the copy. You must give it an <code>id</code> at minimum. Once defined, it can be referenced later in the configuration. You may define multiple databases if necessary.</p>
+
+<p>Sometimes you might define the same database with multiple ids, if you want to have different levels of export. For example you might have one that excludes many tables, and another that excludes none, that latter serving as a backup solution when you want more content than you would during normal development.</p>
+
+<p>Often times when you are copying the content of a database, it is preferable to leave out the data from certains tables, such as in the case of cache tables. This is the reason for <code>exclude_table_data</code>. List one or more tables (astrix globbing allowed), whose <em>structure only</em> should be copied.</p>
+
+<p>If you wish to omit entire tables--data plus structure--you will list those tables in <code>exclude_tables</code>.</p>
+
+<p>The <code>mysqldump_options</code> allow you to customize the behavior of the CLI tool.</p>
+
+</section>
+
+<div class="search__results">
+  <div id="tipue_search_content"></div>
+</div>
+
+<footer>
+  <div class="pager"><a href="index.html" class="prev index">&laquo;Index</a><a href="index.html" class="index pager__book-title"></a><a href="rw--environment_roles.html" class="next rw--environment_roles">Environment Roles&raquo;</a></div>  
+  <div id="footer-legaleeze">
+    <p class="legaleeze center">Version: 0.0.9 &bull; Last Updated: Fri, 08 Jul 2022 17:09:02 -0700</p>
+  </div>
+</footer>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+  <script src="search/tipuesearch_content.js"></script>
+  <script src="search/tipuesearch_set.js"></script>
+  <script src="search/tipuesearch.min.js"></script>
+  <script>
+    $(document).ready(function() {
+      $('#tipue_search_input').tipuesearch()
+    })
+  </script>
+<script src="js/core.js"></script>
+</body>
+</html>

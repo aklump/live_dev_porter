@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>Processors</title>
+  <link href="search/tipuesearch.css" rel="stylesheet">
+  <link href="style.css" rel="stylesheet">
+</head>
+
+<body class="page--rm--processors">
+<header>
+  <div class="pager"><a href="rw--source-control.html" class="prev rw--source-control">&laquo;Source Control</a><a href="index.html" class="index pager__book-title"></a><a href="CHANGELOG.html" class="next changelog">Changelog&raquo;</a></div></header>
+<section class="sub-header">
+  <div class="breadcrumbs"><a href="index.html">Index</a>
+         &raquo
+                        <a href="rm--processors.html">Rm</a>
+         &raquo
+      </div>      <div class="search__wrapper">
+  <form action="search--results.html">
+    <input type="text" class="search-input" name="q" id="tipue_search_input" autocomplete="off" required>
+  </form>
+</div>
+  </section>
+
+<section>
+  <h1>Processors</h1>
+  
+
+<h2>Database Processing</h2>
+
+<p>@todo</p>
+
+<h2>File Processing</h2>
+
+<p>For file groups having <code>include</code> filter(s), you may create <em>processors</em>, or small files, which can mutate the files comprised by that list.</p>
+
+<p>A use case for this is removing the password from a database credential when the file containing it is pulled locally. This is important if you will be committing a scaffold version of this configuration file containing secrets. The processor might replace the real password with a token such as <code>PASSWORD</code>. This will make the file save for inclusion in source control.</p>
+
+<blockquote>
+  <p>Processors are not supported when using <code>exclude</code> rules in the file group definition.</p>
+</blockquote>
+
+<ul>
+<li>To provide feedback to the user the processor should echo a string, which does not contain any line breaks.</li>
+<li>The file must exit with non-zero if it fails.</li>
+<li>When existing non-zero, a default failure message will always be displayed. If the processor echos a message, this default will appear after the response.</li>
+<li>If the file exists with a zero, there is no default message.</li>
+</ul>
+
+<p><em>An example bash processor:</em></p>
+
+<pre><code class="shell">#!/usr/bin/env bash
+
+filepath=$1
+short_path=$2
+
+contents=$(cat "$filepath")
+
+if ! [[ "$contents" ]]; then
+  echo "$short_path was an empty file."
+  exit 1
+fi
+echo "Contents approved in $short_path"
+</code></pre>
+
+<p><em>Same example in PHP:</em></p>
+
+<pre><code class="php">&lt;?php
+$filepath = $argv[1];
+$short_path = $argv[2];
+
+$contents = file_get_contents($filepath);
+
+if ('' == $contents) {
+  echo "$short_path was an empty file.";
+  exit(1);
+}
+echo "Contents approved in $short_path";
+</code></pre>
+
+</section>
+
+<div class="search__results">
+  <div id="tipue_search_content"></div>
+</div>
+
+<footer>
+  <div class="pager"><a href="rw--source-control.html" class="prev rw--source-control">&laquo;Source Control</a><a href="index.html" class="index pager__book-title"></a><a href="CHANGELOG.html" class="next changelog">Changelog&raquo;</a></div>  
+  <div id="footer-legaleeze">
+    <p class="legaleeze center">Version: 0.0.9 &bull; Last Updated: Fri, 08 Jul 2022 17:09:02 -0700</p>
+  </div>
+</footer>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+  <script src="search/tipuesearch_content.js"></script>
+  <script src="search/tipuesearch_set.js"></script>
+  <script src="search/tipuesearch.min.js"></script>
+  <script>
+    $(document).ready(function() {
+      $('#tipue_search_input').tipuesearch()
+    })
+  </script>
+<script src="js/core.js"></script>
+</body>
+</html>

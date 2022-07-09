@@ -2,16 +2,18 @@
 
 <html>
 <head>
-  <title>Files</title>
+  <title>Source Control</title>
   <link href="search/tipuesearch.css" rel="stylesheet">
   <link href="style.css" rel="stylesheet">
 </head>
 
-<body class="page--files">
+<body class="page--rw--source-control">
 <header>
-  <div class="pager"><a href="fetch.html" class="prev fetch">&laquo;Fetch</a><a href="index.html" class="index pager__book-title"></a><a href="README.html" class="next readme">Live Dev Porter&raquo;</a></div></header>
+  <div class="pager"><a href="rw--file_groups.html" class="prev rw--file_groups">&laquo;File Groups</a><a href="index.html" class="index pager__book-title"></a><a href="rm--processors.html" class="next rm--processors">Processors&raquo;</a></div></header>
 <section class="sub-header">
   <div class="breadcrumbs"><a href="index.html">Index</a>
+         &raquo
+                        <a href="rw--databases.html">Rw</a>
          &raquo
       </div>      <div class="search__wrapper">
   <form action="search--results.html">
@@ -21,23 +23,14 @@
   </section>
 
 <section>
-  <h1>Files</h1>
+  <h1>Source Control</h1>
   
 
-<p>File sync uses one or more file "groups", e.g. <code>files.public</code>.</p>
+<p>You should add the directory <em>.live_dev_porter</em> to your project's repository, with the exception of the following files; they must be excluded.</p>
 
-<p>If the local and remote paths are the same then do like this:</p>
-
-<pre><code class="yaml">files:
-  public:
-    - web/sites/default/files
-</code></pre>
-
-<p>If the local and remote paths are different then use this pattern <code>LOCAL:REMOTE</code>, e.g.,</p>
-
-<pre><code class="yaml">files:
-  public:
-    - web/sites/default/files:/files
+<pre><code>.live_dev_porter
+├── .cache
+└── config.local.yml
 </code></pre>
 
 </section>
@@ -47,9 +40,9 @@
 </div>
 
 <footer>
-  <div class="pager"><a href="fetch.html" class="prev fetch">&laquo;Fetch</a><a href="index.html" class="index pager__book-title"></a><a href="README.html" class="next readme">Live Dev Porter&raquo;</a></div>  
+  <div class="pager"><a href="rw--file_groups.html" class="prev rw--file_groups">&laquo;File Groups</a><a href="index.html" class="index pager__book-title"></a><a href="rm--processors.html" class="next rm--processors">Processors&raquo;</a></div>  
   <div id="footer-legaleeze">
-    <p class="legaleeze center">Version: 0.0.9 &bull; Last Updated: Wed, 06 Jul 2022 19:47:09 -0700</p>
+    <p class="legaleeze center">Version: 0.0.9 &bull; Last Updated: Fri, 08 Jul 2022 17:09:04 -0700</p>
   </div>
 </footer>
 
