@@ -10,22 +10,67 @@ eval $(get_config_as 'remote_label' "environments.$REMOTE_ENV_LOOKUP.label")
 eval $(get_config_path_as local_basepath "environments.$LOCAL_ENV_LOOKUP.base_path")
 eval $(get_config_as remote_basepath "environments.$REMOTE_ENV_LOOKUP.base_path")
 
-echo_title "Live Dev Porter Configuration"
+eval $(get_config_keys_as -a 'keys' "environments")
+for key in "${keys[@]}"; do
+  eval $(get_config_as -a 'id' "environments.${key}.id")
+  eval $(get_config_as -a 'label' "environments.${key}.label")
+  eval $(get_config_as -a 'write_access' "environments.${key}.write_access")
+  eval $(get_config_as -a 'plugin' "environments.${key}.plugin")
+  eval $(get_config_as -a 'ssh' "environments.${key}.ssh")
+  eval $(get_config_path_as -a 'basepath' "environments.${key}.base_path")
 
-echo
-echo_heading "Active Environments"
+  echo_title "$(string_ucfirst $id) Environment: $label"
+  table_add_row "SSH" "$ssh"
+  table_add_row "Writeable" "$write_access"
+  table_add_row "Plugin" "$plugin"
+  table_add_row "Root" "$basepath"
+  echo_slim_table
+
+  # List out the file groups and paths.
+
+  for group_id in "${FILE_GROUP_IDS[@]}"; do
+    eval $(get_config_as group_path "environments.${key}.files.${group_id}")
+    if [[ "$group_path" ]]; then
+      table_add_row "$group_id" "$group_path"
+    fi
+  done
+  if table_has_rows; then
+    table_set_header "File group" "Location"
+    echo_slim_table
+  fi
+done
 
 
-table_set_header "" "$local_label ($LOCAL_ENV_ID)" "$remote_label ($REMOTE_ENV_ID)"
-table_add_row "basepath" "$local_basepath" "$remote_basepath"
-table_add_row "SSH" "" "$REMOTE_ENV_AUTH"
-table_add_row "Plugin" "$DEV_PLUGIN" "$REMOTE_PLUGIN"
-echo_slim_table
+eval $(get_config_keys_as -a 'keys' "databases")
+if [[ ${#keys[@]} -gt 0 ]]; then
+  echo
+  echo_title "Databases"
+  list_clear
+  for key in "${keys[@]}"; do
+    eval $(get_config_as -a 'id' "databases.${key}.id")
+    list_add_item "$id"
+  done
+  echo_list
+  echo
+fi
 
-echo
-echo_heading "More info"
+eval $(get_config_keys_as -a 'keys' "file_groups")
+if [[ ${#keys[@]} -gt 0 ]]; then
+  echo
+  echo_title "File Groups"
+  list_clear
+  for key in "${keys[@]}"; do
+    eval $(get_config_as -a 'id' "file_groups.${key}.id")
+    list_add_item "$id"
+  done
+  echo_list
+  echo
+fi
+
+echo_title "Other info"
 array_csv__array=("${ACTIVE_PLUGINS[@]}")
-table_add_row "Active plugins" "$(array_csv --prose)"
+table_add_row "All active plugins" "$(array_csv --prose)"
+echo_slim_table
 
 # Plugins may leverage "table_add_row" to build up the More info.  The table is
 # echoed by the controller.

@@ -84,9 +84,9 @@ function pantheon_info() {
   eval $(get_config_as 'site_uuid' "environments.$REMOTE_ENV_ID.fetch.site_uuid")
   eval $(get_config_as 'site_name' "environments.$REMOTE_ENV_ID.fetch.site_name")
 
-  echo
-  echo_heading "Pantheon"
-  echo_key_value "Machine token" "$machine_token"
-  echo_key_value "$(string_ucfirst "$REMOTE_ENV_ID") Site name" "$site_name"
-  echo_key_value "$(string_ucfirst "$REMOTE_ENV_ID") Site UUID" "$site_uuid"
+  echo_title "Pantheon"
+  table_add_item "Machine token" "$machine_token"
+  table_add_item "$(string_ucfirst "$REMOTE_ENV_ID") Site name" "$site_name"
+  table_add_item "$(string_ucfirst "$REMOTE_ENV_ID") Site UUID" "$site_uuid"
+  echo_slim_table
 }

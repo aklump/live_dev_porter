@@ -59,6 +59,11 @@ function on_boot() {
   CONFIG_DIR="$APP_ROOT/.live_dev_porter"
   CACHE_DIR="$CONFIG_DIR/.cache"
 
+  for plugin in "${ACTIVE_PLUGINS[@]}"; do
+    plugin_implements "$plugin" on_boot && call_plugin "$plugin" on_boot
+  done
+
+  # Do not write code below this line.
   [[ "$(get_command)" == "tests" ]] || return 0
   source "$CLOUDY_ROOT/inc/cloudy.testing.sh"
   echo_heading "Testing core"
@@ -332,10 +337,8 @@ case $command in
     "info")
       source "$SOURCE_DIR/info.sh"
       for plugin in "${ACTIVE_PLUGINS[@]}"; do
-        # Note: use table_add_row() to add to the more info.
         plugin_implements $plugin info && call_plugin $plugin info
       done
-      echo_slim_table
       has_failed && exit_with_failure
       exit_with_success "Use 'help' to see all commands."
     ;;

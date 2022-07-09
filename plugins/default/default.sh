@@ -18,6 +18,15 @@ function _test_remote_path() {
   return 1
 }
 
+function default_on_boot() {
+  eval $(get_config_keys_as -a 'keys' "file_groups")
+  FILE_GROUP_IDS=()
+  for key in "${keys[@]}"; do
+    eval $(get_config_as -a 'id' "file_groups.${key}.id")
+    FILE_GROUP_IDS=("${FILE_GROUP_IDS[@]}" "$id")
+  done
+}
+
 function default_configtest() {
   local assert
 
