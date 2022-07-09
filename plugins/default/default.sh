@@ -169,25 +169,10 @@ function default_pull_files() {
             for include in "${includes[@]}"; do
               for filepath in "$destination"/$include; do
                 if [[ -f "$filepath" ]]; then
+                  short_path=$(path_unresolve "$destination" "$filepath")
+                  short_path=${short_path#/}
                   for processor in "${processors[@]}"; do
-                    processor_path="$CONFIG_DIR/processors/$processor"
-                    if [[ -f "$processor_path" ]]; then
-                      short_path=$(path_unresolve "$destination" "$filepath")
-                      short_path=${short_path#/}
-                      if [[ "$(path_extension "$processor_path")" == "php" ]]; then
-                        processor_output=$($CLOUDY_PHP "$processor_path" "$filepath" "$short_path")
-                      else
-                        processor_output=$(. "$processor_path" "$filepath" "$short_path")
-                      fi
-                      if [[ $? -ne 0 ]]; then
-                        [[ "$processor_output" ]] && fail_because "$processor_output"
-                        fail_because "\"$processor\" has failed while processing: $short_path (in files group \"$group_id\")."
-                        return 1
-                      fi
-                     [[ "$processor_output" ]] && succeed_because "$processor_output"
-                    else
-                      fail_because "Missing \"$group_id\" files group processor: $processor" && return 1
-                    fi
+                    call_files_group_file_processor "$CONFIG_DIR/processors/$processor" "$filepath" "$shortpath" "$group_id" || exit_with_failure
                   done
                 fi
                done

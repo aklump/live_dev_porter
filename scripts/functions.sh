@@ -58,6 +58,40 @@ function get_container_path() {
   return 0
 }
 
+# Call a single-file file group processor.
+#
+# These single files run in a subshell and cannot alter parent variables.
+#
+# $1 - The path to the processor file.
+# $1 - The path to the file to be processed.
+# $1 - The short, relative path of the file to be processed; use in feedback.
+# $1 - The files group id.
+#
+# Returns 0 if successful. 1 if failed.
+function call_files_group_file_processor() {
+  local processor_path="$1"
+  local filepath="$2"
+  local short_path="$3"
+  local group_id="$4"
+
+  if [[ ! -f "$processor_path" ]]; then
+    fail_because "Missing \"$group_id\" files group processor: $(basename $processor_path)"
+    return 1
+  elif [[ "$(path_extension "$processor_path")" == "php" ]]; then
+    processor_output=$($CLOUDY_PHP "$processor_path" "$filepath" "$short_path")
+  else
+    processor_output=$(. "$processor_path" "$filepath" "$short_path")
+  fi
+
+  if [[ $? -ne 0 ]]; then
+    [[ "$processor_output" ]] && fail_because "$processor_output"
+    fail_because "\"$processor\" has failed while processing: $short_path (in files group \"$group_id\")."
+    return 1
+  fi
+  [[ "$processor_output" ]] && succeed_because "$processor_output"
+  return 0
+}
+
 # Call a plugin function.
 #
 # $1 - The name of the plugin
