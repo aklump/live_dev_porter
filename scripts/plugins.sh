@@ -20,11 +20,11 @@ eval $(get_config_as DEV_PLUGIN 'environments.dev.plugin')
 eval $(get_config_as PRODUCTION_PLUGIN 'environments.production.plugin')
 [[ "$PRODUCTION_PLUGIN" ]] || PRODUCTION_PLUGIN="default"
 
-eval $(get_config_as PLUGIN_FETCH_DB 'plugin_assignments.fetch.db')
-PLUGIN_FETCH_DB=$(_token_expand $PLUGIN_FETCH_DB)
+eval $(get_config_as PLUGIN_PULL_DB 'plugin_assignments.pull.db')
+PLUGIN_PULL_DB=$(_token_expand $PLUGIN_PULL_DB)
 
-eval $(get_config_as PLUGIN_FETCH_FILES 'plugin_assignments.fetch.files')
-PLUGIN_FETCH_FILES=$(_token_expand $PLUGIN_FETCH_FILES)
+eval $(get_config_as PLUGIN_PULL_FILES 'plugin_assignments.pull.files')
+PLUGIN_PULL_FILES=$(_token_expand $PLUGIN_PULL_FILES)
 
 eval $(get_config_as PLUGIN_RESET_DB 'plugin_assignments.reset.db')
 PLUGIN_RESET_DB=$(_token_expand $PLUGIN_RESET_DB)
@@ -45,5 +45,5 @@ eval $(get_config_as PLUGIN_REMOTE_SHELL 'plugin_assignments.shell.remote')
 PLUGIN_REMOTE_SHELL=$(_token_expand $PLUGIN_REMOTE_SHELL)
 
 # Create a unique list of active plugins.
-declare -a ACTIVE_PLUGINS=($PLUGIN_FETCH_DB $PLUGIN_FETCH_FILES $PLUGIN_RESET_DB $PLUGIN_RESET_FILES $PLUGIN_EXPORT_DB $PLUGIN_IMPORT_DB $PLUGIN_DB_SHELL $PLUGIN_REMOTE_SHELL)
+declare -a ACTIVE_PLUGINS=($PLUGIN_PULL_DB $PLUGIN_PULL_FILES $PLUGIN_RESET_DB $PLUGIN_RESET_FILES $PLUGIN_EXPORT_DB $PLUGIN_IMPORT_DB $PLUGIN_DB_SHELL $PLUGIN_REMOTE_SHELL)
 ACTIVE_PLUGINS=($(echo "$(printf "%s\n" "${ACTIVE_PLUGINS[@]}")" | sort -u))

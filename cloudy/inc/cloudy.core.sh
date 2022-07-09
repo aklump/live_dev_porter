@@ -601,6 +601,13 @@ function _cloudy_help_for_single_command() {
 function _cloudy_debug_helper() {
   local sidebar=''
   local IFS=";"
+  local default
+  local fg
+  local bg
+  local message
+  local basename
+  local funcname
+  local lineno
   read default fg bg message basename funcname lineno <<<"$@"
   [[ "$basename" ]] && sidebar="$sidebar${basename##./}"
   [[ "$funcname" ]] && sidebar="$funcname in $sidebar"
@@ -816,15 +823,16 @@ fi
 
 event_dispatch "pre_config" || exit_with_failure "Non-zero returned by on_pre_config()."
 _cloudy_bootstrap_php || exit_with_failure "Invalid PHP"
-
 compile_config__runtime_files=$(event_dispatch "compile_config")
 config_cache_id=$("$CLOUDY_PHP" $CLOUDY_ROOT/php/helpers.php get_config_cache_id "$ROOT\n$compile_config__runtime_files")
 
 # Detect changes in YAML and purge config cache if necessary.
+config_has_changed=false
 _cloudy_auto_purge_config
 
 # Generate the cached configuration file.
 if [[ ! -f "$CACHED_CONFIG_JSON_FILEPATH" ]]; then
+  config_has_changed=true
   # Normalize the config file to JSON.
   CLOUDY_CONFIG_JSON="$("$CLOUDY_PHP" "$CLOUDY_ROOT/php/config_to_json.php" "$CLOUDY_ROOT/cloudy_config.schema.json" "$CONFIG" "$cloudy_development_skip_config_validation" "$compile_config__runtime_files")"
   json_result=$?
@@ -837,6 +845,7 @@ fi
 
 # Generate the cached configuration file.
 if [[ ! -f "$CACHED_CONFIG_FILEPATH" ]]; then
+  config_has_changed=true
   touch "$CACHED_CONFIG_FILEPATH" || exit_with_failure "Unable to write cache file: $CACHED_CONFIG_FILEPATH"
 
   [[ "$cloudy_development_skip_config_validation" == true ]] && write_log_dev_warning "Configuration validation is disabled due to \$cloudy_development_skip_config_validation == true."
@@ -870,7 +879,6 @@ if [[ ! -f "$CACHED_CONFIG_FILEPATH" ]]; then
 
     write_log_notice "$(basename $CONFIG) configuration compiled to $CACHED_CONFIG_FILEPATH."
   fi
-  event_dispatch "config_changed"
 fi
 
 # Import the cached config variables at this top scope into memory.
@@ -889,5 +897,11 @@ if [[ "$additional_bootstrap" != null ]]; then
     source "$ROOT/$include"
   done
 fi
+
 event_dispatch "boot" || exit_with_failure "Could not bootstrap $(get_title)"
 _cloudy_bootstrap $@
+
+# Push this down this far so that APP_ROOT has been set and cloudy is booted.
+if [[ "$config_has_changed" == true ]]; then
+  event_dispatch "config_changed"
+fi
