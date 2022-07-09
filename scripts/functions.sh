@@ -1,5 +1,28 @@
 #!/usr/bin/env bash
 
+# Ensure a directory is within the $APP_ROOT.
+#
+# This should be called before any write operations to the file system as it
+# will make sure the directory is within the app, which is assumed to be safe.
+#
+# Will exit_with_failure if the directory is not safe.
+#
+# @code
+# sandbox_directory "$destination_base/foo"
+# rm -r "$destination_base/foo"
+# @endcode
+#
+# Returns nothing.
+function sandbox_directory() {
+  local dir="$1"
+  ! [[ "$APP_ROOT" ]] && fail_because '$APP_ROOT was empty'
+  ! [[ -d "$APP_ROOT" ]] && fail_because "$APP_ROOT does not exist"
+  ! [[ "$dir" ]] && fail_because "The directory is an empty value."
+  local unresolved="$(path_unresolve "$APP_ROOT" "$dir")"
+  [[ "$dir" == "$unresolved" ]] && fail_because "The directory $dir must be within $APP_ROOT"
+  has_failed && exit_with_failure
+}
+
 # Store a timestamp file.
 #
 # Use yaml_add_line to augment the stored contents.
@@ -69,9 +92,9 @@ function implement_route_access() {
   [[ ! "$requirement" ]] && return 0
   [[ false == "$requirement" ]] && return 0
 
-  local write_access=$(get_environment_config_by_id "$LOCAL_ENV_ID" "write_access")
+  eval $(get_config_as write_access "environments.${LOCAL_ENV_LOOKUP}.write_access")
   [[ $write_access == true ]] && return 0
-  
+
   fail_because "write_access is false for this environment ($LOCAL_ENV_ID)."
   fail_because "set to true in the configuration, to allow this command."
   exit_with_failure "\"$command\" not allowed"
@@ -155,22 +178,6 @@ function combo_path_get_remote() {
   else
     echo ${parts[0]}
   fi
-}
-
-# Make sure all file_sync local directories and files are created.
-#
-# Returns 0 if successful, 1 otherwise.
-function ensure_files_sync_local_directories() {
-  if [[ ! "$FETCH_FILES_PATH" ]]; then
-    fail_because "FETCH_FILES_PATH cannot be empty" && return 1
-  fi
-
-  # Create the base directories and the exclude-from files.
-  eval $(get_config_keys_as -a sync_groups "environments.$LOCAL_ENV_ID.files_sync")
-  for group in "${sync_groups[@]}"; do
-    [ -d "$FETCH_FILES_PATH/$group" ] || mkdir -p "$FETCH_FILES_PATH/$group" || fail
-    touch "$FETCH_FILES_PATH/$group.ignore.txt" || fail
-  done
 }
 
 function implement_configtest() {
