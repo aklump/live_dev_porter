@@ -100,10 +100,9 @@ commands:
         help: Indicate the database ID to export, this can be omitted when only one database is defined, or when you want the first (default) database to be used.
       workflow:
         type: string
+        aliases:
+          - wf
         help: A workflow to use for export; this will be used instead of the configured default.
-      all:
-        type: boolean
-        help: 'Include this option to ignore the tables configuration, that is to say export all tables and data.'
   db:
     help: 'Enter the local database shell.'
     aliases:

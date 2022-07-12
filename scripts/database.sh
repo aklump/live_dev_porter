@@ -11,14 +11,14 @@
 # $2 - The database ID (not the name, the ID!)
 #
 # Returns nothing.
-function ldp_db_echo_conf_filepath() {
+function database_get_defaults_file() {
   local environment_id="$1"
   local database_id="$2"
 
-  echo "$CACHE_DIR/$environment_id/databases/$database_id/mysql.cnf"
+  echo "$CACHE_DIR/$environment_id/databases/$database_id/db.cnf"
 }
 
-function ldp_db_echo_export_directory() {
+function database_get_export_directory() {
   local environment_id="$1"
   local database_id="$2"
 
@@ -28,7 +28,8 @@ function ldp_db_echo_export_directory() {
 ##
 # Drop all local db tables
 #
-function ldp_db_drop_tables() {
+function database_drop_tables() {
+  throw "This is not yet working;$0;in function ${FUNCNAME}();$LINENO"
   eval $(get_config_as "db_name" "environments.dev.database.name")
   local path_to_db_creds=$(ldp_get_db_creds_path dev)
   tables=$(mysql --defaults-file="$path_to_db_creds" $db_name -e 'SHOW TABLES' | awk '{ print $1}' | grep -v '^Tables')
@@ -47,19 +48,6 @@ function ldp_db_drop_tables() {
   return 0
 }
 
-# Get the absolute path the the db creds for an environment.
-#
-# $1 - The environment ID.
-#
-function ldp_get_db_creds_path() {
-  local env_id=$1
-
-  local env
-  eval $(get_config_as "env" "environments.$env_id.id")
-  exit_with_failure_if_empty_config "env" "environments.$env_id.id"
-  echo "$CACHE_DIR/_cached.$(path_filename $SCRIPT).$env.cnf"
-}
-
 # Get the table section of the mysqldump command based on config.
 #
 # $1 - The environment ID.
@@ -68,56 +56,76 @@ function ldp_get_db_creds_path() {
 # @option --structure Tables for structure export.
 # @option --data Tables for data export.
 #
-function ldp_get_db_export_tables() {
-  local environment_id="$1"
-  local database_id="$2"
-
+function database_get_export_tables() {
   parse_args "$@"
-  environment_id="${parse_args__args[0]}"
-  database_id="${parse_args__args[1]}"
+  local environment_id="${parse_args__args[0]}"
+  local database_id="${parse_args__args[1]}"
+  local database_name="${parse_args__args[2]}"
+  local workflow="${parse_args__args[3]}"
 
-  local table_query="SET group_concat_max_len = 40960;"
-  table_query="${table_query} SELECT GROUP_CONCAT(table_name separator ' ')"
-
-  local environment_key=$(echo_config_key_by_id "environments" "$environment_id")
-  eval $(get_config_as "db_name" "environments.$environment_key.databases.$database_id.name")
-  table_query="${table_query} FROM information_schema.tables WHERE table_schema='$db_name'"
+  local conditions
+  local table_query
+  local defaults_file
+  table_query="SET group_concat_max_len = 40960;"
+  table_query="${table_query} SELECT GROUP_CONCAT(table_name separator ' ') FROM information_schema.tables WHERE table_schema='$database_name'"
 
   # Look at the configuration for explicit tables unless using --all.
-  if ! has_option all; then
-
-    if [[ "$parse_args__options__data" ]]; then
-      local database_key=$(echo_config_key_by_id "databases" "$database_id")
-      table_query="${table_query}$(_build_where_not_query "databases.$database_key.exclude_table_data")"
-    fi
-
-    # Omit the tables listed in tables.ignore, again this is needed here too.
-    local database_key=$(echo_config_key_by_id "databases" "$database_id")
-    table_query="${table_query}$(_build_where_not_query "databases.$database_key.exclude_tables")"
+  if [[ "$parse_args__options__data" ]]; then
+    conditions="$(database_get_table_list_where "$database_id" "$workflow" "exclude_table_data")" || return
+    table_query="${table_query}$conditions"
   fi
 
-  local path_to_db_creds=$(ldp_db_echo_conf_filepath "$environment_id" "$database_id")
-  mysql --defaults-file="$path_to_db_creds" -AN -e"$table_query"
+  # Omit the tables listed in tables.ignore, again this is needed here too.
+  conditions="$(database_get_table_list_where "$database_id" "$workflow" "exclude_tables")" || return
+  table_query="${table_query}$conditions"
+
+  defaults_file=$(database_get_defaults_file "$environment_id" "$database_id")
+  write_log_debug "mysql --defaults-file="$defaults_file" -AN -e"$table_query""
+  mysql --defaults-file="$defaults_file" -AN -e"$table_query"
 }
 
-# Build a tablename query expanding wildcards from a file of tablenames
+# Build a tablename query accounting for workflow table exclusions.
 #
-# $1 - string - Filepath to the list of tablenames.
+# $1 - The database ID.
+# $2 - The workflow ID.
+# $3 - The workflow item key, e.g. 'exclude_tables' or 'exclude_table_data'.
 #
-function _build_where_not_query() {
-  local config_list_lookup="$1"
+# Returns 0 and echos the where clause for table selection.  Returns 1 to
+# indicate that all tables have been excluded, meaning no query should be run.
+#
+function database_get_table_list_where() {
+  local database_id="$1"
+  local workflow="$2"
+  local workflow_key="$3"
 
-  eval $(get_config_as -a "tables" "$config_list_lookup")
+  local array_csv__array
+  local where
+  eval $(get_config_keys_as workflow_keys "workflows.$workflow")
+  [[ ${#workflow_keys[@]} -eq 0 ]] && return 0
+
+  tables=()
+  for i in "${workflow_keys[@]}"; do
+     eval $(get_config_as workflow_database "workflows.$workflow.$i.database")
+     if [[ "$workflow_database" == "$database_id" ]]; then
+       eval $(get_config_as -a workflow_tables "workflows.$workflow.$i.$workflow_key")
+       tables=("${tables[@]}" "${workflow_tables[@]}")
+     fi
+  done
+
   [[ ${#tables[@]} -eq 0 ]] && return 0
 
-  local array_csv__array=()
-  local where
+  array_csv__array=()
   for p in "${tables[@]}"; do
 
     # This converts glob-syntax to mysql-syntax; both works.
     p=${p/\*/\%}
 
-    if [[ $p == *"%"* ]]; then
+    if [[ $p == "%" ]]; then
+      # This is special, it means that all tables should be excluded this
+      # function actually has nothing to do, it should echo nothing, meaning
+      # there is modification of the table_schema query necessary.
+      return 1
+    elif [[ $p == *"%"* ]]; then
       where="$where AND table_name NOT LIKE '$p'"
     else
       array_csv__array=("${array_csv__array[@]}" "$p")

@@ -15,8 +15,8 @@ function query() {
   local defaults_file
   local db_name
   query_result="$CACHE_DIR/database_result.sql"
-  defaults_file=$(ldp_db_echo_conf_filepath "$ENVIRONMENT_ID" "$DATABASE_ID")
-  db_name=$(mysql_get_database_name "$ENVIRONMENT_ID" "$DATABASE_ID") || return 1
+  defaults_file=$(database_get_defaults_file "$ENVIRONMENT_ID" "$DATABASE_ID")
+  db_name=$(mysql_get_env_db_name_by_id "$ENVIRONMENT_ID" "$DATABASE_ID") || return 1
   mysql --defaults-file="$defaults_file" "$db_name" -e "$query" > "$query_result" || return 1
   # This removes the header row
   tail -n +2 "$query_result" > "$query_result.tmp" && mv "$query_result.tmp" "$query_result"

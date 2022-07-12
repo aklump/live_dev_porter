@@ -18,7 +18,7 @@ class RsyncHelper {
     }
 
     // Now convert configuration to rsync filter files.
-    foreach ($this->config['file_groups'] ?? [] as $group_data) {
+    foreach ($this->config['file_groups'] ?? [] as $group_id => $group_data) {
       $filter_type = [];
       if (!empty($group_data['include'])) {
         $filter_type[] = 'include';
@@ -27,13 +27,13 @@ class RsyncHelper {
         $filter_type[] = 'exclude';
       }
       if (count($filter_type) > 2) {
-        throw new \RuntimeException(sprintf('Both "include" and "exclude" may not be used at the same time.  Configuration problem with file group: %s', $group_data['id']));
+        throw new \RuntimeException(sprintf('Both "include" and "exclude" may not be used at the same time.  Configuration problem with file group: %s', $group_id));
       }
       $filter_type = array_values($filter_type)[0];
 
       $ruleset = [];
       if (!empty($group_data[$filter_type])) {
-        $path = sprintf('%s/rsync_ruleset.%s.txt', $this->dist, $group_data['id']);
+        $path = sprintf('%s/rsync_ruleset.%s.txt', $this->dist, $group_id);
         foreach ($group_data[$filter_type] as $rule) {
           $rules = $this->inflateRule($rule);
           $rules = array_map(function ($item) use ($filter_type) {

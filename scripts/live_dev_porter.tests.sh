@@ -2,23 +2,23 @@
 
 function testPathRelativeToEnvReturnsAppRootWithoutSecondArg() {
   LOCAL_ENV_ID='dev'
-  local path=$(path_relative_to_env $LOCAL_ENV_ID)
+  local path=$(environment_path_resolve $LOCAL_ENV_ID)
   assert_same "$path" "$APP_ROOT"
 }
 
 function testPathRelativeToEnvReturnsAbsolutePath() {
   LOCAL_ENV_ID='dev'
-  local path=$(path_relative_to_env $LOCAL_ENV_ID 'foo/bar')
+  local path=$(environment_path_resolve $LOCAL_ENV_ID 'foo/bar')
   assert_same '/' ${path:0:1}
 }
 
 function testPathRelativeToEnvFailsWhenEnvironmentMissingConfig() {
   LOCAL_ENV_ID='dev'
-  path_relative_to_env bogus 'foo/bar'; assert_exit_status 1
+  environment_path_resolve bogus 'foo/bar'; assert_exit_status 1
 }
 
 function testPathRelativeToEnvFailsWithAbsolute() {
-  path_relative_to_env production '/foo/bar'; assert_exit_status 1
+  environment_path_resolve production '/foo/bar'; assert_exit_status 1
 }
 
 function testComboPathGetLocalWorksAsExpected() {

@@ -44,8 +44,10 @@ final class Validator {
           $value = (object) $value;
         }
       }
-      foreach ($value as &$v) {
-        $v = $js_like_array($v, $init);
+      if (is_iterable($value)) {
+        foreach ($value as &$v) {
+          $v = $js_like_array($v, $init);
+        }
       }
 
       return $value;

@@ -8,7 +8,7 @@
 CONFIG="live_dev_porter.core.yml";
 
 # Uncomment this line to enable file logging.
-#LOGFILE="live_dev_porter.core.log"
+LOGFILE="live_dev_porter.core.log"
 
 # Call a php class method
 #
@@ -65,6 +65,7 @@ function on_clear_cache() {
 function on_boot() {
   CONFIG_DIR="$APP_ROOT/.live_dev_porter"
   CACHE_DIR="$CONFIG_DIR/.cache"
+  [[ -d "$CACHE_DIR" ]] || mkdir -p "$CACHE_DIR"
 
   # Do not write code below this line.
   [[ "$(get_command)" == "tests" ]] || return 0
@@ -120,40 +121,25 @@ eval $(get_config_as LOCAL_ENV_ID 'environment')
 exit_with_failure_if_empty_config 'LOCAL_ENV_ID' 'environment'
 eval $(get_config_as REMOTE_ENV_ID 'remote_environment')
 
-eval $(get_config_keys_as 'keys' "environments")
-for key in "${keys[@]}"; do
-  eval $(get_config_as "id" "environments.${key}.id")
+eval $(get_config_keys_as 'ENVIRONMENT_IDS' "environments")
+for id in "${ENVIRONMENT_IDS[@]}"; do
   if [[ "$id" == "$LOCAL_ENV_ID" ]]; then
-    LOCAL_ENV_KEY=$key
 
     # Assign the default local database.
-    eval $(get_config_keys_as "ids" "environments.$LOCAL_ENV_KEY.databases")
-    LOCAL_DATABASE_ID=${ids[0]}
+    eval $(get_config_keys_as "LOCAL_DATABASE_IDS" "environments.$LOCAL_ENV_ID.databases")
+    LOCAL_DATABASE_ID=${LOCAL_DATABASE_IDS[0]}
 
   # Configure remote variables if we have that environment.
   elif [[ "$REMOTE_ENV_ID" ]] && [[ "$id" == "$REMOTE_ENV_ID" ]]; then
-    REMOTE_ENV_KEY=$key
-    eval $(get_config_as REMOTE_ENV_AUTH "environments.${key}.ssh")
-    exit_with_failure_if_empty_config REMOTE_ENV_AUTH "environments.${key}.ssh"
+    eval $(get_config_as REMOTE_ENV_AUTH "environments.$REMOTE_ENV_ID.ssh")
+    exit_with_failure_if_empty_config REMOTE_ENV_AUTH "environments.$REMOTE_ENV_ID.ssh"
 
-    eval $(get_config_keys_as "ids" "environments.$REMOTE_ENV_KEY.databases")
-    REMOTE_DATABASE_ID=${ids[0]}
+    eval $(get_config_keys_as "REMOTE_DATABASE_IDS" "environments.$REMOTE_ENV_ID.databases")
+    REMOTE_DATABASE_ID=${REMOTE_DATABASE_IDS[0]}
   fi
 done
 
-eval $(get_config_keys_as -a 'keys' "databases")
-DATABASE_IDS=()
-for key in "${keys[@]}"; do
-  eval $(get_config_as -a 'id' "databases.${key}.id")
-  DATABASE_IDS=("${DATABASE_IDS[@]}" "$id")
-done
-
-eval $(get_config_keys_as -a 'keys' "file_groups")
-FILE_GROUP_IDS=()
-for key in "${keys[@]}"; do
-  eval $(get_config_as -a 'id' "file_groups.${key}.id")
-  FILE_GROUP_IDS=("${FILE_GROUP_IDS[@]}" "$id")
-done
+eval $(get_config_keys_as -a 'FILE_GROUP_IDS' "file_groups")
 
 # Bootstrap the plugin configuration.
 source "$SOURCE_DIR/plugins.sh"
@@ -206,6 +192,9 @@ fi
 implement_cloudy_basic
 implement_route_access
 
+# This is used by several commands so put it here as a universal.
+! WORKFLOW_ID=$(get_active_workflow) && fail_because "$WORKFLOW_ID" && exit_with_failure
+
 # Handle other commands.
 case $COMMAND in
 
@@ -255,7 +244,7 @@ case $COMMAND in
         PS3="Which dumpfile? (CTRL-C to cancel) "
         select dumpfile in ${dumpfiles[@]}; do
           echo_heading "Preparing..."
-          ldp_db_drop_tables
+          database_drop_tables
           echo_heading "Importing..."
           call_plugin $PLUGIN_IMPORT_TO_LOCAL_DB import_db "$EXPORT_DB_PATH/$dumpfile" || fail
           message="import $dumpfile"
@@ -274,38 +263,26 @@ case $COMMAND in
     "export")
       id=$(get_option 'id' $LOCAL_DATABASE_ID)
       echo_title "Export $LOCAL_ENV_ID database \"$id\" (via $PLUGIN_EXPORT_LOCAL_DB)"
-#      call_plugin $PLUGIN_EXPORT_LOCAL_DB export_db "$id" "$(get_command_arg 0)" || fail
+      [[ "$WORKFLOW_ID" ]] && echo_heading "Using workflow: $WORKFLOW_ID"
+      call_plugin $PLUGIN_EXPORT_LOCAL_DB export_db "$id" "$(get_command_arg 0)" || fail
       has_failed && exit_with_failure "Failed to export database"
-      has_option all && succeed_because "All tables and data exported."
-
-      workflow=$(get_option 'workflow')
-      if [[ ! "$workflow" ]]; then
-        eval $(get_config_as "workflow" "environments.$LOCAL_ENV_KEY.command_workflows.$COMMAND")
-      fi
-      if [[ "$workflow" ]]; then
+      if [[ "$WORKFLOW_ID" ]]; then
         ENVIRONMENT_ID="$LOCAL_ENV_ID"
         DATABASE_ID="$id"
-        execute_workflow_processors "$workflow" || exit_with_failure
+        execute_workflow_processors "$WORKFLOW_ID" || exit_with_failure
       fi
-
 #      store_timestamp "$EXPORT_DB_PATH"
       exit_with_success_elapsed "Database exported"
     ;;
 
     "pull")
       echo_title "Pulling from remote"
-      [[ ${#DATABASE_IDS[@]} -eq 0 ]] && has_db=false || has_db=true
+      [[ ${#LOCAL_DATABASE_IDS[@]} -eq 0 ]] && has_db=false || has_db=true
       [[ ${#FILE_GROUP_IDS[@]} -eq 0 ]] && has_files=false || has_files=true
 
       if [[ "$has_db" == false ]] && [[ "$has_files" == false ]]; then
         fail_because "Nothing to pull; neither \"databases\" nor \"files_group\" have been configured."
       fi
-
-      workflow=$(get_option 'processor')
-      if [[ ! "$workflow" ]]; then
-        eval $(get_config_as "workflow" "environments.$LOCAL_ENV_KEY.processors.export")
-      fi
-
       if ! has_failed && [[ "$do_database" == true ]]; then
         if [[ "$has_db" == false ]]; then
           if has_option d; then
@@ -315,7 +292,7 @@ case $COMMAND in
           fi
         else
           call_plugin $PLUGIN_PULL_DB authenticate || fail
-          ! has_failed && call_plugin $PLUGIN_PULL_DB pull_databases || fail
+          ! has_failed && call_plugin $PLUGIN_PULL_DB pull_dbs || fail
         fi
       fi
 

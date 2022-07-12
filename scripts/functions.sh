@@ -24,18 +24,6 @@ function sandbox_directory() {
   has_failed && exit_with_failure
 }
 
-function echo_config_key_by_id() {
-  local config_pointer="$1"
-  local id_to_find="$2"
-
-  eval $(get_config_keys_as 'keys' "$config_pointer")
-  for key in "${keys[@]}"; do
-    eval $(get_config_as "id" "$config_pointer.${key}.id")
-    [[ "$id" == "$id_to_find" ]] && echo "$key" && return 0
-  done
-  return 1
-}
-
 # Store a timestamp file.
 #
 # Use yaml_add_line to augment the stored contents.
@@ -71,6 +59,27 @@ function get_container_path() {
   return 0
 }
 
+# Gets the active workflow by command or --workflow.
+#
+# Returns 1 if invalid workflow.  Echos the workflow ID, if valid and present.
+function get_active_workflow() {
+  local workflow=$(get_option 'workflow')
+  if [[ ! "$workflow" ]]; then
+    eval $(get_config_as "workflow" "environments.$LOCAL_ENV_ID.command_workflows.$COMMAND")
+  fi
+
+  # If there is no workflow, then all is well.
+  [[ ! "$workflow" ]] && return 0
+  eval $(get_config_keys_as array_has_value__array "workflows")
+
+  # Ensure is a configured workflow...
+  array_has_value "$workflow" && echo "$workflow" && return 0
+
+  # ... otherwise fail.
+  echo "\"$workflow\" is not a configured workflow."
+  return 1
+}
+
 function execute_workflow_processors() {
   local workflow="$1"
 
@@ -82,7 +91,7 @@ function execute_workflow_processors() {
   local php_query
   local DATABASE_NAME
   if [[ "$ENVIRONMENT_ID" ]] && [[ "$DATABASE_ID" ]]; then
-    DATABASE_NAME="$(mysql_get_database_name $ENVIRONMENT_ID $DATABASE_ID)" || DATABASE_NAME=''
+    DATABASE_NAME="$(mysql_get_env_db_name_by_id $ENVIRONMENT_ID $DATABASE_ID)" || DATABASE_NAME=''
   fi
 
   eval $(get_config_keys_as workflow_keys "workflows.$workflow")
@@ -154,7 +163,7 @@ function implement_route_access() {
   [[ ! "$requirement" ]] && return 0
   [[ false == "$requirement" ]] && return 0
 
-  eval $(get_config_as write_access "environments.${LOCAL_ENV_KEY}.write_access")
+  eval $(get_config_as write_access "environments.$LOCAL_ENV_ID.write_access")
   [[ $write_access == true ]] && return 0
 
   fail_because "write_access is false for this environment ($LOCAL_ENV_ID)."
@@ -162,36 +171,22 @@ function implement_route_access() {
   exit_with_failure "\"$command\" not allowed"
 }
 
-# Echo a path resolved to an environment base path.
+# Resolve an environment relative path to absolute
 #
-# $1 - The environment id, e.g. dev, production.
-# $2 - Relative path to be resolved to the environment base.  Omit this to
-# return the environment base path itself.
+# $1 - The environment ID.
+# $2 - The relative path.
 #
-# Returns 1 if the path is absolute.
-function path_relative_to_env() {
-  local env_id="$1"
+# Returns 0 if successful. 1 if failed. Echos the absolute path.
+function environment_path_resolve() {
+  local environment_id="$1"
   local path="$2"
 
-  if [[ '/' == "${path:0:1}" ]]; then
-    fail_because "The path argument must not begin with /"
-    return 1
-  fi
+  [[ '/' == "${path:0:1}" ]] &&  echo "The path argument must not begin with /" && return 1
 
-  local base_path
-  if [[ "$env_id" == "$LOCAL_ENV_ID" ]]; then
-    base_path="$APP_ROOT"
-  else
-    eval $(get_config_as "base_path" "environments.$env_id.base_path")
-    if [[ ! "$base_path" ]]; then
-      fail_because "Missing configuration value for environments.$env_id.base_path"
-      return 1
-    fi
-  fi
-
-  echo "$(path_resolve "$base_path" "$path")"
+  eval $(get_config_path_as base_path "environments.$environment_id.base_path")
+  [[ ! "$base_path" ]] && echo "Missing config for: environments.$environment_id.base_path" && return 1
+  path_resolve "$base_path" "$path"
 }
-
 
 # Echo the local part of a file path config value.
 #

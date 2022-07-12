@@ -24,7 +24,7 @@ trait EnvTrait {
    * @param string $replace_with
    *   The value to replace with.
    */
-  protected function envReplaceValue(string $variable_name, string $replace_with = 'PENDING') {
+  protected function envReplaceValue(string $variable_name, string $replace_with = '""') {
     $this->validateFileIsLoaded();
     $this->loadedFile['contents'] = preg_replace('/(' . preg_quote($variable_name) . '=).+$/m', '$1' . $replace_with, $this->loadedFile['contents']);
   }

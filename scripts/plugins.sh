@@ -15,9 +15,9 @@ function _token_expand() {
   echo "$value"
 }
 
-eval $(get_config_as LOCAL_PLUGIN "environments.$LOCAL_ENV_KEY.plugin")
+eval $(get_config_as LOCAL_PLUGIN "environments.$LOCAL_ENV_ID.plugin")
 [[ "$LOCAL_PLUGIN" ]] || LOCAL_PLUGIN="default"
-eval $(get_config_as REMOTE_PLUGIN "environments.$REMOTE_ENV_KEY.plugin")
+eval $(get_config_as REMOTE_PLUGIN "environments.$REMOTE_ENV_ID.plugin")
 [[ "$REMOTE_PLUGIN" ]] || REMOTE_PLUGIN="default"
 
 eval $(get_config_as PLUGIN_PULL_DB 'plugin_assignments.pull.db')

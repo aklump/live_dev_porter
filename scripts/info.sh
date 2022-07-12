@@ -5,62 +5,58 @@
 # Generate the "info" route output
 #
 
-eval $(get_config_as 'local_label' "environments.$LOCAL_ENV_KEY.label")
-eval $(get_config_as 'remote_label' "environments.$REMOTE_ENV_KEY.label")
-eval $(get_config_path_as local_basepath "environments.$LOCAL_ENV_KEY.base_path")
-eval $(get_config_as remote_basepath "environments.$REMOTE_ENV_KEY.base_path")
+eval $(get_config_as 'local_label' "environments.$LOCAL_ENV_ID.label")
+eval $(get_config_as 'remote_label' "environments.$REMOTE_ENV_ID.label")
 
-eval $(get_config_keys_as -a 'keys' "environments")
-for key in "${keys[@]}"; do
-  eval $(get_config_as -a 'id' "environments.${key}.id")
-  eval $(get_config_as -a 'label' "environments.${key}.label")
-  eval $(get_config_as -a 'write_access' "environments.${key}.write_access")
-  eval $(get_config_as -a 'plugin' "environments.${key}.plugin")
-  eval $(get_config_as -a 'ssh' "environments.${key}.ssh")
-  eval $(get_config_path_as -a 'basepath' "environments.${key}.base_path")
+for id in "${ENVIRONMENT_IDS[@]}"; do
+  eval $(get_config_as -a 'label' "environments.$id.label")
+  eval $(get_config_as -a 'write_access' "environments.$id.write_access")
+  eval $(get_config_as -a 'plugin' "environments.$id.plugin")
+  eval $(get_config_as -a 'ssh' "environments.$id.ssh")
+  base_path=$(environment_path_resolve "$id")
 
   echo_title "$(string_ucfirst $id) Environment: $label"
-  table_add_row "SSH" "$ssh"
+  [[ "$ssh" ]] && table_add_row "SSH" "$ssh"
   table_add_row "Writeable" "$write_access"
   table_add_row "Plugin" "$plugin"
-  table_add_row "Root" "$basepath"
+  table_add_row "Root" "$base_path"
   echo_slim_table
 
-  # List out the file groups and paths.
+  # List out the environment's databases
+  eval $(get_config_keys_as database_ids "environments.$id.databases")
+  for database_id in "${database_ids[@]}"; do
+    eval $(get_config_as plugin "environments.$id.databases.${database_id}.plugin")
+    table_add_row "$database_id" "$plugin"
+  done
+  if table_has_rows; then
+    table_set_header "Database" "Plugin"
+    echo_slim_table
+  fi
 
+  # List out the file groups and paths.
   for group_id in "${FILE_GROUP_IDS[@]}"; do
-    eval $(get_config_as group_path "environments.${key}.files.${group_id}")
+    eval $(get_config_as group_path "environments.$id.files.${group_id}")
     if [[ "$group_path" ]]; then
+      group_path="$(path_resolve "$base_path" "$group_path")"
+      group_path=${group_path%/}
+      group_path=${group_path%.}
+      group_path=${group_path%/}
       table_add_row "$group_id" "$group_path"
     fi
   done
   if table_has_rows; then
-    table_set_header "File group" "Location"
+    table_set_header "File group" "Path"
     echo_slim_table
   fi
 done
 
 
-eval $(get_config_keys_as -a 'keys' "databases")
-if [[ ${#keys[@]} -gt 0 ]]; then
-  echo
-  echo_title "Databases"
-  list_clear
-  for key in "${keys[@]}"; do
-    eval $(get_config_as -a 'id' "databases.${key}.id")
-    list_add_item "$id"
-  done
-  echo_list
-  echo
-fi
-
-eval $(get_config_keys_as -a 'keys' "file_groups")
-if [[ ${#keys[@]} -gt 0 ]]; then
+eval $(get_config_keys_as -a 'ids' "file_groups")
+if [[ ${#ids[@]} -gt 0 ]]; then
   echo
   echo_title "File Groups"
   list_clear
-  for key in "${keys[@]}"; do
-    eval $(get_config_as -a 'id' "file_groups.${key}.id")
+  for id in "${ids[@]}"; do
     list_add_item "$id"
   done
   echo_list

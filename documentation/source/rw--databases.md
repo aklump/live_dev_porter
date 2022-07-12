@@ -4,8 +4,41 @@ If a project uses at least one database, it must be defined in configuration for
 
 Sometimes you might define the same database with multiple ids, if you want to have different levels of export. For example you might have one that excludes many tables, and another that excludes none, that latter serving as a backup solution when you want more content than you would during normal development.
 
-Often times when you are copying the content of a database, it is preferable to leave out the data from certains tables, such as in the case of cache tables. This is the reason for `exclude_table_data`. List one or more tables (astrix globbing allowed), whose _structure only_ should be copied.
-
-If you wish to omit entire tables--data plus structure--you will list those tables in `exclude_tables`.
-
 The `mysqldump_options` allow you to customize the behavior of the CLI tool.
+
+## Excluding Tables or Data
+
+Often times when you are copying the content of a database, it is preferable to leave out the data from certain tables, such as in the case of cache tables. This is the reason for `exclude_table_data`. List one or more tables (astrix globbing allowed), whose _structure only_ should be copied.
+
+```yaml
+workflows:
+  development:
+    -
+      database: drupal
+      exclude_table_data:
+        - cache*
+        - batch
+```
+
+To export only table structure and no data, do like this:
+
+```yaml
+workflows:
+  development:
+    -
+      database: drupal
+      exclude_table_data:
+        - "*"
+```
+
+If you wish to omit entire tables--data AND structure--you will list those tables in `exclude_tables`.
+
+```yaml
+workflows:
+  development:
+    -
+      database: drupal
+      exclude_tables:
+        - foo
+        - bar
+```

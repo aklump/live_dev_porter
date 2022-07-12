@@ -65,9 +65,7 @@ final class SchemaBuilder {
   }
 
   private function getEnvironmentIds(): array {
-    return array_filter(array_map(function ($data) {
-      return $data['id'] ?? NULL;
-    }, $this->config['environments'] ?? []));
+    return array_keys($this->config['environments'] ?? []);
   }
 
   private function getPluginIds(): array {
@@ -82,14 +80,11 @@ final class SchemaBuilder {
   }
 
   private function getFileGroups(): array {
-    return array_filter(array_map(function ($data) {
-      return $data['id'] ?? NULL;
-    }, $this->config['file_groups'] ?? []));
+    return array_keys($this->config['file_groups'] ?? []);
   }
 
   private function getDatabaseIds(): array {
-    return array_filter(array_map(function ($data) {
-      return $data['id'] ?? NULL;
-    }, $this->config['databases'] ?? []));
+    // TODO This is not correct.
+    return array_keys($this->config['databases'] ?? []);
   }
 }
