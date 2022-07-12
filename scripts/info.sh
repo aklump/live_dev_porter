@@ -5,10 +5,10 @@
 # Generate the "info" route output
 #
 
-eval $(get_config_as 'local_label' "environments.$LOCAL_ENV_LOOKUP.label")
-eval $(get_config_as 'remote_label' "environments.$REMOTE_ENV_LOOKUP.label")
-eval $(get_config_path_as local_basepath "environments.$LOCAL_ENV_LOOKUP.base_path")
-eval $(get_config_as remote_basepath "environments.$REMOTE_ENV_LOOKUP.base_path")
+eval $(get_config_as 'local_label' "environments.$LOCAL_ENV_KEY.label")
+eval $(get_config_as 'remote_label' "environments.$REMOTE_ENV_KEY.label")
+eval $(get_config_path_as local_basepath "environments.$LOCAL_ENV_KEY.base_path")
+eval $(get_config_as remote_basepath "environments.$REMOTE_ENV_KEY.base_path")
 
 eval $(get_config_keys_as -a 'keys' "environments")
 for key in "${keys[@]}"; do
@@ -67,9 +67,16 @@ if [[ ${#keys[@]} -gt 0 ]]; then
   echo
 fi
 
-echo_title "Other info"
-array_csv__array=("${ACTIVE_PLUGINS[@]}")
-table_add_row "All active plugins" "$(array_csv --prose)"
+echo_title "Plugins"
+table_set_header "operation" "plugin"
+table_add_row "Pull db" "$PLUGIN_PULL_DB"
+table_add_row "Pull files" "$PLUGIN_PULL_FILES"
+table_add_row "Export local db" "$PLUGIN_EXPORT_LOCAL_DB"
+table_add_row "Import to local db" "$PLUGIN_IMPORT_TO_LOCAL_DB"
+
+#echo_title "Other info"
+#array_csv__array=("${ACTIVE_PLUGINS[@]}")
+#table_add_row "All active plugins" "$(array_csv --prose)"
 echo_slim_table
 
 # Plugins may leverage "table_add_row" to build up the More info.  The table is

@@ -4,8 +4,8 @@ namespace AKlump\LiveDevPorter\Config;
 
 class RsyncHelper {
 
-  public function __construct(array $config) {
-    $this->config = $config;
+  public function __construct(array $config, array $cloudy_config) {
+    $this->config = $cloudy_config;
     $this->dist = $config['CACHE_DIR'];
   }
 

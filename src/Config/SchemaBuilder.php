@@ -15,22 +15,28 @@ final class SchemaBuilder {
 
   private $jsonSchemaDist;
 
-  public function __construct(array $config) {
-    $this->config = $config;
-    $this->jsonSchemaSource = __DIR__ . '/../../json_schema';
-    $this->jsonSchemaDist = $config['CACHE_DIR'];
+  public function __construct(array $config, array $cloudy_config) {
+    $this->config = $cloudy_config;
+    $this->jsonSchemaSource = __DIR__ . '/../../json_schema/config.schema.json';
+    $this->jsonSchemaDist = $config['CACHE_DIR'] . '/config.schema.json';
+  }
+
+  public function destroy() {
+    if (file_exists($this->jsonSchemaDist)) {
+      unlink($this->jsonSchemaDist);
+    }
   }
 
   public function build() {
-    if (!file_exists($this->jsonSchemaDist)) {
-      $result = mkdir($this->jsonSchemaDist, 0755, TRUE);
+    $parent_dir = dirname($this->jsonSchemaDist);
+    if (!file_exists($parent_dir)) {
+      $result = mkdir($parent_dir, 0755, TRUE);
       if (!$result) {
-        throw new \RuntimeException(sprintf('Failed to create json schema distribution directory: %s', $this->jsonSchemaDist));
+        throw new \RuntimeException(sprintf('Failed to create json schema distribution directory: %s', $parent_dir));
       }
     }
-    $path = '/config.schema.json';
-    $data = json_decode(file_get_contents($this->jsonSchemaSource . $path), TRUE);
-    $data['properties']['fetch_environment']['enum'] = $this->getEnvironmentIds();
+    $data = json_decode(file_get_contents($this->jsonSchemaSource), TRUE);
+    $data['properties']['remote_environment']['enum'] = $this->getEnvironmentIds();
 
     $data['properties']['environment']['enum'] = $this->getEnvironmentIds();
 
@@ -39,7 +45,7 @@ final class SchemaBuilder {
     $data['properties']['environments']['items']['properties']['databases']['propertyNames']['enum'] = $this->getDatabaseIds();
     $this->removeEmptyEnum($data);
 
-    file_put_contents($this->jsonSchemaDist . $path, json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+    file_put_contents($this->jsonSchemaDist, json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
 
     return "JSON Schema has been rebuilt.";
   }

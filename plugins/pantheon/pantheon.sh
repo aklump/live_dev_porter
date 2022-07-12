@@ -55,7 +55,7 @@ function pantheon_fetch_files() {
   local rsync_options="-rlz --copy-unsafe-links --size-only --checksum --ipv4"
   has_option v && rsync_options="$rsync_options --progress"
 
-  eval $(get_config_keys_as -a sync_groups files)
+  eval $(get_config_keys_as sync_groups files)
   for group in "${sync_groups[@]}"; do
     has_option group && [[ "$(get_option group)" != "$group" ]] && continue
     echo_heading "Fetching \"$group\" files..."

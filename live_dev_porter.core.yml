@@ -91,14 +91,26 @@ commands:
     help: 'Import a dumpfile to the local database.'
   export:
     help: 'Export the local database.'
+    arguments:
+      basename:
+        help: Optional basename to use instead of the default, e.g., "rollback".
     options:
+      id:
+        type: string
+        help: Indicate the database ID to export, this can be omitted when only one database is defined, or when you want the first (default) database to be used.
+      workflow:
+        type: string
+        help: A workflow to use for export; this will be used instead of the configured default.
       all:
         type: boolean
-        help: 'Include this option to ignore all table omissions by exclude files.'
+        help: 'Include this option to ignore the tables configuration, that is to say export all tables and data.'
   db:
     help: 'Enter the local database shell.'
     aliases:
       - mysql
+    arguments:
+      id:
+        help: Use to enter a database other than the first/default listed for the local environment.
   config:
     help: 'Open configuration in $EDITOR.'
     options:
@@ -123,6 +135,13 @@ commands:
       - cc
     help: 'Clear all cached data.'
 plugin_assignments:
+  local:
+    databases: mysql
+    files: default
+  remote:
+    databases: REMOTE_PLUGIN
+    files: REMOTE_PLUGIN
+
   shell:
     db: mysql
     remote: REMOTE_PLUGIN
@@ -133,7 +152,7 @@ plugin_assignments:
   #    db: REMOTE_PLUGIN
   #    files: REMOTE_PLUGIN
   #  reset:
-  #    db: DEV_PLUGIN
+  #    db: LOCAL_PLUGIN
   #    files: default
   export:
     db: mysql

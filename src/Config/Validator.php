@@ -4,14 +4,12 @@ namespace AKlump\LiveDevPorter\Config;
 
 final class Validator {
 
-  private static $mustValidate;
-
   private $config;
 
   private $jsonSchema;
 
-  public function __construct(array $config) {
-    $this->config = array_diff_key($config, array_flip([
+  public function __construct(array $config, array $cloudy_config) {
+    $this->config = array_diff_key($cloudy_config, array_flip([
 
       // Remove known keys that are okay, but will invalidate the schema.
       '__cloudy',
@@ -27,9 +25,6 @@ final class Validator {
       'default_command',
       'commands',
       'plugin_assignments',
-      'CACHE_DIR',
-      'CONFIG_DIR',
-      'PLUGINS_DIR',
     ]));
     $this->jsonSchema = $config['CACHE_DIR'] . '/config.schema.json';
   }

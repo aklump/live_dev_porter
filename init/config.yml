@@ -37,7 +37,7 @@ databases:
       - key_value_expire
       - sessions
       - watchdog
-    # https://zoomadmin.com/HowToLinux/LinuxCommand/mysqldump
+    # https://dev.mysql.com/doc/refman/5.7/en/mysqldump.html#mysqldump-option-summary
 #    mysqldump_options:
 #      - xml
 

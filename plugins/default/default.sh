@@ -18,20 +18,11 @@ function _test_remote_path() {
   return 1
 }
 
-function default_on_boot() {
-  eval $(get_config_keys_as -a 'keys' "file_groups")
-  FILE_GROUP_IDS=()
-  for key in "${keys[@]}"; do
-    eval $(get_config_as -a 'id' "file_groups.${key}.id")
-    FILE_GROUP_IDS=("${FILE_GROUP_IDS[@]}" "$id")
-  done
-}
-
 function default_configtest() {
   local assert
 
   # Test remote connection
-  assert="Connect to $REMOTE_ENV_ID server"
+  assert="Can connect to $REMOTE_ENV_ID server."
   local did_connect=false
   # @link https://unix.stackexchange.com/a/264477
   ssh -o BatchMode=yes "$REMOTE_ENV_AUTH" pwd &> /dev/null && did_connect=true
@@ -43,7 +34,7 @@ function default_configtest() {
   fi
 
   # Test remote base_path
-    assert="$REMOTE_ENV_ID base_path exists"
+    assert="$(string_ucfirst "$REMOTE_ENV_ID") base path exists."
     local exists=false
     if _test_remote_path; then
       echo_pass "$assert"
@@ -56,7 +47,7 @@ function default_configtest() {
   local environments=("$LOCAL_ENV_ID" "$REMOTE_ENV_ID")
   for env_id in "${environments[@]}"; do
 
-    eval $(get_config_keys_as -a groups "environments.$env_id.files")
+    eval $(get_config_keys_as groups "environments.$env_id.files")
     for group in "${groups[@]}"; do
       eval $(get_config_as -a group_paths "environments.$env_id.files.$group")
       for path in "${group_paths[@]}"; do
@@ -99,11 +90,11 @@ function default_pull_files() {
     base_rsync_options="$base_rsync_options --dry-run -v"
   fi
 
-  eval $(get_config_as source_base "environments.${REMOTE_ENV_LOOKUP}.base_path")
-  eval $(get_config_path_as destination_base "environments.${LOCAL_ENV_LOOKUP}.base_path")
+  eval $(get_config_as source_base "environments.${REMOTE_ENV_KEY}.base_path")
+  eval $(get_config_path_as destination_base "environments.${LOCAL_ENV_KEY}.base_path")
 
   local group_filter=$(get_option group)
-  eval $(get_config_keys_as -a group_ids "environments.${LOCAL_ENV_LOOKUP}.files")
+  eval $(get_config_keys_as group_ids "environments.${LOCAL_ENV_KEY}.files")
   if [[ "$group_filter" ]]; then
     array_has_value__array=("${group_ids[@]}")
     array_has_value "$group_filter" || fail_because "The environment \"$LOCAL_ENV_ID\" has not assigned a path to the file group \"$group_filter\"."
@@ -111,10 +102,15 @@ function default_pull_files() {
 
   has_failed && return 1
 
-  for group_id in ${group_ids[@]} ; do
-    has_option group && [[ "$group_filter" != "$group_id" ]] && continue
+  workflow=$(get_option 'workflow')
+  if [[ ! "$workflow" ]]; then
+    eval $(get_config_as "workflow" "environments.$LOCAL_ENV_KEY.command_workflows.$COMMAND")
+  fi
 
-    eval $(get_config_as source "environments.${REMOTE_ENV_LOOKUP}.files.${group_id}")
+  for FILES_GROUP_ID in ${group_ids[@]} ; do
+    has_option group && [[ "$group_filter" != "$FILES_GROUP_ID" ]] && continue
+
+    eval $(get_config_as source "environments.${REMOTE_ENV_KEY}.files.${FILES_GROUP_ID}")
     if [[ "$group_filter" ]] && [[ ! "$source" ]]; then
 
       # If there is no source path, it's only considered an error if the user is
@@ -122,13 +118,13 @@ function default_pull_files() {
       fail_because "The environment \"$REMOTE_ENV_ID\" has not assigned a path to the file group \"$group_filter\"." && return 1
     fi
 
-    eval $(get_config_as destination "environments.${LOCAL_ENV_LOOKUP}.files.${group_id}")
+    eval $(get_config_as destination "environments.${LOCAL_ENV_KEY}.files.${FILES_GROUP_ID}")
 
     if [[ "$source" ]] && [[ "$destination" ]]; then
       rsync_options="$base_rsync_options"
       source=$(path_resolve "$source_base" "$source")
-      destination=$(path_resolve "$destination_base" "$destination")
-      ruleset="$CACHE_DIR/rsync_ruleset.$group_id.txt"
+      destination_path=$(path_resolve "$destination_base" "$destination")
+      ruleset="$CACHE_DIR/rsync_ruleset.$FILES_GROUP_ID.txt"
       if [[ -f "$ruleset" ]]; then
         # I picked --include-from and not --exclude-from, but that is arbitrary.
         # Given my choice, there is no need for us to use --exclude-from because
@@ -138,47 +134,33 @@ function default_pull_files() {
         rsync_options="$rsync_options --include-from="$ruleset""
       fi
 
-      sandbox_directory "$destination"
-      if [[ ! -d "$destination" ]]; then
-        mkdir -p "$destination" || fail_because "Could not create directory: $destination"
+      sandbox_directory "$destination_path"
+      if [[ ! -d "$destination_path" ]]; then
+        mkdir -p "$destination_path" || fail_because "Could not create directory: $destination_path"
       fi
       has_failed && return 1
 
       has_option v && echo "$rsync_options"
-      write_log "rsync $rsync_options "$REMOTE_ENV_AUTH:$source/" "$destination/""
-      rsync $rsync_options "$REMOTE_ENV_AUTH:$source/" "$destination/" || fail
+      write_log "rsync $rsync_options "$REMOTE_ENV_AUTH:$source/" "$destination_path/""
+      rsync $rsync_options "$REMOTE_ENV_AUTH:$source/" "$destination_path/" || fail
 
       if has_failed; then
-        echo_fail "Files group \"$group_id\" failed to download."
+        echo_fail "Files group \"$FILES_GROUP_ID\" failed to download."
       else
-
-        # Apply processors to include files.
-        eval $(get_config_keys_as -a 'keys' "file_groups")
-        for key in "${keys[@]}"; do
-          eval $(get_config_as id "file_groups.${key}.id")
-          if [[ "$id" == "$group_id" ]]; then
-
-            # Determine if this group has any processors.
-            eval $(get_config_as -a processors "file_groups.${key}.processors")
-            [[ ${#processors[@]} -eq 0 ]] && continue
-
-            eval $(get_config_as -a includes "file_groups.${key}.include")
-            for include in "${includes[@]}"; do
-              for filepath in "$destination"/$include; do
-                if [[ -f "$filepath" ]]; then
-                  short_path=$(path_unresolve "$destination" "$filepath")
-                  short_path=${short_path#/}
-                  for processor in "${processors[@]}"; do
-                    call_files_group_file_processor "$CONFIG_DIR/processors/$processor" "$filepath" "$shortpath" "$group_id" || exit_with_failure
-                  done
-                fi
-               done
-            done
-          fi
-        done
-
-        echo_pass "Files group \"$group_id\" finished."
-        has_option "dry-run" || succeed_because "\"$group_id\" saved to $(path_unresolve "$APP_ROOT" "$destination")"
+        if [[ "$workflow" ]] && file_group_key=$(echo_config_key_by_id file_groups "$FILES_GROUP_ID"); then
+          ENVIRONMENT_ID="$LOCAL_ENV_ID"
+          eval $(get_config_as -a includes "file_groups.${file_group_key}.include")
+          for include in "${includes[@]}"; do
+            for FILEPATH in "$destination_path"/${include#/}; do
+              if [[ -f "$FILEPATH" ]]; then
+                SHORTPATH=$(path_unresolve "$destination_path" "$FILEPATH")
+                SHORTPATH=${SHORTPATH#/}
+                execute_workflow_processors "$workflow" || exit_with_failure
+              fi
+             done
+          done
+        fi
+        ! has_option "dry-run" && echo_pass "Files group \"$FILES_GROUP_ID\" saved to $destination."
       fi
 #      local message="📦 $local_relative_path ⬅️ 🌎 $remote_relative_path"
     fi

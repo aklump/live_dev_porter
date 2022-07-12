@@ -1,2 +1,2 @@
 environment: local
-fetch_environment: live
+remote_environment: live

@@ -25,7 +25,7 @@
             "type": "string",
             "enum": []
         },
-        "fetch_environment": {
+        "remote_environment": {
             "type": "string",
             "enum": []
         },

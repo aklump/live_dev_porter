@@ -5,25 +5,24 @@
 # Provide shared database-related functions.
 #
 
+# Echo the path to a .conf file.
 #
-# Echo the basename of the last pulled database file.
+# $1 - The environment ID.
+# $2 - The database ID (not the name, the ID!)
 #
-function ldp_get_fetched_db_path() {
-  path=$(ls "$FETCH_DB_PATH/"*.sql* 2> /dev/null)
-  if [[ "$path" ]]; then
-    echo "$path"
-  fi
+# Returns nothing.
+function ldp_db_echo_conf_filepath() {
+  local environment_id="$1"
+  local database_id="$2"
+
+  echo "$CACHE_DIR/$environment_id/databases/$database_id/mysql.cnf"
 }
 
-function ldp_delete_fetched_db() {
-  local dumpfile=$(ldp_get_fetched_db_path)
-  if [[ "$dumpfile" ]]; then
-    if [ -f "$dumpfile" ]; then
-      rm -v "$dumpfile" || fail_because "Could not delete $dumpfile"
-    fi
-  fi
-  has_failed && return 1
-  return 0
+function ldp_db_echo_export_directory() {
+  local environment_id="$1"
+  local database_id="$2"
+
+  echo "$CONFIG_DIR/$environment_id/databases/$database_id/"
 }
 
 ##
@@ -61,48 +60,44 @@ function ldp_get_db_creds_path() {
   echo "$CACHE_DIR/_cached.$(path_filename $SCRIPT).$env.cnf"
 }
 
-# These are the tables whose structure only should be dumped.
+# Get the table section of the mysqldump command based on config.
 #
-function ldp_get_db_export_structure_and_data_tables() {
+# $1 - The environment ID.
+# $2 - The database ID for that environment.
+#
+# @option --structure Tables for structure export.
+# @option --data Tables for data export.
+#
+function ldp_get_db_export_tables() {
+  local environment_id="$1"
+  local database_id="$2"
+
+  parse_args "$@"
+  environment_id="${parse_args__args[0]}"
+  database_id="${parse_args__args[1]}"
+
   local table_query="SET group_concat_max_len = 40960;"
   table_query="${table_query} SELECT GROUP_CONCAT(table_name separator ' ')"
 
-  eval $(get_config_as "db_name" "environments.dev.database.name")
+  local environment_key=$(echo_config_key_by_id "environments" "$environment_id")
+  eval $(get_config_as "db_name" "environments.$environment_key.databases.$database_id.name")
   table_query="${table_query} FROM information_schema.tables WHERE table_schema='$db_name'"
 
-  # Omit the tables listed in tables.ignore unless using '--all'.
+  # Look at the configuration for explicit tables unless using --all.
   if ! has_option all; then
-    eval $(get_config_as "ignore_tables" "environments.dev.export.exclude_tables_listed_in")
-    local path="$EXPORT_DB_PATH/$ignore_tables"
-    [ -f "$path" ] || touch "$path"
-    table_query="${table_query}$(_build_where_not_query $path)"
+
+    if [[ "$parse_args__options__data" ]]; then
+      local database_key=$(echo_config_key_by_id "databases" "$database_id")
+      table_query="${table_query}$(_build_where_not_query "databases.$database_key.exclude_table_data")"
+    fi
+
+    # Omit the tables listed in tables.ignore, again this is needed here too.
+    local database_key=$(echo_config_key_by_id "databases" "$database_id")
+    table_query="${table_query}$(_build_where_not_query "databases.$database_key.exclude_tables")"
   fi
 
-  mysql --defaults-file="$(ldp_get_db_creds_path dev)" -AN -e"$table_query"
-}
-
-# These are the tables whose content only should be dumped
-#
-function ldp_get_db_export_data_only_tables() {
-  eval $(get_config_as "db_name" "environments.dev.database.name")
-  local table_query="SET group_concat_max_len = 40960;"
-  table_query="${table_query} SELECT GROUP_CONCAT(table_name separator ' ')"
-  table_query="${table_query} FROM information_schema.tables WHERE table_schema='$db_name'"
-
-  # Omit the tables listed in data.ignore unless using '--all'.
-  if ! has_option all; then
-    eval $(get_config_as "ignore_data" "environments.dev.export.exclude_data_from_tables_listed_in")
-    local path="$EXPORT_DB_PATH/$ignore_data"
-    [ -f "$path" ] || touch "$path"
-    table_query="${table_query}$(_build_where_not_query $path)"
-
-    # Omit the tables listed in tables.ignore
-    eval $(get_config_as "ignore_tables" "environments.dev.export.exclude_tables_listed_in")
-    local path="$EXPORT_DB_PATH/$ignore_tables"
-    table_query="${table_query}$(_build_where_not_query $path)"
-  fi
-
-  mysql --defaults-file="$(ldp_get_db_creds_path dev)" -AN -e"$table_query"
+  local path_to_db_creds=$(ldp_db_echo_conf_filepath "$environment_id" "$database_id")
+  mysql --defaults-file="$path_to_db_creds" -AN -e"$table_query"
 }
 
 # Build a tablename query expanding wildcards from a file of tablenames
@@ -110,24 +105,27 @@ function ldp_get_db_export_data_only_tables() {
 # $1 - string - Filepath to the list of tablenames.
 #
 function _build_where_not_query() {
-  local path_to_table_list="$1"
+  local config_list_lookup="$1"
 
-  # Nothing to do if there is no file
-  [ -f "$path_to_table_list" ] || return 0
+  eval $(get_config_as -a "tables" "$config_list_lookup")
+  [[ ${#tables[@]} -eq 0 ]] && return 0
 
-  local csv
+  local array_csv__array=()
   local where
-  while read p; do
+  for p in "${tables[@]}"; do
+
+    # This converts glob-syntax to mysql-syntax; both works.
+    p=${p/\*/\%}
+
     if [[ $p == *"%"* ]]; then
       where="$where AND table_name NOT LIKE '$p'"
     else
-      csv="$csv,'$p'"
+      array_csv__array=("${array_csv__array[@]}" "$p")
     fi
-  done <"$path_to_table_list"
+  done
 
-  csv=${csv#,}
-  if [[ "$csv" ]]; then
-    where="$where AND table_name NOT IN ($csv)"
+  if [[ "${#array_csv__array[@]}" ]]; then
+    where="$where AND table_name NOT IN ($(array_csv --single-quotes))"
   fi
   echo "$where"
 }
