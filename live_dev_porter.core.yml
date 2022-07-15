@@ -115,6 +115,9 @@ commands:
         aliases:
           - wf
         help: A workflow to use for export; this will be used instead of the configured default.
+      json:
+        type: boolean
+        help: Use JSON output mode.  Prints the absolute path to the export string.
   db:
     help: 'Enter the local database shell.'
     aliases:

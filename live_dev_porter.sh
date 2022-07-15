@@ -186,6 +186,8 @@ implement_route_access
 # This is used by several commands so put it here as a universal.
 ! WORKFLOW_ID=$(get_active_workflow) && fail_because "$WORKFLOW_ID" && exit_with_failure
 
+has_option 'json' && JSON=true
+
 # Handle other commands.
 case $COMMAND in
 
@@ -194,9 +196,9 @@ case $COMMAND in
       implement_configtest
       for plugin in "${ACTIVE_PLUGINS[@]}"; do
         if plugin_implements $plugin configtest; then
+          echo
           echo_heading "Plugin: $(string_ucfirst "$plugin")"
-          output=$(call_plugin $plugin configtest)
-          [[ "$output" ]] && echo "$output" && echo
+          call_plugin $plugin configtest
         fi
       done
       has_failed && fail_because "Try clearing caches." && exit_with_failure "Tests failed."
@@ -219,26 +221,32 @@ case $COMMAND in
       ;;
 
     "export")
-      local filename
       filename=$(get_command_arg 0)
       DATABASE_ID=$(get_option 'id' $LOCAL_DATABASE_ID)
       ENVIRONMENT_ID="$LOCAL_ENV_ID"
       eval $(get_config_as plugin "environments.$ENVIRONMENT_ID.databases.$DATABASE_ID.plugin")
-      echo_title "Export $ENVIRONMENT_ID database \"$DATABASE_ID\" (via $plugin)"
-      [[ "$WORKFLOW_ID" ]] && echo_heading "Using workflow: $WORKFLOW_ID"
-      echo_heading $(time_local)
+      if [[ ! "$JSON" ]]; then
+        echo_title "Export $ENVIRONMENT_ID database \"$DATABASE_ID\" (via $plugin)"
+        [[ "$WORKFLOW_ID" ]] && echo_heading "Using workflow: $WORKFLOW_ID"
+        echo_heading $(time_local)
+      fi
 
       # This will create a quick link for the user to "open in Finder"
       dumpfiles_dir=$(database_get_dumpfiles_directory "$ENVIRONMENT_ID" "$DATABASE_ID")
       table_clear
       table_add_row "export directory" "$dumpfiles_dir"
-      echo_slim_table
+      [[ "$JSON" ]] || echo_slim_table
 
-      call_plugin $plugin export_db "$DATABASE_ID" "$filename" || fail
-      echo_heading $(time_local)
+      json_output=$(call_plugin $plugin export_db "$DATABASE_ID" "$filename") || fail
+      [[ "$JSON" ]] || echo_heading $(time_local)
       has_failed && exit_with_failure "Failed to export database."
       if [[ "$WORKFLOW_ID" ]]; then
         execute_workflow_processors "$WORKFLOW_ID" || fail
+      fi
+      if [[ "$JSON" ]]; then
+        has_failed && exit_with_failure_code_only
+        echo $json_output
+        exit_with_success_code_only
       fi
       echo_heading $(time_local)
       has_failed && exit_with_failure "Failed to export database."

@@ -97,13 +97,26 @@ function mysql_configtest() {
   for database_id in "${LOCAL_DATABASE_IDS[@]}"; do
     defaults_file=$(database_get_defaults_file "$LOCAL_ENV_ID" "$database_id")
     ! db_name=$(mysql_get_env_db_name_by_id "$LOCAL_ENV_ID" "$database_id") && echo_fail "$db_name" && fail
-    message="Able to connect to $LOCAL_ENV_ID database: $database_id."
+    echo_task "Able to connect to $LOCAL_ENV_ID database: $database_id."
     if mysql --defaults-file="$defaults_file" "$db_name" -e ";" 2> /dev/null ; then
-      echo_pass "$message"
+      echo_task_complete
     else
-      echo_fail "$message" && fail
+      echo_task_failed
+      fail
     fi
   done
+
+  # Check if remote has an export tool installed.
+  if [[ "$REMOTE_ENV_ID" ]]; then
+    remote_base_path="$(environment_path_resolve $REMOTE_ENV_ID)"
+    echo_task "Ensure remote has export tool installed."
+    if ssh -t "$REMOTE_ENV_AUTH" "[[ -e "$remote_base_path"/vendor/bin/live-dev-porter ]] || [[ -e "$remote_base_path"/vendor/bin/loft_deploy.sh ]]"  &> /dev/null; then
+      echo_task_complete
+    else
+      echo_task_failed
+      fail
+    fi
+  fi
 }
 
 # Enter a local database shell
@@ -258,6 +271,7 @@ function mysql_export_db() {
   ! gzip -f "$save_as" && fail_because "Could not compress dumpfile"
 
   has_failed && return 1
+  [[ "$JSON" ]] && echo "$save_as"
   succeed_because "Saved in: $(dirname "$save_as")"
   succeed_because "Filename is: $(basename "$save_as")"
 }
@@ -326,7 +340,7 @@ function mysql_pull_db() {
   echo_task "Export remote database."
   remote_base_path="$(environment_path_resolve $REMOTE_ENV_ID)"
 
-  ! ssh -t $REMOTE_ENV_AUTH "(cd $remote_base_path && if [[ -f ./vendor/bin/loft_deploy.sh ]]; then ./vendor/bin/loft_deploy.sh export pull -y; elif [[ -f ./vendor/bin/live-dev-porter ]]; then ./vendor/bin/live-dev-porter export pull --id="$DATABASE_ID" --workflow="$WORKFLOW_ID"; fi)" &> /dev/null && echo_task_failed && return 1
+  ! ssh -t "REMOTE_ENV_AUTH" "(cd $remote_base_path && if [[ -e ./vendor/bin/live-dev-porter ]]; then ./vendor/bin/live-dev-porter export pull --json --id="$DATABASE_ID" --workflow="$WORKFLOW_ID"; elif [[ -e ./vendor/bin/loft_deploy.sh ]]; then ./vendor/bin/loft_deploy.sh export pull -y; else exit 1; fi)" &> /dev/null && echo_task_failed && fail_because "No export tool installed on the remote environment." && return 1
   echo_task_complete
   remote_dumpfile_path="$remote_base_path/private/default/db/purgeable/aurora_timesheet_drupal-pull.sql.gz"
 

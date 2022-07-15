@@ -24,26 +24,26 @@ function default_configtest() {
   local directory_path
 
   # Test remote connection
-  assert="Able to connect to $REMOTE_ENV_ID server."
+  echo_task "Able to connect to $REMOTE_ENV_ID server."
   local did_connect=false
   # @link https://unix.stackexchange.com/a/264477
   ssh -o BatchMode=yes "$REMOTE_ENV_AUTH" pwd &> /dev/null && did_connect=true
   if [[ false == "$did_connect" ]]; then
+    echo_task_failed
     fail_because "Check $REMOTE_ENV_ID host and user config."
-    echo_fail "$assert"
   else
-    echo_pass "$assert"
+    echo_task_complete
   fi
 
   # Test remote base_path
-    assert="$(string_ucfirst "$REMOTE_ENV_ID") base path exists."
-    local exists=false
-    if _test_remote_path; then
-      echo_pass "$assert"
-    else
-      fail_because "Check \"$remote_base_path\" on $REMOTE_ENV_ID."
-      echo_fail "$assert"
-    fi
+  echo_task "$(string_ucfirst "$REMOTE_ENV_ID") base path exists."
+  local exists=false
+  if _test_remote_path; then
+    echo_task_complete
+  else
+    echo_task_failed
+    fail_because "Check \"$remote_base_path\" on $REMOTE_ENV_ID."
+  fi
 
   # Test for file sync groups.
   for environment_id in "${ENVIRONMENT_IDS[@]}"; do
@@ -57,17 +57,19 @@ function default_configtest() {
 
         # Create local directories if they don't exist to prevent failure.
         file_group_path="$(environment_path_resolve "$environment_id" "$file_group_directory")"
-        assert="$(string_ucfirst $environment_id) file group $group_id exists: $file_group_path"
+        echo_task "$(string_ucfirst $environment_id) file group $group_id exists: $file_group_path"
         if [[ "$environment_id" == "$LOCAL_ENV_ID" ]]; then
           if [[ -e "$file_group_path" ]] || mkdir -p "$file_group_path"; then
-            echo_pass "$assert"
+            echo_task_complete
           else
-            echo_fail "$assert"
+            echo_task_failed
+            fail
           fi
         elif [[ "$environment_id" == "$REMOTE_ENV_ID" ]] && _test_remote_path "$file_group_directory"; then
-          echo_pass "$assert"
+          echo_task_complete
         else
-          echo_fail "$assert" && fail
+          echo_task_failed
+          fail
         fi
       done
     done
@@ -79,7 +81,7 @@ function default_remote_shell() {
   # @link https://www.man7.org/linux/man-pages/man1/ssh.1.html
   # @link https://github.com/fraction/sshcd/blob/master/sshcd
   local remote_base_path="$(environment_path_resolve $REMOTE_ENV_ID)"
-  ssh -t $REMOTE_ENV_AUTH "(cd $remote_base_path; exec \$SHELL -l)"
+  ssh -t "$REMOTE_ENV_AUTH" "(cd $remote_base_path; exec \$SHELL -l)"
 }
 
 function default_pull_files() {

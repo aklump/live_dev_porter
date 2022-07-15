@@ -253,5 +253,4 @@ function implement_configtest() {
     fi
   done
   has_failed && fail_because "Use 'init' to create configuration files"
-  echo
 }
