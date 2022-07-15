@@ -316,7 +316,6 @@ case $COMMAND in
             echo; echo_slim_table
 
             eval $(get_config_as plugin "environments.$ENVIRONMENT_ID.databases.$DATABASE_ID.plugin")
-            call_plugin $plugin authenticate || fail
             ! has_failed && call_plugin $plugin pull_db "$DATABASE_ID" || fail
           done
         fi
