@@ -142,7 +142,7 @@ function mysql_prune_rollback_files() {
   done
 
   stop_at_index=$((${#rollback_files[@]}-$keep_files_count))
-  echo_task "Delete all but $keep_files_count most recent rollback files."
+  echo_task "Delete all but $keep_files_count most recent backups."
   for (( i = 0; i < $stop_at_index; i++ )); do
     sandbox_directory "$(dirname "${rollback_files[i]}")"
     ! rm "${rollback_files[i]}" && echo_task_failed && return 1
@@ -255,6 +255,8 @@ function mysql_export_db() {
     fail_because "A database export file was not created."
   fi
 
+  ! gzip -f "$save_as" && fail_because "Could not compress dumpfile"
+
   has_failed && return 1
   succeed_because "Saved in: $(dirname "$save_as")"
   succeed_because "Filename is: $(basename "$save_as")"
@@ -269,6 +271,14 @@ function mysql_import_db() {
   defaults_file=$(database_get_defaults_file "$LOCAL_ENV_ID" "$database_id")
   ! db_name=$(mysql_get_env_db_name_by_id "$LOCAL_ENV_ID" "$database_id") && fail_because "$db_name" && return 1
   mysql_drop_all_tables "$DATABASE_ID" || return 1
+
+  if [[ "$(path_extension "$filepath")" == 'gz' ]]; then
+    echo_task "Decompress file."
+    ! gunzip -f "$filepath" && echo_task_failed && return 1
+    filepath=${filepath%.*}
+    echo_task_complete
+  fi
+
   echo_task "Import data from $(basename "$filepath")"
   write_log_debug "mysql --defaults-file="$defaults_file" $db_name < $filepath"
   ! mysql --defaults-file="$defaults_file" $db_name < $filepath && echo_task_failed && return 1
@@ -288,10 +298,12 @@ function mysql_drop_all_tables() {
   local db_name
   local tables
   local sql
+
   echo_task "Drop all tables."
   ! db_name=$(mysql_get_env_db_name_by_id "$LOCAL_ENV_ID" "$database_id") && fail_because "$db_name" && return 1
-  ! mysql --defaults-file="$defaults_file" $db_name < $filepath && echo_fail "$message"
   tables=$(mysql --defaults-file="$defaults_file" $db_name -e 'SHOW TABLES' | awk '{ print $1}' | grep -v '^Tables')
+  [[ ! "${tables[0]}" ]] && echo_task_complete && return 0
+
   sql="DROP TABLE "
   for t in $tables; do
     sql="$sql\`$t\`,"
@@ -307,22 +319,31 @@ function mysql_drop_all_tables() {
 function mysql_pull_db() {
   local DATABASE_ID="$1"
 
+  local remote_base_path
+  local remote_dumpfile_path
+
+  # Create the export at the remote.
+  echo_task "Export remote database."
+  remote_base_path="$(environment_path_resolve $REMOTE_ENV_ID)"
+
+  ! ssh -t $REMOTE_ENV_AUTH "(cd $remote_base_path && if [[ -f ./vendor/bin/loft_deploy.sh ]]; then ./vendor/bin/loft_deploy.sh export pull -y; elif [[ -f ./vendor/bin/live-dev-porter ]]; then ./vendor/bin/live-dev-porter export pull --id="$DATABASE_ID" --workflow="$WORKFLOW_ID"; fi)" &> /dev/null && echo_task_failed && return 1
+  echo_task_complete
+  remote_dumpfile_path="$remote_base_path/private/default/db/purgeable/aurora_timesheet_drupal-pull.sql.gz"
+
+  # Create the local destination...
   local dumpfiles_dir="$(database_get_dumpfiles_directory "$REMOTE_ENV_ID" "$DATABASE_ID")"
   sandbox_directory "$dumpfiles_dir"
   ! mkdir -p "$dumpfiles_dir" && fail_because "Could not create directory: $dumpfiles_dir" && return 1
-  local save_as="$dumpfiles_dir/pulled.sql"
 
+  # Download the dumpfile.
+  local save_as="$dumpfiles_dir/$(basename "$remote_dumpfile_path")"
   echo_task "Download as $(basename "$save_as")"
+  ! scp ${REMOTE_ENV_AUTH}:$remote_dumpfile_path "$save_as" &> /dev/null && echo_task_failed && return 1
   echo_task_complete
-
-  save_as="/Users/aklump/Code/Packages/bash/live_dev_porter/.live_dev_porter/local/databases/drupal/original.sql"
 
   # Do the rollback and import.
   mysql_create_local_rollback_file "$DATABASE_ID" || return 1
   mysql_import_db "$DATABASE_ID" "$save_as" || return 1
   eval $(get_config_as total_files_to_keep max_database_rollbacks_to_keep 5)
   mysql_prune_rollback_files "$DATABASE_ID" "$total_files_to_keep" || return 1
-  if [[ "$WORKFLOW_ID" ]]; then
-    execute_workflow_processors "$WORKFLOW_ID" || return 1
-  fi
 }

@@ -109,7 +109,6 @@ function execute_workflow_processors() {
     eval $(get_config_as basename "workflows.$workflow.$workflow_key.processor")
     [[ ! "$basename" ]] && continue
 
-    echo_task "$basename"
     processor_path="$CONFIG_DIR/processors/$basename"
     processor="$(path_unresolve "$APP_ROOT" "$processor_path")"
 
@@ -124,7 +123,6 @@ function execute_workflow_processors() {
     fi
 
     if [[ $processor_result -ne 0 ]]; then
-      echo_task_failed
       [[ "$processor_output" ]] && fail_because "$processor_output"
       if [[ "$FILES_GROUP_ID" ]]; then
         fail_because "\"$processor\" has failed while processing: $SHORTPATH (in files group \"$FILES_GROUP_ID\")."
@@ -133,7 +131,6 @@ function execute_workflow_processors() {
       fi
       return 1
     fi
-    echo_task_complete
     succeed_because "$processor_output"
   done
 

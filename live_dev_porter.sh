@@ -226,6 +226,7 @@ case $COMMAND in
       eval $(get_config_as plugin "environments.$ENVIRONMENT_ID.databases.$DATABASE_ID.plugin")
       echo_title "Export $ENVIRONMENT_ID database \"$DATABASE_ID\" (via $plugin)"
       [[ "$WORKFLOW_ID" ]] && echo_heading "Using workflow: $WORKFLOW_ID"
+      echo_heading $(time_local)
 
       # This will create a quick link for the user to "open in Finder"
       dumpfiles_dir=$(database_get_dumpfiles_directory "$ENVIRONMENT_ID" "$DATABASE_ID")
@@ -234,10 +235,13 @@ case $COMMAND in
       echo_slim_table
 
       call_plugin $plugin export_db "$DATABASE_ID" "$filename" || fail
+      echo_heading $(time_local)
       has_failed && exit_with_failure "Failed to export database."
       if [[ "$WORKFLOW_ID" ]]; then
-        execute_workflow_processors "$WORKFLOW_ID" || exit_with_failure
+        execute_workflow_processors "$WORKFLOW_ID" || fail
       fi
+      echo_heading $(time_local)
+      has_failed && exit_with_failure "Failed to export database."
       exit_with_success_elapsed "Database exported."
     ;;
 
@@ -248,6 +252,7 @@ case $COMMAND in
       eval $(get_config_as plugin "environments.$ENVIRONMENT_ID.databases.$DATABASE_ID.plugin")
       echo_title "Replace Existing Data in $ENVIRONMENT_ID database \"$DATABASE_ID\""
       [[ "$WORKFLOW_ID" ]] && echo_heading "Using workflow: $WORKFLOW_ID"
+      echo_heading $(time_local)
 
       # Give the the user a select menu.
       if [[ -f "$filepath" ]]; then
@@ -282,6 +287,7 @@ case $COMMAND in
       if ! has_failed && [[ "$WORKFLOW_ID" ]]; then
         execute_workflow_processors "$WORKFLOW_ID" || fail
       fi
+      echo_heading $(time_local)
       has_failed && exit_with_failure "Failed to import database."
       exit_with_success_elapsed "$shortpath was imported to $DATABASE_ID"
     ;;
@@ -307,16 +313,22 @@ case $COMMAND in
         else
           for DATABASE_ID in "${LOCAL_DATABASE_IDS[@]}"; do
             echo_heading "Database: $DATABASE_ID"
+
             # This will create a quick link for the user to "open in Finder"
             save_dir=$(database_get_dumpfiles_directory "$REMOTE_ENV_ID" "$DATABASE_ID")
             backup_dir=$(database_get_dumpfiles_directory "$LOCAL_ENV_ID" "$DATABASE_ID")
             table_clear
-            table_add_row "download directory" "$save_dir"
-            table_add_row "backup directory" "$backup_dir"
+            table_add_row "downloads" "$save_dir"
+            table_add_row "backups" "$backup_dir"
             echo; echo_slim_table
 
+            echo_heading $(time_local)
+            echo
             eval $(get_config_as plugin "environments.$ENVIRONMENT_ID.databases.$DATABASE_ID.plugin")
             ! has_failed && call_plugin $plugin pull_db "$DATABASE_ID" || fail
+            if ! has_failed && [[ "$WORKFLOW_ID" ]]; then
+              execute_workflow_processors "$WORKFLOW_ID" || fail
+            fi
           done
         fi
       fi
@@ -329,10 +341,13 @@ case $COMMAND in
             succeed_because "No file_groups defined; skipping files component."
           fi
         else
+          echo_heading $(time_local)
+          echo
           eval $(get_config_as plugin "environments.$ENVIRONMENT_ID.plugin")
           call_plugin $plugin pull_files || fail
         fi
       fi
+      echo_heading $(time_local)
       has_failed && exit_with_failure
       exit_with_success_elapsed
     ;;

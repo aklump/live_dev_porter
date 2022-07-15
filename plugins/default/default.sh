@@ -144,27 +144,32 @@ function default_pull_files() {
 
       has_option v && echo "$rsync_options"
       write_log "rsync $rsync_options "$REMOTE_ENV_AUTH:$source_path/" "$destination_path/""
+      echo_task "Save $FILES_GROUP_ID to: $destination"
       rsync $rsync_options "$REMOTE_ENV_AUTH:$source_path/" "$destination_path/" || fail
 
       if has_failed; then
-        echo_fail "Files group \"$FILES_GROUP_ID\" failed to download."
+        echo_task_failed
       else
+        ! has_option "dry-run" && echo_task_complete
+
         if [[ "$WORKFLOW_ID" ]]; then
+          echo_task "Run workflow."
           ENVIRONMENT_ID="$LOCAL_ENV_ID"
+          DATABASE_ID=""
           eval $(get_config_as -a includes "file_groups.$FILES_GROUP_ID.include")
           for include in "${includes[@]}"; do
             for FILEPATH in "$destination_path"/${include#/}; do
               if [[ -f "$FILEPATH" ]]; then
                 SHORTPATH=$(path_unresolve "$destination_path" "$FILEPATH")
                 SHORTPATH=${SHORTPATH#/}
-                execute_workflow_processors "$WORKFLOW_ID" || exit_with_failure
+                execute_workflow_processors "$WORKFLOW_ID" || fail
               fi
              done
           done
+          has_failed && echo_task_failed && return 1
+          echo_task_complete
         fi
-        ! has_option "dry-run" && echo_pass "Files group \"$FILES_GROUP_ID\" saved to $destination."
       fi
-#      local message="📦 $local_relative_path ⬅️ 🌎 $remote_relative_path"
     fi
   done
   has_failed && return 1
