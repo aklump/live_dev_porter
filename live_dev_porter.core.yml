@@ -10,6 +10,7 @@ additional_config:
   - .live_dev_porter/config.local.yml
 additional_bootstrap: null
 default_command: configtest
+max_database_rollbacks_to_keep: 5
 commands:
   remote:
     help: 'Enter the remote server shell.'
@@ -148,33 +149,4 @@ commands:
       - clearcache
       - cc
     help: 'Clear all cached data.'
-max_database_rollbacks_to_keep: 5
-plugin_assignments:
-  local:
-    databases: mysql
-    files: default
-  remote:
-    databases: REMOTE_PLUGIN
-    files: REMOTE_PLUGIN
 
-  shell:
-    db: mysql
-    remote: REMOTE_PLUGIN
-  pull:
-    db: REMOTE_PLUGIN
-    files: REMOTE_PLUGIN
-  #  fetch:
-  #    db: REMOTE_PLUGIN
-  #    files: REMOTE_PLUGIN
-  #  reset:
-  #    db: LOCAL_PLUGIN
-  #    files: default
-  export:
-    db: mysql
-#environments:
-#  -
-#    id: production
-#    label: Production
-#    write_access: false
-#    plugin: default
-#environment: production

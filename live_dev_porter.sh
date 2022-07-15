@@ -192,7 +192,7 @@ has_option 'json' && JSON=true
 case $COMMAND in
 
     "configtest")
-      echo_title "CONFIGURATION TESTS"
+      echo_title "Test Configuration"
       implement_configtest
       for plugin in "${ACTIVE_PLUGINS[@]}"; do
         if plugin_implements $plugin configtest; then
@@ -206,16 +206,17 @@ case $COMMAND in
       ;;
 
     "remote")
-      call_plugin $PLUGIN_REMOTE_SSH_SHELL remote_shell || fail
+      call_plugin default remote_shell || fail
       has_failed && exit_with_failure
       exit_with_success_elapsed
       ;;
 
     "db")
-      database_id=$(get_command_arg 0 "$LOCAL_DATABASE_ID")
-      eval $(get_config_as plugin 'plugin_assignments.local.databases')
-      echo_title "$LOCAL_ENV_ID database \"$database_id\""
-      call_plugin $plugin db_shell "$database_id" || fail
+      ENVIRONMENT_ID="$LOCAL_ENV_ID"
+      DATABASE_ID=$(get_command_arg 0 "$LOCAL_DATABASE_ID")
+      eval $(get_config_as plugin "environments.$ENVIRONMENT_ID.databases.$DATABASE_ID.plugin")
+      echo_title "Enter $LOCAL_ENV_ID database \"$DATABASE_ID\""
+      call_plugin $plugin db_shell "$DATABASE_ID" || fail
       has_failed && exit_with_failure
       exit_with_success_elapsed
       ;;
@@ -228,7 +229,7 @@ case $COMMAND in
       if [[ ! "$JSON" ]]; then
         echo_title "Export $ENVIRONMENT_ID database \"$DATABASE_ID\" (via $plugin)"
         [[ "$WORKFLOW_ID" ]] && echo_heading "Using workflow: $WORKFLOW_ID"
-        echo_heading $(time_local)
+        echo_time_heading
       fi
 
       # This will create a quick link for the user to "open in Finder"
@@ -238,7 +239,7 @@ case $COMMAND in
       [[ "$JSON" ]] || echo_slim_table
 
       json_output=$(call_plugin $plugin export_db "$DATABASE_ID" "$filename") || fail
-      [[ "$JSON" ]] || echo_heading $(time_local)
+      [[ "$JSON" ]] || echo_time_heading
       has_failed && exit_with_failure "Failed to export database."
       if [[ "$WORKFLOW_ID" ]]; then
         execute_workflow_processors "$WORKFLOW_ID" || fail
@@ -248,7 +249,7 @@ case $COMMAND in
         echo $json_output
         exit_with_success_code_only
       fi
-      echo_heading $(time_local)
+      echo_time_heading
       has_failed && exit_with_failure "Failed to export database."
       exit_with_success_elapsed "Database exported."
     ;;
@@ -260,7 +261,7 @@ case $COMMAND in
       eval $(get_config_as plugin "environments.$ENVIRONMENT_ID.databases.$DATABASE_ID.plugin")
       echo_title "Replace Existing Data in $ENVIRONMENT_ID database \"$DATABASE_ID\""
       [[ "$WORKFLOW_ID" ]] && echo_heading "Using workflow: $WORKFLOW_ID"
-      echo_heading $(time_local)
+      echo_time_heading
 
       # Give the the user a select menu.
       if [[ -f "$filepath" ]]; then
@@ -295,18 +296,27 @@ case $COMMAND in
       if ! has_failed && [[ "$WORKFLOW_ID" ]]; then
         execute_workflow_processors "$WORKFLOW_ID" || fail
       fi
-      echo_heading $(time_local)
+      echo_time_heading
       has_failed && exit_with_failure "Failed to import database."
       exit_with_success_elapsed "$shortpath was imported to $DATABASE_ID"
     ;;
 
     "pull")
       ENVIRONMENT_ID="$LOCAL_ENV_ID"
-      echo_title "Pulling from remote"
-      [[ "$WORKFLOW_ID" ]] && echo_heading "Using workflow: $WORKFLOW_ID"
 
       [[ ${#LOCAL_DATABASE_IDS[@]} -eq 0 ]] && has_db=false || has_db=true
       [[ ${#FILE_GROUP_IDS[@]} -eq 0 ]] && has_files=false || has_files=true
+
+      array_csv__array=()
+      [[ "$do_database" == true ]] && array_csv__array=("${array_csv__array[@]}" "databases")
+      [[ "$do_files" == true ]] && array_csv__array=("${array_csv__array[@]}" "files")
+
+      eval $(get_config_as label "environments.$LOCAL_ENV_ID.label")
+      echo_title "$label"
+
+      eval $(get_config_as label "environments.$REMOTE_ENV_ID.label")
+      echo_title "Pull $(array_csv --prose) from $label"
+      [[ "$WORKFLOW_ID" ]] && echo_heading "Using workflow: $WORKFLOW_ID"
 
       if [[ "$has_db" == false ]] && [[ "$has_files" == false ]]; then
         fail_because "Nothing to pull; neither \"databases\" nor \"files_group\" have been configured."
@@ -324,13 +334,15 @@ case $COMMAND in
 
             # This will create a quick link for the user to "open in Finder"
             save_dir=$(database_get_dumpfiles_directory "$REMOTE_ENV_ID" "$DATABASE_ID")
-            backup_dir=$(database_get_dumpfiles_directory "$LOCAL_ENV_ID" "$DATABASE_ID")
+            backups_dir=$(database_get_dumpfiles_directory "$LOCAL_ENV_ID" "$DATABASE_ID")
             table_clear
-            table_add_row "downloads" "$save_dir"
-            table_add_row "backups" "$backup_dir"
+            table_add_row "downloads" "$(path_unresolve "$PWD" "$save_dir")"
+            table_add_row "backups" "$(path_unresolve "$PWD" "$backups_dir")"
             echo; echo_slim_table
 
-            echo_heading $(time_local)
+            echo_red "Press CTRL-C at any time to abort."
+
+            echo_time_heading
             echo
             eval $(get_config_as plugin "environments.$ENVIRONMENT_ID.databases.$DATABASE_ID.plugin")
             ! has_failed && call_plugin $plugin pull_db "$DATABASE_ID" || fail
@@ -349,13 +361,13 @@ case $COMMAND in
             succeed_because "No file_groups defined; skipping files component."
           fi
         else
-          echo_heading $(time_local)
+          echo_time_heading
           echo
           eval $(get_config_as plugin "environments.$ENVIRONMENT_ID.plugin")
           call_plugin $plugin pull_files || fail
         fi
       fi
-      echo_heading $(time_local)
+      echo_time_heading
       has_failed && exit_with_failure
       exit_with_success_elapsed
     ;;

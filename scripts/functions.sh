@@ -254,3 +254,17 @@ function implement_configtest() {
   done
   has_failed && fail_because "Use 'init' to create configuration files"
 }
+
+#
+# If you use ssh -o “BatchMode yes”, then it will do ssh only if the
+# password-less login is enabled, else it will return error and continues.
+# $1 -
+#
+# Returns 0 if .
+function remote_ssh() {
+  ssh -t -o BatchMode=yes "$REMOTE_ENV_AUTH" $@
+}
+
+function echo_time_heading() {
+  echo "$LIL $(time_local)"
+}

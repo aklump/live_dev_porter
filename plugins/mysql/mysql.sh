@@ -110,7 +110,7 @@ function mysql_configtest() {
   if [[ "$REMOTE_ENV_ID" ]]; then
     remote_base_path="$(environment_path_resolve $REMOTE_ENV_ID)"
     echo_task "Ensure remote has export tool installed."
-    if ssh -t "$REMOTE_ENV_AUTH" "[[ -e "$remote_base_path"/vendor/bin/live-dev-porter ]] || [[ -e "$remote_base_path"/vendor/bin/loft_deploy.sh ]]"  &> /dev/null; then
+    if remote_ssh "[[ -e "$remote_base_path"/vendor/bin/live-dev-porter ]] || [[ -e "$remote_base_path"/vendor/bin/loft_deploy.sh ]]"  &> /dev/null; then
       echo_task_complete
     else
       echo_task_failed
@@ -337,10 +337,10 @@ function mysql_pull_db() {
   local remote_dumpfile_path
 
   # Create the export at the remote.
-  echo_task "Export remote database."
+  echo_task "Export remote database: $DATABASE_ID."
   remote_base_path="$(environment_path_resolve $REMOTE_ENV_ID)"
 
-  ! ssh -t "REMOTE_ENV_AUTH" "(cd $remote_base_path && if [[ -e ./vendor/bin/live-dev-porter ]]; then ./vendor/bin/live-dev-porter export pull --json --id="$DATABASE_ID" --workflow="$WORKFLOW_ID"; elif [[ -e ./vendor/bin/loft_deploy.sh ]]; then ./vendor/bin/loft_deploy.sh export pull -y; else exit 1; fi)" &> /dev/null && echo_task_failed && fail_because "No export tool installed on the remote environment." && return 1
+  ! remote_ssh "(cd $remote_base_path && if [[ -e ./vendor/bin/live-dev-porter ]]; then ./vendor/bin/live-dev-porter export pull --json --id="$DATABASE_ID" --workflow="$WORKFLOW_ID"; elif [[ -e ./vendor/bin/loft_deploy.sh ]]; then ./vendor/bin/loft_deploy.sh export pull -y; else exit 1; fi)" &> /dev/null && echo_task_failed && fail_because "No export tool installed on the remote environment." && return 1
   echo_task_complete
   remote_dumpfile_path="$remote_base_path/private/default/db/purgeable/aurora_timesheet_drupal-pull.sql.gz"
 

@@ -14,7 +14,7 @@ function _test_remote_path() {
   local remote_path="$1"
 
   remote_path=$(environment_path_resolve "$REMOTE_ENV_ID" "$remote_path") || return 1
-  ssh -o BatchMode=yes "$REMOTE_ENV_AUTH" [ -e "$remote_path" ] &> /dev/null && return 0
+  remote_ssh [ -e "$remote_path" ] &> /dev/null && return 0
   return 1
 }
 
@@ -27,7 +27,7 @@ function default_configtest() {
   echo_task "Able to connect to $REMOTE_ENV_ID server."
   local did_connect=false
   # @link https://unix.stackexchange.com/a/264477
-  ssh -o BatchMode=yes "$REMOTE_ENV_AUTH" pwd &> /dev/null && did_connect=true
+  remote_ssh pwd &> /dev/null && did_connect=true
   if [[ false == "$did_connect" ]]; then
     echo_task_failed
     fail_because "Check $REMOTE_ENV_ID host and user config."
@@ -81,7 +81,7 @@ function default_remote_shell() {
   # @link https://www.man7.org/linux/man-pages/man1/ssh.1.html
   # @link https://github.com/fraction/sshcd/blob/master/sshcd
   local remote_base_path="$(environment_path_resolve $REMOTE_ENV_ID)"
-  ssh -t "$REMOTE_ENV_AUTH" "(cd $remote_base_path; exec \$SHELL -l)"
+  remote_ssh "(cd $remote_base_path; exec \$SHELL -l)"
 }
 
 function default_pull_files() {
@@ -146,7 +146,7 @@ function default_pull_files() {
 
       has_option v && echo "$rsync_options"
       write_log "rsync $rsync_options "$REMOTE_ENV_AUTH:$source_path/" "$destination_path/""
-      echo_task "Save $FILES_GROUP_ID to: $destination"
+      echo_task "Save "$FILES_GROUP_ID" to: $destination"
       rsync $rsync_options "$REMOTE_ENV_AUTH:$source_path/" "$destination_path/" || fail
 
       if has_failed; then

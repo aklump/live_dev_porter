@@ -24,7 +24,6 @@ final class Validator {
       'additional_bootstrap',
       'default_command',
       'commands',
-      'plugin_assignments',
     ]));
     $this->jsonSchema = $config['CACHE_DIR'] . '/config.schema.json';
   }
