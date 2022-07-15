@@ -21,7 +21,6 @@
     4. `${PLUGIN}_fetch`
     5. `${PLUGIN}_reset`
     6. `${PLUGIN}_on_clear_cache`
-    6. `${PLUGIN}_on_before_command`
     7. Plugins may define private functions, but they should begin with an underscore.
        ```bash
        function _get_remote_env() {

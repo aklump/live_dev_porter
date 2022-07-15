@@ -2,6 +2,25 @@
 
 If a project uses at least one database, it must be defined in configuration for it to be included in the copy. You must give it an `id` at minimum. Once defined, it can be referenced later in the configuration. You may define multiple databases if necessary.
 
+In cases where a database can be assumed, such as `export` without the use of `--database=NAME`, the first database ID listed in the environment list will be used. In the following configuration example, `primary` will be assumed the default database.
+
+```yaml
+environments:
+  -
+    id: local
+    databases:
+      primary:
+        plugin: lando
+        service: database
+      secondary:
+        plugin: lando
+        service: alt_database
+        mysqldump_options:
+          - add-drop-database
+          - bind-address
+          - dump-date
+```
+
 Sometimes you might define the same database with multiple ids, if you want to have different levels of export. For example you might have one that excludes many tables, and another that excludes none, that latter serving as a backup solution when you want more content than you would during normal development.
 
 The `mysqldump_options` allow you to customize the behavior of the CLI tool.
