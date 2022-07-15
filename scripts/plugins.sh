@@ -20,17 +20,6 @@ eval $(get_config_as LOCAL_PLUGIN "environments.$LOCAL_ENV_ID.plugin")
 eval $(get_config_as REMOTE_PLUGIN "environments.$REMOTE_ENV_ID.plugin")
 [[ "$REMOTE_PLUGIN" ]] || REMOTE_PLUGIN="default"
 
-eval $(get_config_as PLUGIN_PULL_DB 'plugin_assignments.pull.db')
-PLUGIN_PULL_DB=$(_token_expand $PLUGIN_PULL_DB)
-
-eval $(get_config_as PLUGIN_PULL_FILES 'plugin_assignments.pull.files')
-PLUGIN_PULL_FILES=$(_token_expand $PLUGIN_PULL_FILES)
-
-eval $(get_config_as PLUGIN_EXPORT_LOCAL_DB 'plugin_assignments.export.db')
-PLUGIN_EXPORT_LOCAL_DB=$(_token_expand $PLUGIN_EXPORT_LOCAL_DB)
-
-eval $(get_config_as PLUGIN_IMPORT_TO_LOCAL_DB 'plugin_assignments.import.db')
-PLUGIN_IMPORT_TO_LOCAL_DB=$(_token_expand $PLUGIN_IMPORT_TO_LOCAL_DB)
 
 eval $(get_config_as PLUGIN_LOCAL_DB_SHELL 'plugin_assignments.shell.db')
 PLUGIN_LOCAL_DB_SHELL=$(_token_expand $PLUGIN_LOCAL_DB_SHELL)
@@ -39,5 +28,15 @@ eval $(get_config_as PLUGIN_REMOTE_SSH_SHELL 'plugin_assignments.shell.remote')
 PLUGIN_REMOTE_SSH_SHELL=$(_token_expand $PLUGIN_REMOTE_SSH_SHELL)
 
 # Create a unique list of active plugins.
-declare -a ACTIVE_PLUGINS=($PLUGIN_PULL_DB $PLUGIN_PULL_FILES $PLUGIN_EXPORT_LOCAL_DB $PLUGIN_IMPORT_TO_LOCAL_DB $PLUGIN_LOCAL_DB_SHELL $PLUGIN_REMOTE_SSH_SHELL)
+declare -a ACTIVE_PLUGINS=($PLUGIN_EXPORT_LOCAL_DB $PLUGIN_LOCAL_DB_SHELL $PLUGIN_REMOTE_SSH_SHELL)
+
+# This will load the database plugins for all environments.
+for environment_id in "${ENVIRONMENT_IDS[@]}"; do
+  eval $(get_config_keys_as database_ids "environments.$environment_id.databases")
+  for database_id in "${database_ids[@]}"; do
+    eval $(get_config_as plugin "environments.$environment_id.databases.$database_id.plugin")
+    ACTIVE_PLUGINS=("${ACTIVE_PLUGINS[@]}" "$plugin")
+  done
+done
+
 ACTIVE_PLUGINS=($(echo "$(printf "%s\n" "${ACTIVE_PLUGINS[@]}")" | sort -u))

@@ -8,7 +8,7 @@
 CONFIG="live_dev_porter.core.yml";
 
 # Uncomment this line to enable file logging.
-LOGFILE="live_dev_porter.core.log"
+#LOGFILE="live_dev_porter.core.log"
 
 # Call a php class method
 #
@@ -155,14 +155,6 @@ if [ -f "$CONFIG_DIR/hooks.local.sh" ]; then
   source "$CONFIG_DIR/hooks.local.sh"
 fi
 
-
-# Initialize local stash directory.
-#pull_to_path="$LOCAL_FETCH_DIR/$REMOTE_ENV_ID/"
-#mkdir -p "$pull_to_path/db" || exit 1
-#mkdir -p "$pull_to_path/files" || exit 1
-#FETCH_DB_PATH=$(cd "$pull_to_path/db" && pwd)
-#FETCH_FILES_PATH=$(cd "$pull_to_path/files" && pwd)
-
 # Determine if we are going to operate on database, files, or both.
 if has_option d && has_option f; then
   do_database=true
@@ -177,7 +169,6 @@ else
   do_database=true
   do_files=true
 fi
-
 
 if [[ "$CLOUDY_CONFIG_HAS_CHANGED" == true ]] && [[ "$COMMAND" != "clear-cache" ]]; then
   call_php_class_method "\AKlump\LiveDevPorter\Config\RsyncHelper::createFiles" "CACHE_DIR=$CONFIG_DIR/.cache"
@@ -227,56 +218,79 @@ case $COMMAND in
       exit_with_success_elapsed
       ;;
 
-    "import")
-      eval $(get_config_as "name" "environments.dev.database.name")
-      echo_title "Replace $LOCAL_ENV_ID database \"$name\" with import (via $PLUGIN_IMPORT_TO_LOCAL_DB)"
-      eval $(get_config_path_as 'LOCAL_EXPORT_DIR' 'environments.dev.export.path')
-      exit_with_failure_if_empty_config 'LOCAL_EXPORT_DIR' 'environments.dev.export.path'
-      EXPORT_DB_PATH="$LOCAL_EXPORT_DIR/$LOCAL_ENV_ID/db"
-      if [ ! -d $EXPORT_DB_PATH ]; then
-        fail_because "Missing directory $EXPORT_DB_PATH"
-      else
-        dumpfiles=()
-        for i in $(cd "$EXPORT_DB_PATH" && find . -maxdepth 1 -type f -name '*.sql*'); do
-           [[ "$i" != '.' ]] && dumpfiles=("${dumpfiles[@]}" "$(basename "$i")")
-        done
-        echo
-        PS3="Which dumpfile? (CTRL-C to cancel) "
-        select dumpfile in ${dumpfiles[@]}; do
-          echo_heading "Preparing..."
-          database_drop_tables
-          echo_heading "Importing..."
-          call_plugin $PLUGIN_IMPORT_TO_LOCAL_DB import_db "$EXPORT_DB_PATH/$dumpfile" || fail
-          message="import $dumpfile"
-          if has_failed; then
-            echo_fail "$message"
-          else
-            echo_pass "$message"
-          fi
-          break
-        done
-      fi
-      has_failed && exit_with_failure "The import failed"
-      exit_with_success_elapsed "The import was successful"
-      ;;
-
     "export")
-      id=$(get_option 'id' $LOCAL_DATABASE_ID)
-      echo_title "Export $LOCAL_ENV_ID database \"$id\" (via $PLUGIN_EXPORT_LOCAL_DB)"
+      local filename
+      filename=$(get_command_arg 0)
+      DATABASE_ID=$(get_option 'id' $LOCAL_DATABASE_ID)
+      ENVIRONMENT_ID="$LOCAL_ENV_ID"
+      eval $(get_config_as plugin "environments.$ENVIRONMENT_ID.databases.$DATABASE_ID.plugin")
+      echo_title "Export $ENVIRONMENT_ID database \"$DATABASE_ID\" (via $plugin)"
       [[ "$WORKFLOW_ID" ]] && echo_heading "Using workflow: $WORKFLOW_ID"
-      call_plugin $PLUGIN_EXPORT_LOCAL_DB export_db "$id" "$(get_command_arg 0)" || fail
-      has_failed && exit_with_failure "Failed to export database"
+
+      # This will create a quick link for the user to "open in Finder"
+      dumpfiles_dir=$(database_get_dumpfiles_directory "$ENVIRONMENT_ID" "$DATABASE_ID")
+      table_clear
+      table_add_row "export directory" "$dumpfiles_dir"
+      echo_slim_table
+
+      call_plugin $plugin export_db "$DATABASE_ID" "$filename" || fail
+      has_failed && exit_with_failure "Failed to export database."
       if [[ "$WORKFLOW_ID" ]]; then
-        ENVIRONMENT_ID="$LOCAL_ENV_ID"
-        DATABASE_ID="$id"
         execute_workflow_processors "$WORKFLOW_ID" || exit_with_failure
       fi
-#      store_timestamp "$EXPORT_DB_PATH"
-      exit_with_success_elapsed "Database exported"
+      exit_with_success_elapsed "Database exported."
+    ;;
+
+    "import")
+      filepath=$(get_command_arg 0)
+      DATABASE_ID=$(get_option 'id' $LOCAL_DATABASE_ID)
+      ENVIRONMENT_ID="$LOCAL_ENV_ID"
+      eval $(get_config_as plugin "environments.$ENVIRONMENT_ID.databases.$DATABASE_ID.plugin")
+      echo_title "Replace Existing Data in $ENVIRONMENT_ID database \"$DATABASE_ID\""
+      [[ "$WORKFLOW_ID" ]] && echo_heading "Using workflow: $WORKFLOW_ID"
+
+      # Give the the user a select menu.
+      if [[ -f "$filepath" ]]; then
+        shortpath=$(path_unresolve "$PWD" "$filepath")
+      else
+        dumpfiles_dir=$(database_get_dumpfiles_directory "$ENVIRONMENT_ID" "$DATABASE_ID")
+        table_clear
+        table_add_row "export directory" "$dumpfiles_dir"
+        echo; echo_slim_table
+
+        choose__array=()
+        # http://mywiki.wooledge.org/ParsingLs
+        for i in *$filepath*.sql*; do
+          [[ -f "$i" ]] && choose__array=("${choose__array[@]}" "$i")
+        done
+        for i in "${dumpfiles_dir%/}"/*$filepath*.sql*; do
+          [[ -f "$i" ]] && choose__array=("${choose__array[@]}" "$(path_unresolve "$PWD" "$i")")
+        done
+        ! shortpath=$(choose "Type the number of the file to import") && exit_with_failure "Import cancelled."
+        filepath=${PWD%/}/${shortpath#/}
+        echo
+      fi
+
+      if [[ ! -f "$filepath" ]]; then
+        fail_because "$shortpath does not exit" && return 1
+      else
+        mysql_create_local_rollback_file "$DATABASE_ID" || fail
+        call_plugin $plugin import_db "$DATABASE_ID" "$filepath" || fail
+        eval $(get_config_as total_files_to_keep max_database_rollbacks_to_keep 5)
+        mysql_prune_rollback_files "$DATABASE_ID" "$total_files_to_keep"
+      fi
+      if ! has_failed && [[ "$WORKFLOW_ID" ]]; then
+        execute_workflow_processors "$WORKFLOW_ID" || fail
+      fi
+      has_failed && exit_with_failure "Failed to import database."
+      exit_with_success_elapsed "$shortpath was imported to $DATABASE_ID"
     ;;
 
     "pull")
+      ENVIRONMENT_ID="$LOCAL_ENV_ID"
       echo_title "Pulling from remote"
+      [[ "$WORKFLOW_ID" ]] && echo_heading "Using workflow: $WORKFLOW_ID"
+
       [[ ${#LOCAL_DATABASE_IDS[@]} -eq 0 ]] && has_db=false || has_db=true
       [[ ${#FILE_GROUP_IDS[@]} -eq 0 ]] && has_files=false || has_files=true
 
@@ -291,8 +305,20 @@ case $COMMAND in
             succeed_because "No databases defined; skipping database component."
           fi
         else
-          call_plugin $PLUGIN_PULL_DB authenticate || fail
-          ! has_failed && call_plugin $PLUGIN_PULL_DB pull_dbs || fail
+          for DATABASE_ID in "${LOCAL_DATABASE_IDS[@]}"; do
+            echo_heading "Database: $DATABASE_ID"
+            # This will create a quick link for the user to "open in Finder"
+            save_dir=$(database_get_dumpfiles_directory "$REMOTE_ENV_ID" "$DATABASE_ID")
+            backup_dir=$(database_get_dumpfiles_directory "$LOCAL_ENV_ID" "$DATABASE_ID")
+            table_clear
+            table_add_row "download directory" "$save_dir"
+            table_add_row "backup directory" "$backup_dir"
+            echo; echo_slim_table
+
+            eval $(get_config_as plugin "environments.$ENVIRONMENT_ID.databases.$DATABASE_ID.plugin")
+            call_plugin $plugin authenticate || fail
+            ! has_failed && call_plugin $plugin pull_db "$DATABASE_ID" || fail
+          done
         fi
       fi
 
@@ -304,7 +330,8 @@ case $COMMAND in
             succeed_because "No file_groups defined; skipping files component."
           fi
         else
-          call_plugin $PLUGIN_PULL_FILES pull_files || fail
+          eval $(get_config_as plugin "environments.$ENVIRONMENT_ID.plugin")
+          call_plugin $plugin pull_files || fail
         fi
       fi
       has_failed && exit_with_failure

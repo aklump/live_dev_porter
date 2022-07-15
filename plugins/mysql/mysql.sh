@@ -121,6 +121,76 @@ function mysql_db_shell() {
   mysql --defaults-file="$defaults_file" "$db_name"
 }
 
+# Delete the oldest files up to a count.
+#
+# $1 - The database ID.
+# $2 - The total newest files to keep, e.g. 5
+#
+# Returns 1 if failed.
+function mysql_prune_rollback_files() {
+  local database_id="$1"
+  local keep_files_count=$2
+  [[ "$2" ]] || return 1
+  filename="rollback_$(date8601 -c).sql"
+  dumpfiles_dir="$(database_get_dumpfiles_directory "$LOCAL_ENV_ID" "$database_id")"
+
+  local rollback_files
+  local stop_at_index
+  rollback_files=()
+  for i in "$dumpfiles_dir/rollback_"*.sql*; do
+    rollback_files=("${rollback_files[@]}" "$i")
+  done
+
+  stop_at_index=$((${#rollback_files[@]}-$keep_files_count))
+  echo_task "Delete all but $keep_files_count most recent rollback files."
+  for (( i = 0; i < $stop_at_index; i++ )); do
+    sandbox_directory "$(dirname "${rollback_files[i]}")"
+    ! rm "${rollback_files[i]}" && echo_task_failed && return 1
+  done
+  echo_task_complete
+  return 0
+}
+
+# Create a database archive for rollback
+#
+# $1 - The database ID.
+#
+# Returns 0 if file was created, 1 otherwise.
+function mysql_create_local_rollback_file() {
+  local database_id="$1"
+
+  local filename
+  local db_name
+  local defaults_file
+  local dumpfiles_dir
+  local options
+  local save_as
+
+  filename="rollback_$(date8601 -c).sql"
+  dumpfiles_dir="$(database_get_dumpfiles_directory "$LOCAL_ENV_ID" "$database_id")"
+  sandbox_directory "$dumpfiles_dir"
+  ! mkdir -p "$dumpfiles_dir" && fail_because "Could not create directory: $dumpfiles_dir" && return 1
+
+  # @link https://dev.mysql.com/doc/refman/5.7/en/mysqldump.html#mysqldump-option-summary
+  eval $(get_config_as -a "settings" "environments.$LOCAL_ENV_ID.databases.$database_id.mysqldump_options")
+  options=' --add-drop-table'
+  if [[ null != ${settings[@]} ]]; then
+    for option in ${settings[@]}; do
+      options="$options --$option"
+    done
+  fi
+
+  defaults_file=$(database_get_defaults_file "$LOCAL_ENV_ID" "$database_id")
+  ! db_name=$(mysql_get_env_db_name_by_id "$LOCAL_ENV_ID" "$database_id") && fail_because "$db_name" && return 1
+  write_log_debug "mysqldump --defaults-file="$defaults_file"$options "$db_name"  >> "${dumpfiles_dir%/}/$filename""
+  echo_task "Create backup as $filename"
+  if ! mysqldump --defaults-file="$defaults_file"$options "$db_name"  > "${dumpfiles_dir%/}/$filename"; then
+    echo_task_failed && fail_because "mysqldump failed." && return 1
+  fi
+  echo_task_complete
+  return 0
+}
+
 # Handle a database export.
 #
 # $1 - The database ID
@@ -129,19 +199,17 @@ function mysql_db_shell() {
 # Returns 0 if .
 function mysql_export_db() {
   local database_id="$1"
-  local basename="$3"
+  local filename="$2"
 
-  [[ "$database_id" ]] || database_id="$LOCAL_DATABASE_ID"
-
-  local export_dir="$(database_get_export_directory "$LOCAL_ENV_ID" "$database_id")"
-  [[ "$basename" ]] || basename="${LOCAL_ENV_ID}_${database_id}_$(date8601 -c)"
-  local save_as="${export_dir%/}/$basename.sql"
+  local dumpfiles_dir="$(database_get_dumpfiles_directory "$LOCAL_ENV_ID" "$database_id")"
+  [[ "$filename" ]] || filename="${LOCAL_ENV_ID}_${database_id}_$(date8601 -c)"
+  local save_as="$dumpfiles_dir/$filename.sql"
 
   # Ensure we don't clobber an existing.
   [[ -f "$save_as" ]] && fail_because "$save_as already exists." && return 1
 
-  sandbox_directory "$export_dir"
-  ! mkdir -p "$export_dir" && fail_because "Could not create directory: $save_as" && return 1
+  sandbox_directory "$dumpfiles_dir"
+  ! mkdir -p "$dumpfiles_dir" && fail_because "Could not create directory: $dumpfiles_dir" && return 1
 
   # @link https://dev.mysql.com/doc/refman/5.7/en/mysqldump.html#mysqldump-option-summary
   eval $(get_config_as -a "settings" "environments.$LOCAL_ENV_ID.databases.$database_id.mysqldump_options")
@@ -193,44 +261,68 @@ function mysql_export_db() {
 }
 
 function mysql_import_db() {
-  local path_to_dumpfile="$1"
+  local database_id="$1"
+  local filepath="$2"
 
-  if [[ ! "$path_to_dumpfile" ]]; then
-    fail_because "No import filename given." && return 1
-  fi
-  if [ ! -f "$path_to_dumpfile" ]; then
-    fail_because "Import file \"$path_to_dumpfile\" does not exist." && return 1
-  fi
+  local db_name
+  local defaults_file
+  defaults_file=$(database_get_defaults_file "$LOCAL_ENV_ID" "$database_id")
+  ! db_name=$(mysql_get_env_db_name_by_id "$LOCAL_ENV_ID" "$database_id") && fail_because "$db_name" && return 1
+  mysql_drop_all_tables "$DATABASE_ID" || return 1
+  echo_task "Import data from $(basename "$filepath")"
+  write_log_debug "mysql --defaults-file="$defaults_file" $db_name < $filepath"
+  ! mysql --defaults-file="$defaults_file" $db_name < $filepath && echo_task_failed && return 1
+  echo_task_complete
 
-  eval $(get_config_as "db_name" "environments.dev.database.name")
-
-  local defaults_file=$(database_get_defaults_file "$LOCAL_ENV_ID" "$LOCAL_DATABASE_ID")
-
-  mysql --defaults-file="$defaults_file" $db_name < $path_to_dumpfile
+  return 0;
 }
 
-function mysql_pull_dbs() {
-  for DATABASE_ID in "${LOCAL_DATABASE_IDS[@]}"; do
+# Drop all local database tables for given database.
+#
+# $1 - The database ID.
+#
+# Returns 0 if successful; 1 otherwise.
+function mysql_drop_all_tables() {
+  local database_id="$1"
 
-    # TODO Export remote database.
-    # TODO Download remote database.
-    # TODO Export local database for rollback.
-    # TODO Import Remote database to local database
-
-    continue;
-
-    if [[ "$WORKFLOW_ID" ]]; then
-      ENVIRONMENT_ID="$LOCAL_ENV_ID"
-#      eval $(get_config_as -a includes "file_groups.${key}.include")
-#      for include in "${includes[@]}"; do
-#        for FILEPATH in "$destination"/$include; do
-#          if [[ -f "$FILEPATH" ]]; then
-#            SHORTPATH=$(path_unresolve "$destination" "$FILEPATH")
-#            SHORTPATH=${SHORTPATH#/}
-#            execute_workflow "$workflow" || exit_with_failure
-#          fi
-#         done
-#      done
-    fi
+  local db_name
+  local tables
+  local sql
+  echo_task "Drop all tables."
+  ! db_name=$(mysql_get_env_db_name_by_id "$LOCAL_ENV_ID" "$database_id") && fail_because "$db_name" && return 1
+  ! mysql --defaults-file="$defaults_file" $db_name < $filepath && echo_fail "$message"
+  tables=$(mysql --defaults-file="$defaults_file" $db_name -e 'SHOW TABLES' | awk '{ print $1}' | grep -v '^Tables')
+  sql="DROP TABLE "
+  for t in $tables; do
+    sql="$sql\`$t\`,"
   done
+  sql="${sql%,}"
+
+  write_log_debug "mysql --defaults-file="$defaults_file" $db_name -e "$sql""
+  ! mysql --defaults-file="$defaults_file" $db_name -e "$sql" && echo_task_failed && return 1
+  echo_task_complete
+  return 0
+}
+
+function mysql_pull_db() {
+  local DATABASE_ID="$1"
+
+  local dumpfiles_dir="$(database_get_dumpfiles_directory "$REMOTE_ENV_ID" "$DATABASE_ID")"
+  sandbox_directory "$dumpfiles_dir"
+  ! mkdir -p "$dumpfiles_dir" && fail_because "Could not create directory: $dumpfiles_dir" && return 1
+  local save_as="$dumpfiles_dir/pulled.sql"
+
+  echo_task "Download as $(basename "$save_as")"
+  echo_task_complete
+
+  save_as="/Users/aklump/Code/Packages/bash/live_dev_porter/.live_dev_porter/local/databases/drupal/original.sql"
+
+  # Do the rollback and import.
+  mysql_create_local_rollback_file "$DATABASE_ID" || return 1
+  mysql_import_db "$DATABASE_ID" "$save_as" || return 1
+  eval $(get_config_as total_files_to_keep max_database_rollbacks_to_keep 5)
+  mysql_prune_rollback_files "$DATABASE_ID" "$total_files_to_keep" || return 1
+  if [[ "$WORKFLOW_ID" ]]; then
+    execute_workflow_processors "$WORKFLOW_ID" || return 1
+  fi
 }

@@ -89,11 +89,23 @@ commands:
   import:
     require_write_access: true
     help: 'Import a dumpfile to the local database.'
+    arguments:
+      filepath:
+        help: A an absolute (or relative to the working directory) path to an existing export file.  Alternately, it may be a portion of a filename used to search through existing files, or simply omitted and you will be shown files to choose from.
+    options:
+      id:
+        type: string
+        help: Indicate the database ID to import into, this can be omitted when only one database is defined, or when you want the first (default) database to be used.
+      workflow:
+        type: string
+        aliases:
+          - wf
+        help: A workflow to use post import; this will be used instead of the configured default.
   export:
     help: 'Export the local database.'
     arguments:
-      basename:
-        help: Optional basename to use instead of the default, e.g., "rollback".
+      filename:
+        help: Optional filename to use instead of the default, e.g., "rollback".  Do not include the extension.
     options:
       id:
         type: string
@@ -133,6 +145,7 @@ commands:
       - clearcache
       - cc
     help: 'Clear all cached data.'
+max_database_rollbacks_to_keep: 5
 plugin_assignments:
   local:
     databases: mysql
@@ -154,8 +167,6 @@ plugin_assignments:
   #    db: LOCAL_PLUGIN
   #    files: default
   export:
-    db: mysql
-  import:
     db: mysql
 #environments:
 #  -

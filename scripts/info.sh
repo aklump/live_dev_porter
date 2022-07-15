@@ -26,10 +26,11 @@ for id in "${ENVIRONMENT_IDS[@]}"; do
   eval $(get_config_keys_as database_ids "environments.$id.databases")
   for database_id in "${database_ids[@]}"; do
     eval $(get_config_as plugin "environments.$id.databases.${database_id}.plugin")
-    table_add_row "$database_id" "$plugin"
+    dumpfiles_dir="$(database_get_dumpfiles_directory "$id" "$database_id")"
+    table_add_row "$database_id" "$plugin" "$dumpfiles_dir"
   done
   if table_has_rows; then
-    table_set_header "Database" "Plugin"
+    table_set_header "Database" "Plugin" "Path"
     echo_slim_table
   fi
 
@@ -64,17 +65,6 @@ if [[ ${#ids[@]} -gt 0 ]]; then
 fi
 
 echo_title "Plugins"
-table_set_header "operation" "plugin"
-table_add_row "Pull db" "$PLUGIN_PULL_DB"
-table_add_row "Pull files" "$PLUGIN_PULL_FILES"
-table_add_row "Export local db" "$PLUGIN_EXPORT_LOCAL_DB"
-table_add_row "Import to local db" "$PLUGIN_IMPORT_TO_LOCAL_DB"
-
-#echo_title "Other info"
-#array_csv__array=("${ACTIVE_PLUGINS[@]}")
-#table_add_row "All active plugins" "$(array_csv --prose)"
+array_csv__array=("${ACTIVE_PLUGINS[@]}")
+table_add_row "All active plugins" "$(array_csv --prose)"
 echo_slim_table
-
-# Plugins may leverage "table_add_row" to build up the More info.  The table is
-# echoed by the controller.
-

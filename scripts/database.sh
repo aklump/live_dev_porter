@@ -18,34 +18,17 @@ function database_get_defaults_file() {
   echo "$CACHE_DIR/$environment_id/databases/$database_id/db.cnf"
 }
 
-function database_get_export_directory() {
+# Get the export directory
+#
+# $1 - The environment ID.
+# $2 - The database ID.
+#
+# Echos the directory WITHOUT trailing slash.
+function database_get_dumpfiles_directory() {
   local environment_id="$1"
   local database_id="$2"
 
-  echo "$CONFIG_DIR/$environment_id/databases/$database_id/"
-}
-
-##
-# Drop all local db tables
-#
-function database_drop_tables() {
-  throw "This is not yet working;$0;in function ${FUNCNAME}();$LINENO"
-  eval $(get_config_as "db_name" "environments.dev.database.name")
-  local path_to_db_creds=$(ldp_get_db_creds_path dev)
-  tables=$(mysql --defaults-file="$path_to_db_creds" $db_name -e 'SHOW TABLES' | awk '{ print $1}' | grep -v '^Tables')
-  sql="DROP TABLE "
-  for t in $tables; do
-    sql="$sql\`$t\`,"
-  done
-  sql="${sql%,}"
-  message="drop all tables"
-  if mysql --defaults-file="$path_to_db_creds" $db_name -e "$sql"; then
-    echo_pass "$message"
-  else
-    echo_pass "$message" && fail
-  fi
-  has_failed && return 1
-  return 0
+  echo "$CONFIG_DIR/$environment_id/databases/$database_id"
 }
 
 # Get the table section of the mysqldump command based on config.

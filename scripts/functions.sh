@@ -94,11 +94,22 @@ function execute_workflow_processors() {
     DATABASE_NAME="$(mysql_get_env_db_name_by_id $ENVIRONMENT_ID $DATABASE_ID)" || DATABASE_NAME=''
   fi
 
+  if [[ "$DATABASE_NAME" ]]; then
+    # These should never hold values if we are processing a database.
+    FILES_GROUP_ID=''
+    FILEPATH=''
+    SHORTPATH=''
+  else
+    # Without a name, we should never have an ID.
+    DATABASE_ID=''
+  fi
+
   eval $(get_config_keys_as workflow_keys "workflows.$workflow")
   for workflow_key in "${workflow_keys[@]}"; do
-     eval $(get_config_as basename "workflows.$workflow.$workflow_key.processor")
-     [[ ! "$basename" ]] && continue
+    eval $(get_config_as basename "workflows.$workflow.$workflow_key.processor")
+    [[ ! "$basename" ]] && continue
 
+    echo_task "$basename"
     processor_path="$CONFIG_DIR/processors/$basename"
     processor="$(path_unresolve "$APP_ROOT" "$processor_path")"
 
@@ -113,6 +124,7 @@ function execute_workflow_processors() {
     fi
 
     if [[ $processor_result -ne 0 ]]; then
+      echo_task_failed
       [[ "$processor_output" ]] && fail_because "$processor_output"
       if [[ "$FILES_GROUP_ID" ]]; then
         fail_because "\"$processor\" has failed while processing: $SHORTPATH (in files group \"$FILES_GROUP_ID\")."
@@ -121,15 +133,16 @@ function execute_workflow_processors() {
       fi
       return 1
     fi
-    if [[ "$processor_output" ]]; then
-      ! has_failed && echo_pass "$processor_output" || echo_fail "$processor_output"
-    fi
+    echo_task_complete
+    succeed_because "$processor_output"
   done
 
   return 0
 }
 
 # Call a plugin function.
+#
+# If the named plugin doesn't support the function, the "default" plugin will be tried.
 #
 # $1 - The name of the plugin
 # $2 - The function name without the plugin leader, so for a function
@@ -141,9 +154,13 @@ function call_plugin() {
   local function_tail=$2
   local args=("${@:3}")
 
+  local function
   [ -f "$PLUGINS_DIR/$plugin/$plugin.sh" ] || return 1
   source "$PLUGINS_DIR/$plugin/$plugin.sh"
-  local function="${plugin}_${function_tail}"
+  function="${plugin}_${function_tail}"
+  if ! function_exists $function; then
+    function="default_${function_tail}"
+  fi
   ! function_exists $function && fail_because "Plugin \"$plugin\" does not support \"$function_tail\"" && return 1
   $function "${args[@]}"
 }

@@ -6,6 +6,7 @@
 #
 
 function _get_remote_env() {
+    throw "broken;$0;in function ${FUNCNAME}();$LINENO"
   case $REMOTE_ENV_ID in
   production)
     echo 'live' && return 0
@@ -18,6 +19,7 @@ function _get_remote_env() {
 }
 
 function pantheon_authenticate() {
+    throw "broken;$0;in function ${FUNCNAME}();$LINENO"
   eval $(get_config_as 'machine_token' "environments.$REMOTE_ENV_ID.fetch.machine_token")
   exit_with_failure_if_empty_config 'machine_token' 'pantheon.machine_token'
 
@@ -25,12 +27,15 @@ function pantheon_authenticate() {
 }
 
 function pantheon_remote_clear_cache() {
+    throw "broken;$0;in function ${FUNCNAME}();$LINENO"
   eval $(get_config_as 'site_name' "environments.$REMOTE_ENV_ID.fetch.site_name")
   exit_with_failure_if_empty_config 'site_name' 'pantheon.site_name'
   lando terminus env:clear-cache $site_name.$(_get_remote_env)
 }
 
 function pantheon_fetch_db() {
+    throw "broken;$0;in function ${FUNCNAME}();$LINENO"
+  throw "Broken;$0;in function ${FUNCNAME}();$LINENO"
   ldp_delete_fetched_db
   local lando_path=$(get_container_path "$FETCH_DB_PATH")
   if [[ ! "$lando_path" ]]; then
@@ -42,12 +47,14 @@ function pantheon_fetch_db() {
 }
 
 function pantheon_remote_shell() {
+    throw "broken;$0;in function ${FUNCNAME}();$LINENO"
   eval $(get_config_as 'site_uuid' "environments.$REMOTE_ENV_ID.fetch.site_uuid")
   exit_with_failure_if_empty_config 'site_uuid' 'pantheon.site_uuid'
   sftp -o Port=2222 $(_get_remote_env).$site_uuid@appserver.$(_get_remote_env).$site_uuid.drush.in
 }
 
 function pantheon_fetch_files() {
+  throw "broken;$0;in function ${FUNCNAME}();$LINENO"
   eval $(get_config_as 'site_uuid' "environments.$REMOTE_ENV_ID.fetch.site_uuid")
   exit_with_failure_if_empty_config 'site_uuid' 'pantheon.site_uuid'
 
@@ -80,6 +87,7 @@ function pantheon_fetch_files() {
 }
 
 function pantheon_info() {
+    throw "broken;$0;in function ${FUNCNAME}();$LINENO"
   eval $(get_config_as 'machine_token' "environments.$REMOTE_ENV_ID.fetch.machine_token")
   eval $(get_config_as 'site_uuid' "environments.$REMOTE_ENV_ID.fetch.site_uuid")
   eval $(get_config_as 'site_name' "environments.$REMOTE_ENV_ID.fetch.site_name")
