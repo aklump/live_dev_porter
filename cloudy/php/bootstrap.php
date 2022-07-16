@@ -16,6 +16,7 @@ use Jasny\DotKey;
 define('ROOT', getenv('ROOT'));
 
 $autoload_paths = [
+  '/vendor/autoload.php',
   '/../../../../../vendor/autoload.php',
   '/../../vendor/autoload.php',
 ];

@@ -1,8 +1,12 @@
+/cloudy/.gitignore
+/cloudy/cache/
+/cloudy/php/composer*
+/cloudy/php/vendor/
+/cloudy/php/vendor/*
+/composer.lock
 /documentation/core/
 /documentation/README.md
-/vendor/
-/composer.lock
-/cloudy/vendor/
-/cloudy/cache/
-live_dev_porter.core.log
 init.old/
+live_dev_porter.core.log
+tmp/
+vendor/
