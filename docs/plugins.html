@@ -26,31 +26,25 @@
 
 <ol>
 <li>Plugins are folders saved to the <em>plugins/</em> directory, resembling the following structure.
-<code>└── pantheon
+<code>└── mysql
     ├── README.md
     ├── config.yml
     └── plugin.sh</code></li>
-<li><em>config.yml</em> should all configuration that the plugin is expecting to use.
+<li><em>config.yml</em> should all configuration that the plugin is expecting to use.</li>
+<li><p><em>plugin.sh</em> should contain functions; all that are public must be prefixed by the plugin name:</p>
 
-<ol>
-<li><em>plugin.sh</em> should contain functions; all that are public must be prefixed by the plugin name:
-<code>bash
-function pantheon_init() {
- ensure_files_local_directories &amp;&amp; succeed_because "Updated fetch structure at $(path_unresolve "$APP_ROOT" "$FETCH_FILES_PATH")"
-}</code></li>
-</ol></li>
+<pre><code class="bash">function mysql_on_init() {
+ensure_files_local_directories &amp;&amp; succeed_because "Updated fetch structure at $(path_unresolve "$APP_ROOT" "$FETCH_FILES_PATH")"
+}
+</code></pre></li>
 <li>Plugins may provide the following functions:
 
 <ol>
-<li><code>${PLUGIN}_init</code></li>
-<li><code>${PLUGIN}_authenticate</code></li>
-<li><code>${PLUGIN}_remote_clear_cache</code></li>
-<li><code>${PLUGIN}_fetch</code></li>
-<li><code>${PLUGIN}_reset</code></li>
-<li><code>${PLUGIN}_on_clear_cache</code></li>
+<li>Plugins implement hooks which are functions named by: PLUGIN_on_*.</li>
+<li>To find the hooks available, search the code for <code>plugin_implements</code> and <code>call_plugin</code>.</li>
 <li>Plugins may define private functions, but they should begin with an underscore.
 <code>bash
-function _get_remote_env() {
+function _mysql_get_remote_env() {
  case $REMOTE_ENV_ID in
  production)
    echo 'live' &amp;&amp; return 0
@@ -91,7 +85,7 @@ function _get_remote_env() {
 <footer>
   <div class="pager"><a href="README.html" class="prev README">&laquo;Live Dev Porter</a><a href="index.html" class="index pager__book-title"></a><a href="remote.html" class="next remote">Remote Environment&raquo;</a></div>  
   <div id="footer-legaleeze">
-    <p class="legaleeze center">Version: 0.0.9 &bull; Last Updated: Fri, 15 Jul 2022 14:04:27 -0700</p>
+    <p class="legaleeze center">Version: 0.0.10 &bull; Last Updated: Fri, 15 Jul 2022 21:59:25 -0700</p>
   </div>
 </footer>
 
