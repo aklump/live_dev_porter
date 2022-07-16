@@ -4,24 +4,13 @@
 #
 # Returns 0 if successful, 1 otherwise.
 function mysql_on_clear_cache() {
-  local pattern=$(database_get_defaults_file "*" "*")
-  for filepath in $pattern; do
-    [[ ! -f "$filepath" ]] && continue
-    sandbox_directory "$(dirname $filepath)"
-    if chmod 0600 "$filepath" && rm "$filepath"; then
-      succeed_because "$(path_unresolve "$APP_ROOT" "$filepath")"
-    else
-      fail_because "Failed to delete $filepath"
-    fi
-  done
-  has_failed && return 1
-  return 0
+  database_delete_all_defaults_files
 }
 
 # Rebuild configuration files after a cache clear.
 #
 # Returns 0 if successful, 1 otherwise.
-function mysql_rebuild_config() {
+function mysql_on_rebuild_config() {
   for environment_id in "${ENVIRONMENT_IDS[@]}"; do
     eval $(get_config_keys_as "database_ids" "environments.$environment_id.databases")
     for database_id in "${database_ids[@]}"; do
@@ -66,37 +55,27 @@ function mysql_rebuild_config() {
   return 0
 }
 
-# Echo the database name by environment ID && database ID.
-#
-# $1 - The environment ID.
-# $1 - The database ID.
-#
-# @code
-# local name
-# ! name=$(mysql_get_env_db_name_by_id "$LOCAL_ENV_ID" "$database_id") && fail_because "$name" && return 1
-# @endcode
-#
-# Returns 0 if .
-function mysql_get_env_db_name_by_id() {
-  local environment_id="$1"
-  local database_id="$2"
+# @see database_get_name
+function mysql_on_database_name() {
+    local environment_id="$1"
+    local database_id="$2"
 
-  eval $(get_config_as "db_name" "environments.$environment_id.databases.$database_id.name")
-  [[ "$db_name" ]] && echo "$db_name" && return 0
-  echo "The database ID \"$database_id\" is not in the \"$environment_id\" environment configuration."
-  return 1
+    eval $(get_config_as "db_name" "environments.$environment_id.databases.$database_id.name")
+    [[ "$db_name" ]] && echo "$db_name" && return 0
+    echo "The database ID \"$database_id\" is not in the \"$environment_id\" environment configuration."
+    return 1
 }
 
 # Add database configuration tests to the execution
 #
 # Returns nothing.
-function mysql_configtest() {
+function mysql_on_configtest() {
   local defaults_file
   local db_name
   local message
   for database_id in "${LOCAL_DATABASE_IDS[@]}"; do
     defaults_file=$(database_get_defaults_file "$LOCAL_ENV_ID" "$database_id")
-    ! db_name=$(mysql_get_env_db_name_by_id "$LOCAL_ENV_ID" "$database_id") && echo_fail "$db_name" && fail
+    ! db_name=$(database_get_name "$LOCAL_ENV_ID" "$database_id") && echo_fail "$db_name" && fail
     echo_task "Able to connect to $LOCAL_ENV_ID database: $database_id."
     if mysql --defaults-file="$defaults_file" "$db_name" -e ";" 2> /dev/null ; then
       echo_task_complete
@@ -124,12 +103,12 @@ function mysql_configtest() {
 # $1 - The local database ID to use.
 #
 # Returns 0 if .
-function mysql_db_shell() {
+function mysql_on_db_shell() {
   local database_id="$1"
 
   local defaults_file
   local db_name
-  ! db_name=$(mysql_get_env_db_name_by_id "$LOCAL_ENV_ID" "$database_id") && fail_because "$db_name" && return 1
+  ! db_name=$(database_get_name "$LOCAL_ENV_ID" "$database_id") && fail_because "$db_name" && return 1
   defaults_file=$(database_get_defaults_file "$LOCAL_ENV_ID" "$LOCAL_DATABASE_ID")
   mysql --defaults-file="$defaults_file" "$db_name"
 }
@@ -194,7 +173,7 @@ function mysql_create_local_rollback_file() {
   fi
 
   defaults_file=$(database_get_defaults_file "$LOCAL_ENV_ID" "$database_id")
-  ! db_name=$(mysql_get_env_db_name_by_id "$LOCAL_ENV_ID" "$database_id") && fail_because "$db_name" && return 1
+  ! db_name=$(database_get_name "$LOCAL_ENV_ID" "$database_id") && fail_because "$db_name" && return 1
   write_log_debug "mysqldump --defaults-file="$defaults_file"$options "$db_name"  >> "${dumpfiles_dir%/}/$filename""
   echo_task "Create backup as $filename"
   if ! mysqldump --defaults-file="$defaults_file"$options "$db_name"  > "${dumpfiles_dir%/}/$filename"; then
@@ -210,7 +189,7 @@ function mysql_create_local_rollback_file() {
 # $2 - Optional, base name to use instead of default.
 #
 # Returns 0 if .
-function mysql_export_db() {
+function mysql_on_export_db() {
   local database_id="$1"
   local filename="$2"
 
@@ -240,25 +219,24 @@ function mysql_export_db() {
   local structure_tables
   local data_tables
 
-  ! db_name=$(mysql_get_env_db_name_by_id "$LOCAL_ENV_ID" "$database_id") && fail_because "$db_name" && return 1
+  ! db_name=$(database_get_name "$LOCAL_ENV_ID" "$database_id") && fail_because "$db_name" && return 1
 
   # This will write the table structure to the export file.
   structure_tables=($(database_get_export_tables --structure "$LOCAL_ENV_ID" "$database_id" "$db_name" "$WORKFLOW_ID"))
   if [[ "$structure_tables" ]]; then
     options="$shared_options --add-drop-table --no-data "
     write_log_debug "mysqldump --defaults-file="$defaults_file"$options "$db_name" $structure_tables >> "$save_as""
+    mysqldump --defaults-file="$defaults_file"$options "$db_name" ${structure_tables[*]} >> "$save_as" || return 1
     succeed_because "Structure for ${#structure_tables[@]} table(s) exported."
-    mysqldump --defaults-file="$defaults_file"$options "$db_name" ${structure_tables[*]} >> "$save_as"
   fi
-
-  # This will write the data to the export file.s
+  # This will write the data to the export file.
   data_tables=($(database_get_export_tables --data "$LOCAL_ENV_ID" "$database_id" "$db_name" "$WORKFLOW_ID"))
 
   if [[ "$data_tables" ]]; then
     options="$shared_options --skip-add-drop-table --no-create-info"
     write_log_debug "mysqldump --defaults-file="$defaults_file"$options "$db_name" $data_tables >> "$save_as""
+    mysqldump --defaults-file="$defaults_file"$options "$db_name" ${data_tables[*]} >> "$save_as" || return 1
     succeed_because "Data for ${#data_tables[@]} table(s) exported."
-    mysqldump --defaults-file="$defaults_file"$options "$db_name" ${data_tables[*]} >> "$save_as"
   else
     succeed_because "No table data has been exported."
   fi
@@ -276,14 +254,14 @@ function mysql_export_db() {
   succeed_because "Filename is: $(basename "$save_as")"
 }
 
-function mysql_import_db() {
+function mysql_on_import_db() {
   local database_id="$1"
   local filepath="$2"
 
   local db_name
   local defaults_file
   defaults_file=$(database_get_defaults_file "$LOCAL_ENV_ID" "$database_id")
-  ! db_name=$(mysql_get_env_db_name_by_id "$LOCAL_ENV_ID" "$database_id") && fail_because "$db_name" && return 1
+  ! db_name=$(database_get_name "$LOCAL_ENV_ID" "$database_id") && fail_because "$db_name" && return 1
   mysql_drop_all_tables "$DATABASE_ID" || return 1
 
   if [[ "$(path_extension "$filepath")" == 'gz' ]]; then
@@ -314,7 +292,7 @@ function mysql_drop_all_tables() {
   local sql
 
   echo_task "Drop all tables."
-  ! db_name=$(mysql_get_env_db_name_by_id "$LOCAL_ENV_ID" "$database_id") && fail_because "$db_name" && return 1
+  ! db_name=$(database_get_name "$LOCAL_ENV_ID" "$database_id") && fail_because "$db_name" && return 1
   tables=$(mysql --defaults-file="$defaults_file" $db_name -e 'SHOW TABLES' | awk '{ print $1}' | grep -v '^Tables')
   [[ ! "${tables[0]}" ]] && echo_task_complete && return 0
 
@@ -330,7 +308,7 @@ function mysql_drop_all_tables() {
   return 0
 }
 
-function mysql_pull_db() {
+function mysql_on_pull_db() {
   local DATABASE_ID="$1"
 
   local remote_base_path
@@ -357,7 +335,7 @@ function mysql_pull_db() {
 
   # Do the rollback and import.
   mysql_create_local_rollback_file "$DATABASE_ID" || return 1
-  mysql_import_db "$DATABASE_ID" "$save_as" || return 1
+  mysql_on_import_db "$DATABASE_ID" "$save_as" || return 1
   eval $(get_config_as total_files_to_keep max_database_rollbacks_to_keep 5)
   mysql_prune_rollback_files "$DATABASE_ID" "$total_files_to_keep" || return 1
 }

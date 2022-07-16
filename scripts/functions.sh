@@ -91,7 +91,7 @@ function execute_workflow_processors() {
   local php_query
   local DATABASE_NAME
   if [[ "$ENVIRONMENT_ID" ]] && [[ "$DATABASE_ID" ]]; then
-    DATABASE_NAME="$(mysql_get_env_db_name_by_id $ENVIRONMENT_ID $DATABASE_ID)" || DATABASE_NAME=''
+    DATABASE_NAME="$(database_get_name $ENVIRONMENT_ID $DATABASE_ID)" || DATABASE_NAME=''
   fi
 
   if [[ "$DATABASE_NAME" ]]; then
@@ -143,7 +143,7 @@ function execute_workflow_processors() {
 #
 # $1 - The name of the plugin
 # $2 - The function name without the plugin leader, so for a function
-# called pantheon_fetch_db, you would pass 'fetch_db'.
+# called pantheon_on_fetch_db, you would pass 'fetch_db'.
 # $... Additional arguments exclusively will be passed to the plugin function.
 #
 function call_plugin() {
@@ -151,23 +151,32 @@ function call_plugin() {
   local function_tail=$2
   local args=("${@:3}")
 
-  local function
-  [ -f "$PLUGINS_DIR/$plugin/$plugin.sh" ] || return 1
-  source "$PLUGINS_DIR/$plugin/$plugin.sh"
-  function="${plugin}_${function_tail}"
-  if ! function_exists $function; then
-    function="default_${function_tail}"
-  fi
-  ! function_exists $function && fail_because "Plugin \"$plugin\" does not support \"$function_tail\"" && return 1
-  $function "${args[@]}"
+  local func_name
+  func_name=$(_plugin_get_func_name "$plugin" "$function_tail")
+  ! plugin_implements $plugin $function_tail && fail_because "Plugin \"$plugin\" does not define a function called $func_name()" && return 1
+  $func_name "${args[@]}"
 }
 
+function _plugin_get_func_name() {
+  local plugin=$1
+  local function_tail=$2
+
+  echo "${plugin}_on_${function_tail}"
+}
+
+# Test if a given plugin implements a hook.
+#
+# $1 - The plugin name.
+# $2 - The hook base, e.g. 'pull_db'.  Will look for PLUGIN_on_pull_db().
+#
+# Returns 0 if .
 function plugin_implements() {
   local plugin=$1
+  local function_tail=$2
 
   [ -f "$PLUGINS_DIR/$plugin/$plugin.sh" ] || return 1
   source "$PLUGINS_DIR/$plugin/$plugin.sh"
-  function_exists "${plugin}_$2"
+  function_exists "$(_plugin_get_func_name "$plugin" "$function_tail")"
 }
 
 function implement_route_access() {

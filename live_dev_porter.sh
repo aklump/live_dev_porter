@@ -51,14 +51,18 @@ function on_pre_config() {
 
 function on_compile_config() {
   for plugin in "${ALL_PLUGINS[@]}"; do
-    plugin_implements $plugin on_compile_config && call_plugin $plugin on_compile_config
+    plugin_implements $plugin on_compile_config && call_plugin $plugin compile_config
   done
 }
 
 function on_clear_cache() {
   call_php_class_method "\AKlump\LiveDevPorter\Config\SchemaBuilder::destroy" "CACHE_DIR=$CONFIG_DIR/.cache"
-  for plugin in "${ACTIVE_PLUGINS[@]}"; do
-    plugin_implements "$plugin" on_clear_cache && call_plugin "$plugin" on_clear_cache
+
+  # We have to do all plugins because a plugin may have changed, and if we only
+  # did active ones, there inactive plugin will not know to clean up it's
+  # generated files, e.g., lando.
+  for plugin in "${ALL_PLUGINS[@]}"; do
+    plugin_implements "$plugin" clear_cache && call_plugin "$plugin" clear_cache
   done
 }
 
@@ -227,7 +231,7 @@ case $COMMAND in
       ENVIRONMENT_ID="$LOCAL_ENV_ID"
       eval $(get_config_as plugin "environments.$ENVIRONMENT_ID.databases.$DATABASE_ID.plugin")
       if [[ ! "$JSON" ]]; then
-        echo_title "Export $ENVIRONMENT_ID database \"$DATABASE_ID\" (via $plugin)"
+        echo_title "Export $ENVIRONMENT_ID database \"$DATABASE_ID\""
         [[ "$WORKFLOW_ID" ]] && echo_heading "Using workflow: $WORKFLOW_ID"
         echo_time_heading
       fi
@@ -237,9 +241,7 @@ case $COMMAND in
       table_clear
       table_add_row "export directory" "$dumpfiles_dir"
       [[ "$JSON" ]] || echo_slim_table
-
       json_output=$(call_plugin $plugin export_db "$DATABASE_ID" "$filename") || fail
-      [[ "$JSON" ]] || echo_time_heading
       has_failed && exit_with_failure "Failed to export database."
       if [[ "$WORKFLOW_ID" ]]; then
         execute_workflow_processors "$WORKFLOW_ID" || fail

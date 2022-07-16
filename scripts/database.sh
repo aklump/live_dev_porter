@@ -5,19 +5,6 @@
 # Provide shared database-related functions.
 #
 
-# Echo the path to a .conf file.
-#
-# $1 - The environment ID.
-# $2 - The database ID (not the name, the ID!)
-#
-# Returns nothing.
-function database_get_defaults_file() {
-  local environment_id="$1"
-  local database_id="$2"
-
-  echo "$CACHE_DIR/$environment_id/databases/$database_id/db.cnf"
-}
-
 # Get the export directory
 #
 # $1 - The environment ID.
@@ -115,8 +102,62 @@ function database_get_table_list_where() {
     fi
   done
 
-  if [[ "${#array_csv__array[@]}" ]]; then
+  if [[ "${#array_csv__array[@]}" -gt 0 ]]; then
     where="$where AND table_name NOT IN ($(array_csv --single-quotes))"
   fi
   echo "$where"
+}
+
+
+# Echo the path to a .conf file.
+#
+# $1 - The environment ID.
+# $2 - The database ID (not the name, the ID!)
+#
+# Returns nothing.
+function database_get_defaults_file() {
+  local environment_id="$1"
+  local database_id="$2"
+
+  echo "$CACHE_DIR/$environment_id/databases/$database_id/db.cnf"
+}
+
+# Delete all .cnf files for all environments and database.
+#
+# @see HOOK_on_clear_cache()
+#
+# Returns 0 if successful; 1 otherwise.
+function database_delete_all_defaults_files(){
+  local pattern=$(database_get_defaults_file "*" "*")
+  for filepath in $pattern; do
+    [[ ! -f "$filepath" ]] && continue
+    sandbox_directory "$(dirname $filepath)"
+    if chmod 0600 "$filepath" && rm "$filepath"; then
+      succeed_because "$(path_unresolve "$APP_ROOT" "$filepath")"
+    else
+      fail_because "Failed to delete $filepath"
+    fi
+  done
+  has_failed && return 1
+  return 0
+}
+
+
+# Echo the database name by environment ID && database ID.
+#
+# $1 - The environment ID.
+# $1 - The database ID.
+#
+# @code
+# local name
+# ! name=$(database_get_name "$LOCAL_ENV_ID" "$database_id") && fail_because "$name" && return 1
+# @endcode
+#
+# Returns 0 if .
+function database_get_name() {
+  local environment_id="$1"
+  local database_id="$2"
+
+  eval $(get_config_as plugin "environments.$environment_id.databases.$database_id.plugin")
+  call_plugin $plugin database_name $@
 }

@@ -18,7 +18,7 @@ function _test_remote_path() {
   return 1
 }
 
-function default_configtest() {
+function default_on_configtest() {
   local assert
 
   local directory_path
@@ -76,7 +76,7 @@ function default_configtest() {
   done
 }
 
-function default_remote_shell() {
+function default_on_remote_shell() {
   # @link https://stackoverflow.com/a/14703291/3177610
   # @link https://www.man7.org/linux/man-pages/man1/ssh.1.html
   # @link https://github.com/fraction/sshcd/blob/master/sshcd
@@ -84,7 +84,7 @@ function default_remote_shell() {
   remote_ssh "(cd $remote_base_path; exec \$SHELL -l)"
 }
 
-function default_pull_files() {
+function default_on_pull_files() {
   local source
   local destination
   local include_from
