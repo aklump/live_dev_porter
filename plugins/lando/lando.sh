@@ -64,7 +64,7 @@ function lando_on_rebuild_config() {
       [[ "$plugin" != 'lando' ]] && continue;
       eval $(get_config_as service "environments.$environment_id.databases.$database_id.service")
 
-      ! json_set "$(cd /Users/aklump/Code/Projects/ContechServices/AuroraTimesheet/site/app && lando info -s $service --format=json | tail -1)" && fail_because "Could not read Lando configuration" && return 1
+      ! json_set "$(cd $APP_ROOT && lando info -s $service --format=json | tail -1)" && fail_because "Could not read Lando configuration" && return 1
 
       local filepath=$(database_get_defaults_file "$environment_id" "$database_id")
       local path_label="$(path_unresolve "$APP_ROOT" "$filepath")"

@@ -15,7 +15,7 @@ function database_get_dumpfiles_directory() {
   local environment_id="$1"
   local database_id="$2"
 
-  echo "$CONFIG_DIR/$environment_id/databases/$database_id"
+  echo "$CONFIG_DIR/data/$environment_id/databases/$database_id"
 }
 
 # Get the table section of the mysqldump command based on config.
