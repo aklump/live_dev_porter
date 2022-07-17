@@ -12,11 +12,6 @@ abstract class ProcessorBase {
   /**
    * @var string
    */
-  protected $environmentId;
-
-  /**
-   * @var string
-   */
   protected $databaseId;
 
   /**
@@ -28,11 +23,6 @@ abstract class ProcessorBase {
    * @var string
    */
   protected $filesGroupId;
-
-  /**
-   * @var string
-   */
-  protected $filepath;
 
   /**
    * @var string
@@ -49,6 +39,16 @@ abstract class ProcessorBase {
    */
   protected $output;
 
+  /**
+   * @var string
+   */
+  private $filepath;
+
+  /**
+   * @var string
+   */
+  private $environmentId;
+
   public function __construct($config) {
     $this->command = $config['COMMAND'] ?? '';
     $this->environmentId = $config['ENVIRONMENT_ID'] ?? '';
@@ -59,6 +59,23 @@ abstract class ProcessorBase {
     $this->shortpath = $config['SHORTPATH'] ?? '';
   }
 
+  /**
+   * Get source environment info.
+   *
+   * @return array
+   *   Information about the source environment.
+   */
+  public function getSourceEnvironment(): array {
+    return ['id' => $this->environmentId];
+  }
+
+  public function getFileInfo() {
+    if (empty($this->filepath)) {
+      return [];
+    }
+
+    return ['filepath' => $this->filepath] + pathinfo($this->filepath);
+  }
 
   /**
    * Load the contents of a file.
@@ -94,6 +111,9 @@ abstract class ProcessorBase {
   /**
    * Save any loaded file changes.
    *
+   * @param string $move
+   *   Move the file to a different location on save.
+   *
    * @return bool
    *   If the contents have not changed since loading, false is returned;
    *   otherwise true on success saving of the file.  Errors are thrown as
@@ -101,14 +121,22 @@ abstract class ProcessorBase {
    *
    * @throws \AKlump\LiveDevPorter\Processors\ProcessorFailedException If the file could not be saved.
    */
-  public function saveFile() {
+  public function saveFile(string $move = NULL) {
     $this->validateFileIsLoaded();
     if ($this->loadedFile['contents'] === $this->loadedFile['original']) {
       return TRUE;
     }
+
     $result = file_put_contents($this->filepath, $this->loadedFile['contents']);
     if (FALSE === $result) {
-      throw new ProcessorFailedException(sprintf('Failed to save: %s', $this->shortpath));
+      throw new ProcessorFailedException(sprintf('Failed to save: %s', $save_as));
+    }
+    if ($move && $move !== $this->filepath) {
+      $result = rename($this->filepath, $move);
+      if (FALSE === $result) {
+        throw new ProcessorFailedException(sprintf("Could not move file to: %s", $move));
+      }
+      $this->filepath = $move;
     }
 
     return $result;

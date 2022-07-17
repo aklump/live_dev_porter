@@ -156,7 +156,7 @@ function default_on_pull_files() {
 
         if [[ "$WORKFLOW_ID" ]]; then
           echo_task "Run workflow."
-          ENVIRONMENT_ID="$LOCAL_ENV_ID"
+          ENVIRONMENT_ID="$REMOTE_ENV_ID"
           DATABASE_ID=""
           eval $(get_config_as -a includes "file_groups.$FILES_GROUP_ID.include")
           for include in "${includes[@]}"; do

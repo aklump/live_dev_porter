@@ -46,9 +46,7 @@ class LoftDeployMigrator {
       'environments.local.write_access' => function ($conf) {
         return $conf('local.role') === 'dev';
       },
-      'environments.local.plugin' => function ($conf) {
-        return $conf('local.database.lando') ? 'lando' : 'default';
-      },
+      'environments.local.plugin' => 'default',
       'environments.local.base_path' => './',
       //      'environments.local.base_path' => $conf('local.basepath'),
       'environments.local.command_workflows' => [

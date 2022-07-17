@@ -1,6 +1,8 @@
 # Processors
 
 > The working directory for processors is always the app root.
+ 
+> `$ENVIRONMENT_ID` will always refer to the source, which in the case of pull is remote, in the case of export local, etc.
 
 ## Database Processing
 

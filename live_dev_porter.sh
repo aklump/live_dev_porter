@@ -228,9 +228,8 @@ case $COMMAND in
       ;;
 
     "db")
-      ENVIRONMENT_ID="$LOCAL_ENV_ID"
       DATABASE_ID=$(get_command_arg 0 "$LOCAL_DATABASE_ID")
-      eval $(get_config_as plugin "environments.$ENVIRONMENT_ID.databases.$DATABASE_ID.plugin")
+      eval $(get_config_as plugin "environments.$LOCAL_ENV_ID.databases.$DATABASE_ID.plugin")
       echo_title "Enter $LOCAL_ENV_ID database \"$DATABASE_ID\""
       call_plugin $plugin db_shell "$DATABASE_ID" || fail
       has_failed && exit_with_failure
@@ -240,22 +239,23 @@ case $COMMAND in
     "export")
       filename=$(get_command_arg 0)
       DATABASE_ID=$(get_option 'id' $LOCAL_DATABASE_ID)
-      ENVIRONMENT_ID="$LOCAL_ENV_ID"
-      eval $(get_config_as plugin "environments.$ENVIRONMENT_ID.databases.$DATABASE_ID.plugin")
+      eval $(get_config_as plugin "environments.$LOCAL_ENV_ID.databases.$DATABASE_ID.plugin")
       if [[ ! "$JSON" ]]; then
-        echo_title "Export $ENVIRONMENT_ID database \"$DATABASE_ID\""
+        echo_title "Export $LOCAL_ENV_ID database \"$DATABASE_ID\""
         [[ "$WORKFLOW_ID" ]] && echo_heading "Using workflow: $WORKFLOW_ID"
         echo_time_heading
       fi
 
       # This will create a quick link for the user to "open in Finder"
-      dumpfiles_dir=$(database_get_dumpfiles_directory "$ENVIRONMENT_ID" "$DATABASE_ID")
+      dumpfiles_dir=$(database_get_dumpfiles_directory "$LOCAL_ENV_ID" "$DATABASE_ID")
       table_clear
       table_add_row "export directory" "$dumpfiles_dir"
       [[ "$JSON" ]] || echo_slim_table
       json_output=$(call_plugin $plugin export_db "$DATABASE_ID" "$filename") || fail
       has_failed && exit_with_failure "Failed to export database."
+
       if [[ "$WORKFLOW_ID" ]]; then
+        ENVIRONMENT_ID="$LOCAL_ENV_ID"
         execute_workflow_processors "$WORKFLOW_ID" || fail
       fi
       if [[ "$JSON" ]]; then
@@ -271,9 +271,8 @@ case $COMMAND in
     "import")
       filepath=$(get_command_arg 0)
       DATABASE_ID=$(get_option 'id' $LOCAL_DATABASE_ID)
-      ENVIRONMENT_ID="$LOCAL_ENV_ID"
-      eval $(get_config_as plugin "environments.$ENVIRONMENT_ID.databases.$DATABASE_ID.plugin")
-      echo_title "Replace Existing Data in $ENVIRONMENT_ID database \"$DATABASE_ID\""
+      eval $(get_config_as plugin "environments.$LOCAL_ENV_ID.databases.$DATABASE_ID.plugin")
+      echo_title "Replace Existing Data in $LOCAL_ENV_ID database \"$DATABASE_ID\""
       [[ "$WORKFLOW_ID" ]] && echo_heading "Using workflow: $WORKFLOW_ID"
       echo_time_heading
 
@@ -281,7 +280,7 @@ case $COMMAND in
       if [[ -f "$filepath" ]]; then
         shortpath=$(path_unresolve "$PWD" "$filepath")
       else
-        dumpfiles_dir=$(database_get_dumpfiles_directory "$ENVIRONMENT_ID" "$DATABASE_ID")
+        dumpfiles_dir=$(database_get_dumpfiles_directory "$LOCAL_ENV_ID" "$DATABASE_ID")
         table_clear
         table_add_row "export directory" "$dumpfiles_dir"
         echo; echo_slim_table
@@ -308,6 +307,7 @@ case $COMMAND in
         mysql_prune_rollback_files "$DATABASE_ID" "$total_files_to_keep"
       fi
       if ! has_failed && [[ "$WORKFLOW_ID" ]]; then
+        ENVIRONMENT_ID="$LOCAL_ENV_ID"
         execute_workflow_processors "$WORKFLOW_ID" || fail
       fi
       echo_time_heading
@@ -316,8 +316,6 @@ case $COMMAND in
     ;;
 
     "pull")
-      ENVIRONMENT_ID="$LOCAL_ENV_ID"
-
       [[ ${#LOCAL_DATABASE_IDS[@]} -eq 0 ]] && has_db=false || has_db=true
       [[ ${#FILE_GROUP_IDS[@]} -eq 0 ]] && has_files=false || has_files=true
 
@@ -358,9 +356,10 @@ case $COMMAND in
 
             echo_time_heading
             echo
-            eval $(get_config_as plugin "environments.$ENVIRONMENT_ID.databases.$DATABASE_ID.plugin")
+            eval $(get_config_as plugin "environments.$LOCAL_ENV_ID.databases.$DATABASE_ID.plugin")
             ! has_failed && call_plugin $plugin pull_db "$DATABASE_ID" || fail
             if ! has_failed && [[ "$WORKFLOW_ID" ]]; then
+              ENVIRONMENT_ID="$REMOTE_ENV_ID"
               execute_workflow_processors "$WORKFLOW_ID" || fail
             fi
           done
@@ -377,7 +376,7 @@ case $COMMAND in
         else
           echo_time_heading
           echo
-          eval $(get_config_as plugin "environments.$ENVIRONMENT_ID.plugin")
+          eval $(get_config_as plugin "environments.$LOCAL_ENV_ID.plugin")
           call_plugin $plugin pull_files || fail
         fi
       fi
