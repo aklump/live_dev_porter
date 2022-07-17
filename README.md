@@ -11,8 +11,10 @@ Simplifies the management and transfer of assets between website environments.
 ## Quick Start
 
 - Install using `composer require aklump/live-dev-porter`
-- Now initialize your project `./vendor/bin/ldp init`
-- And update the configuration `./vendor/bin/ldp config`
+- Migrate from Loft Deploy: ` ./vendor/aklump/live-dev-porter/bin/migrate.php ./.loft_deploy`
+- OR initialize your project `./vendor/aklump/live-dev-porter/live_dev_porter.sh init`
+- Merge the contents of _migrate_ into _.live-dev-porter_
+- And update the configuration `./vendor/aklump/live-dev-porter/live_dev_porter.sh config`
 - Open _.live_dev_porter/config.yml_ and modify as needed.
 - Open _.live_dev_porter/config.local.yml_ and ...; be sure to ignore this file in SCM.
 - Try it out with `./bin/live_dev_porter SOME_COMMAND`
