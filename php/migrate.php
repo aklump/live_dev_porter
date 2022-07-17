@@ -24,8 +24,9 @@ if (!is_dir($loft_deploy_config_dir)
 }
 
 $directory = dirname($loft_deploy_config_dir) . '/.live_dev_porter';
-if (is_dir($directory)) {
-  echo "$directory already exists.  Conversion cancelled.";
+$new_config = $directory . '/config.yml';
+if (file_exists($new_config)) {
+  echo "$new_config already exists.  Conversion cancelled.";
   exit(1);
 }
 
@@ -35,7 +36,7 @@ echo "Saved $directory";
 $migrator = new LoftDeployMigrator($loft_deploy_config_dir);
 $new_config = $migrator->getNewConfig();
 $yaml = Yaml::dump($new_config, 6, 2);
-file_put_contents("$directory/config.yml", $yaml);
+file_put_contents("$new_config", $yaml);
 
 foreach (($new_config['workflows'] ?? []) as $workflow_id => $items) {
   if (!is_dir("$directory/processors/")) {
