@@ -1,10 +1,6 @@
 {
     "name": "aklump/live-dev-porter",
     "description": "Simplifies the management and transfer of assets between website environments.",
-    "bin": [
-        "bin/live-dev-porter",
-        "bin/ldp"
-    ],
     "license": "BSD-3-Clause",
     "autoload": {
         "psr-4": {
