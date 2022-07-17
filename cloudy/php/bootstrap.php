@@ -5,7 +5,6 @@
  * Bootstrap for all php files.
  */
 
-use AKlump\Data\Data;
 use Ckr\Util\ArrayMerger;
 use Symfony\Component\Yaml\Yaml;
 use Jasny\DotKey;
@@ -14,24 +13,7 @@ use Jasny\DotKey;
  * Root directory of the Cloudy instance script.
  */
 define('ROOT', getenv('ROOT'));
-
-$autoload_paths = [
-  '/vendor/autoload.php',
-  '/../../../../../vendor/autoload.php',
-  '/../../vendor/autoload.php',
-];
-foreach ($autoload_paths as $autoload_path) {
-  if (is_file(__DIR__ . $autoload_path)) {
-    require_once __DIR__ . $autoload_path;
-    break;
-  }
-  unset($autoload_path);
-}
-if (empty($autoload_path)) {
-  throw new \RuntimeException('Failed to autoload Cloudy core dependencies.');
-}
-
-$g = new Data();
+require_once getenv('COMPOSER_AUTOLOAD');
 
 /**
  * Sort an array by the length of it's values.

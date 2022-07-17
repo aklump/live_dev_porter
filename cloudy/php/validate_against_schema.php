@@ -12,14 +12,14 @@ use JsonSchema\Validator;
 
 require_once __DIR__ . '/bootstrap.php';
 
-$config = json_decode($g->get($argv, 1, '[]'), TRUE);
-$config_key = $g->get($argv, 2);
-$name = $g->get($argv, 3);
-$value = $g->get($argv, 4);
-$schema = $g->get($config, $config_key, []);
+$config = json_decode(isset($argv[1]) ? $argv[1] : '[]', true);
+$config_key = isset($argv[2]) ? $argv[2] : null;
+$name = isset($argv[3]) ? $argv[3] : null;
+$value = isset($argv[4]) ? $argv[4] : null;
+$schema = isset($config[$config_key]) ? $config[$config_key] : [];
 
 // Handle casting 'true' 'false' in bash to boolean in PHP.
-if ($g->get($schema, 'type') === 'boolean') {
+if ('boolean' === (isset($schema['type']) ? $schema['type'] : '')) {
   $value = $value === 'true' ? TRUE : $value;
   $value = $value === 'false' ? FALSE : $value;
 }

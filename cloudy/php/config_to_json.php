@@ -24,8 +24,9 @@ require_once __DIR__ . '/bootstrap.php';
 
 $path_to_config_schema = $argv[1];
 $path_to_master_config = $argv[2];
-$skip_config_validation = $g->get($argv, 3, FALSE) === 'true';
-$additional_config_paths = array_filter(explode("\n", trim($g->get($argv, 4, ''))));
+$skip_config_validation = isset($argv[3]) && $argv[3] === 'true';
+$additional_config_paths = array_filter(explode("\n", (isset($argv[4]) ? $argv[4] : '')));
+
 try {
   $config = [
     '__cloudy' => [

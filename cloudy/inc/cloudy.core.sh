@@ -785,6 +785,16 @@ function _cloudy_validate_input_against_schema() {
 
 # Expand some vars from our controlling script.
 export CONFIG="$(cd $(dirname "$r/$CONFIG") && pwd)/$(basename $CONFIG)"
+
+# The application script may move the composer autoload to it's own location,
+# otherwise we'll assume it's in the php directory of the framework.
+if [[ "$COMPOSER_AUTOLOAD" ]]; then
+  export COMPOSER_AUTOLOAD="$(cd $(dirname "$r/$COMPOSER_AUTOLOAD") && pwd)/$(basename $COMPOSER_AUTOLOAD)"
+else
+  export COMPOSER_AUTOLOAD="$CLOUDY_ROOT/php/vendor/autoload.php"
+fi
+[[ -f "$COMPOSER_AUTOLOAD" ]] || exit_with_failure "Composer autoloader not found at $COMPOSER_AUTOLOAD"
+
 if [[ "$LOGFILE" ]]; then
   log_dir="$(dirname $r/$LOGFILE)"
   mkdir -p "$log_dir" || exit_with_failure "Please manually create \"$log_dir\" and ensure it is writeable."
