@@ -32,6 +32,14 @@
   <p><code>$ENVIRONMENT_ID</code> will always refer to the source, which in the case of pull is remote, in the case of export local, etc.</p>
 </blockquote>
 
+<ul>
+<li>To provide feedback to the user the processor should use echo</li>
+<li>The file must exit with non-zero if it fails.</li>
+<li>If you wish to indicated the processor was skipped or not applied exit with 255; see examples below.</li>
+<li>When existing with code 1-254 a default failure message will always be displayed. If the processor echos a message, this default will appear after the response.</li>
+<li>If the file exists with a zero, there is no default message.</li>
+</ul>
+
 <h2>Database Processing</h2>
 
 <ul>
@@ -49,7 +57,7 @@
 #debug "$DATABASE_NAME;\$DATABASE_NAME"
 
 # Only do processing when we have a database event.
-[[ "$DATABASE_ID" ]] || return 0
+[[ "$DATABASE_ID" ]] || exit 255
 
 # Reduce our users to at most 20.
 if ! query 'DELETE FROM users WHERE uid &gt; 20'; then
@@ -67,17 +75,6 @@ echo "$(cat $query_result) total users remain in $DATABASE_NAME"
 
 <p>A use case for this is removing the password from a database credential when the file containing it is pulled locally. This is important if you will be committing a scaffold version of this configuration file containing secrets. The processor might replace the real password with a token such as <code>PASSWORD</code>. This will make the file save for inclusion in source control.</p>
 
-<blockquote>
-  <p>Processors are not supported when using <code>exclude</code> rules in the file group definition.</p>
-</blockquote>
-
-<ul>
-<li>To provide feedback to the user the processor should echo a string, which does not contain any line breaks.</li>
-<li>The file must exit with non-zero if it fails.</li>
-<li>When existing non-zero, a default failure message will always be displayed. If the processor echos a message, this default will appear after the response.</li>
-<li>If the file exists with a zero, there is no default message.</li>
-</ul>
-
 <p><em>An example bash processor for a file:</em></p>
 
 <pre><code class="shell">#!/usr/bin/env bash
@@ -89,7 +86,7 @@ echo "$(cat $query_result) total users remain in $DATABASE_NAME"
 #debug "$SHORTPATH;\$SHORTPATH"
 
 # Only do processing when we have a file event.
-[[ "$FILES_GROUP_ID" ]] || return 0
+[[ "$FILES_GROUP_ID" ]] || exit 255
 
 contents=$(cat "$FILEPATH")
 
@@ -100,19 +97,45 @@ fi
 echo "Contents approved in $SHORTPATH"
 </code></pre>
 
-<p><em>Same example in PHP:</em></p>
+<p><em>Here is an example in PHP:</em></p>
 
 <pre><code class="php">&lt;?php
-$filepath = $argv[1];
-$short_path = $argv[2];
 
-$contents = file_get_contents($filepath);
+use AKlump\LiveDevPorter\Processors\EnvTrait;
+use AKlump\LiveDevPorter\Processors\ProcessorBase;
+use AKlump\LiveDevPorter\Processors\ProcessorSkippedException;
 
-if ('' == $contents) {
-  echo "$short_path was an empty file.";
-  exit(1);
+/**
+ * Remove secrets and passwords from install files.
+ */
+final class RemoveSecrets extends ProcessorBase {
+
+  use EnvTrait;
+
+  public function process() {
+    if (!$this-&gt;loadFile() || 'install' !== $this-&gt;filesGroupId) {
+      throw new ProcessorSkippedException();
+    }
+
+    if ($this-&gt;getFileInfo()['basename'] == '.env') {
+      $response = [];
+      $this-&gt;envReplaceUrlPassword('DATABASE_URL');
+      $this-&gt;envReplaceUrlPassword('SHAREFILE_URL');
+      $response[] = "DATABASE_URL password";
+      foreach (['HASH_SALT', 'SHAREFILE_CLIENT_SECRET'] as $variable_name) {
+        $this-&gt;envReplaceValue($variable_name);
+        $response[] = $variable_name;
+      }
+      $response = sprintf("Removed %s from %s.", implode(', ', $response), $this-&gt;shortpath);
+    }
+
+    $this-&gt;saveFile($new_name);
+
+    return $response ?? '';
+  }
+
 }
-echo "Contents approved in $short_path";
+
 </code></pre>
 
 </section>
@@ -124,7 +147,7 @@ echo "Contents approved in $short_path";
 <footer>
   <div class="pager"><a href="rw--loft-deploy-migrations.html" class="prev rw--loft-deploy-migrations">&laquo;Migrating From Loft Deploy</a><a href="index.html" class="index pager__book-title"></a><a href="rw--sanitation.html" class="next rw--sanitation">Sanitation of Vulnerable Data&raquo;</a></div>  
   <div id="footer-legaleeze">
-    <p class="legaleeze center">Version: 0.0.13 &bull; Last Updated: Sun, 17 Jul 2022 13:41:31 -0700</p>
+    <p class="legaleeze center">Version: 0.0.14 &bull; Last Updated: Sun, 17 Jul 2022 15:18:18 -0700</p>
   </div>
 </footer>
 
