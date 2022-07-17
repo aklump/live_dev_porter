@@ -789,11 +789,14 @@ export CONFIG="$(cd $(dirname "$r/$CONFIG") && pwd)/$(basename $CONFIG)"
 # The application script may move the composer autoload to it's own location,
 # otherwise we'll assume it's in the php directory of the framework.
 if [[ "$COMPOSER_AUTOLOAD" ]]; then
-  export COMPOSER_AUTOLOAD="$(cd $(dirname "$r/$COMPOSER_AUTOLOAD") && pwd)/$(basename $COMPOSER_AUTOLOAD)"
+  if [[ ! -f "$COMPOSER_AUTOLOAD" ]]; then
+    COMPOSER_AUTOLOAD="$(cd $(dirname "$r/$COMPOSER_AUTOLOAD") && pwd)/$(basename $COMPOSER_AUTOLOAD)"
+  fi
 else
-  export COMPOSER_AUTOLOAD="$CLOUDY_ROOT/php/vendor/autoload.php"
+  COMPOSER_AUTOLOAD="$CLOUDY_ROOT/php/vendor/autoload.php"
 fi
 [[ -f "$COMPOSER_AUTOLOAD" ]] || exit_with_failure "Composer autoloader not found at $COMPOSER_AUTOLOAD"
+export COMPOSER_AUTOLOAD
 
 if [[ "$LOGFILE" ]]; then
   log_dir="$(dirname $r/$LOGFILE)"

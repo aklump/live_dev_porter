@@ -80,6 +80,11 @@ function get_active_workflow() {
   return 1
 }
 
+# All pass-through variables must be set prior to calling.
+#
+# $1 - the workflow ID.
+#
+# Returns 0 if .
 function execute_workflow_processors() {
   local workflow="$1"
 
@@ -89,20 +94,6 @@ function execute_workflow_processors() {
   local processor_result
   local key
   local php_query
-  local DATABASE_NAME
-  if [[ "$ENVIRONMENT_ID" ]] && [[ "$DATABASE_ID" ]]; then
-    DATABASE_NAME="$(database_get_name $ENVIRONMENT_ID $DATABASE_ID)" || DATABASE_NAME=''
-  fi
-
-  if [[ "$DATABASE_NAME" ]]; then
-    # These should never hold values if we are processing a database.
-    FILES_GROUP_ID=''
-    FILEPATH=''
-    SHORTPATH=''
-  else
-    # Without a name, we should never have an ID.
-    DATABASE_ID=''
-  fi
 
   eval $(get_config_keys_as workflow_keys "workflows.$workflow")
   for workflow_key in "${workflow_keys[@]}"; do
@@ -114,15 +105,20 @@ function execute_workflow_processors() {
 
     if [[ "$(path_extension "$processor_path")" == "sh" ]]; then
       [[ ! -f "$processor_path" ]] && fail_because "Missing file processor: $processor" && return 1
+      echo_task "$(path_unresolve "$CONFIG_DIR" "$processor_path")"
       processor_output=$(cd $APP_ROOT; source "$SOURCE_DIR/processor_support.sh"; . "$processor_path")
       processor_result=$?
     else
       php_query="autoload=$CONFIG_DIR/processors/&COMMAND=$COMMAND&ENVIRONMENT_ID=$ENVIRONMENT_ID&DATABASE_ID=$DATABASE_ID&DATABASE_NAME=$DATABASE_NAME&FILES_GROUP_ID=$FILES_GROUP_ID&FILEPATH=$FILEPATH&SHORTPATH=$SHORTPATH"
+      echo_task "$(path_unresolve "$CONFIG_DIR" "$processor_path")"
       processor_output=$(cd $APP_ROOT; export CLOUDY_CONFIG_JSON; $CLOUDY_PHP "$ROOT/php/class_method_caller.php" "$basename" "$php_query")
       processor_result=$?
     fi
 
-    if [[ $processor_result -ne 0 ]]; then
+    if [[ $processor_result -eq 255 ]]; then
+      clear_task
+    elif [[ $processor_result -ne 0 ]]; then
+      echo_task_failed
       [[ "$processor_output" ]] && fail_because "$processor_output"
       if [[ "$FILES_GROUP_ID" ]]; then
         fail_because "\"$processor\" has failed while processing: $SHORTPATH (in files group \"$FILES_GROUP_ID\")."
@@ -130,8 +126,10 @@ function execute_workflow_processors() {
         fail_because "\"$processor\" has failed while processing database: $DATABASE_ID."
       fi
       return 1
+    else
+      echo_task_complete
+      [[ "$processor_output" ]] && succeed_because "$processor_output"
     fi
-    succeed_because "$processor_output"
   done
 
   return 0

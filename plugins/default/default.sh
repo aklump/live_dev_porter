@@ -155,7 +155,6 @@ function default_on_pull_files() {
         ! has_option "dry-run" && echo_task_complete
 
         if [[ "$WORKFLOW_ID" ]]; then
-          echo_task "Run workflow."
           ENVIRONMENT_ID="$REMOTE_ENV_ID"
           DATABASE_ID=""
           eval $(get_config_as -a includes "file_groups.$FILES_GROUP_ID.include")
@@ -168,8 +167,7 @@ function default_on_pull_files() {
               fi
              done
           done
-          has_failed && echo_task_failed && return 1
-          echo_task_complete
+          has_failed && return 1
         fi
       fi
     fi

@@ -1,8 +1,14 @@
 # Processors
 
 > The working directory for processors is always the app root.
- 
+
 > `$ENVIRONMENT_ID` will always refer to the source, which in the case of pull is remote, in the case of export local, etc.
+
+* To provide feedback to the user the processor should use echo
+* The file must exit with non-zero if it fails.
+* If you wish to indicated the processor was skipped or not applied exit with 255; see examples below.
+* When existing with code 1-254 a default failure message will always be displayed. If the processor echos a message, this default will appear after the response.
+* If the file exists with a zero, there is no default message.
 
 ## Database Processing
 
@@ -20,7 +26,7 @@ _An example bash processor for a database command:_
 #debug "$DATABASE_NAME;\$DATABASE_NAME"
 
 # Only do processing when we have a database event.
-[[ "$DATABASE_ID" ]] || return 0
+[[ "$DATABASE_ID" ]] || exit 255
 
 # Reduce our users to at most 20.
 if ! query 'DELETE FROM users WHERE uid > 20'; then
@@ -38,13 +44,6 @@ For file groups having `include` filter(s), you may create _processors_, or smal
 
 A use case for this is removing the password from a database credential when the file containing it is pulled locally. This is important if you will be committing a scaffold version of this configuration file containing secrets. The processor might replace the real password with a token such as `PASSWORD`. This will make the file save for inclusion in source control.
 
-> Processors are not supported when using `exclude` rules in the file group definition.
-
-* To provide feedback to the user the processor should echo a string, which does not contain any line breaks.
-* The file must exit with non-zero if it fails.
-* When existing non-zero, a default failure message will always be displayed. If the processor echos a message, this default will appear after the response.
-* If the file exists with a zero, there is no default message.
-
 _An example bash processor for a file:_
 
 ```shell
@@ -57,7 +56,7 @@ _An example bash processor for a file:_
 #debug "$SHORTPATH;\$SHORTPATH"
 
 # Only do processing when we have a file event.
-[[ "$FILES_GROUP_ID" ]] || return 0
+[[ "$FILES_GROUP_ID" ]] || exit 255
 
 contents=$(cat "$FILEPATH")
 
@@ -68,20 +67,46 @@ fi
 echo "Contents approved in $SHORTPATH"
 ```
 
-_Same example in PHP:_
+_Here is an example in PHP:_
 
 ```php
 <?php
-$filepath = $argv[1];
-$short_path = $argv[2];
 
-$contents = file_get_contents($filepath);
+use AKlump\LiveDevPorter\Processors\EnvTrait;
+use AKlump\LiveDevPorter\Processors\ProcessorBase;
+use AKlump\LiveDevPorter\Processors\ProcessorSkippedException;
 
-if ('' == $contents) {
-  echo "$short_path was an empty file.";
-  exit(1);
+/**
+ * Remove secrets and passwords from install files.
+ */
+final class RemoveSecrets extends ProcessorBase {
+
+  use EnvTrait;
+
+  public function process() {
+    if (!$this->loadFile() || 'install' !== $this->filesGroupId) {
+      throw new ProcessorSkippedException();
+    }
+
+    if ($this->getFileInfo()['basename'] == '.env') {
+      $response = [];
+      $this->envReplaceUrlPassword('DATABASE_URL');
+      $this->envReplaceUrlPassword('SHAREFILE_URL');
+      $response[] = "DATABASE_URL password";
+      foreach (['HASH_SALT', 'SHAREFILE_CLIENT_SECRET'] as $variable_name) {
+        $this->envReplaceValue($variable_name);
+        $response[] = $variable_name;
+      }
+      $response = sprintf("Removed %s from %s.", implode(', ', $response), $this->shortpath);
+    }
+
+    $this->saveFile($new_name);
+
+    return $response ?? '';
+  }
+
 }
-echo "Contents approved in $short_path";
+
 ```
 
 

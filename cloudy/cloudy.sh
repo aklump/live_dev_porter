@@ -864,6 +864,16 @@ function echo_task() {
   echo "$(echo_blue '[ ]') $(echo_blue "$echo_task__task")"
 }
 
+# Call this to erase the last "echo_task".
+#
+# You may want to do this if the task was aborted and neight completed nor
+# failed.  It will erase the task instead of marking a result.
+#
+# Returns nothing.
+function clear_task() {
+  echo -n "$(tput cuu1)" && echo && echo -n "$(tput cuu1)"
+}
+
 # Replace the task pending with success.
 #
 # Returns nothing.
