@@ -198,7 +198,16 @@ has_option 'json' && JSON=true
 # Handle other commands.
 case $COMMAND in
 
-    "configtest")
+    "config-migrate")
+      echo_title "Migrate from Loft Deploy"
+      old_config=$(get_command_arg 0 "$APP_ROOT/.loft_deploy")
+      message="$($CLOUDY_PHP "$ROOT/php/migrate.php" "$old_config")" || fail
+      has_failed && fail_because "$message" && exit_with_failure "Migration failed."
+      succeed_because "$message"
+      exit_with_success "Migration complete"
+      ;;
+
+    "config-test")
       echo_title "Test Configuration"
       implement_configtest
       for plugin in "${ACTIVE_PLUGINS[@]}"; do

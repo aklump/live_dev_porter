@@ -13,7 +13,7 @@
  * 4. If successful, a string, if returned, will be passed to Cloudy's succeed_because() function.
  */
 
-require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/../cloudy/php/bootstrap.php';
 
 $callback = $argv[1];
 $query_string = $argv[2];
