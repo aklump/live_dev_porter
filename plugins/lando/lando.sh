@@ -81,7 +81,7 @@ function lando_on_rebuild_config() {
       local user="$(json_get_value '0.creds.user')"
       local password="$(json_get_value '0.creds.password')"
 
-      echo "[client]" >>"$filepath"
+      echo "[client]" >"$filepath"
       echo "host=\"$host\"" >>"$filepath"
       [[ "$port" ]] && echo "port=\"$port\"" >>"$filepath"
       echo "user=\"$user\"" >>"$filepath"

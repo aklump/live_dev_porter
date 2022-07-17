@@ -39,6 +39,6 @@ try {
 }
 catch (\Exception $exception) {
   echo $exception->getMessage();
-  exit(1);
+  exit($exception->getCode());
 }
 

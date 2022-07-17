@@ -40,7 +40,7 @@ function mysql_on_rebuild_config() {
       ! touch "$filepath" && fail_because "Could not create $path_label" && return 1
       ! chmod 0600 "$filepath" && fail_because "Failed with chmod 0600 $path_label" && return 1
 
-      echo "[client]" >>"$filepath"
+      echo "[client]" >"$filepath"
       echo "host=\"$host\"" >>"$filepath"
       [[ "$port" ]] && echo "port=\"$port\"" >>"$filepath"
       echo "user=\"$user\"" >>"$filepath"
