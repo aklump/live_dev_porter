@@ -13,7 +13,7 @@ use Jasny\DotKey;
  * Root directory of the Cloudy instance script.
  */
 define('ROOT', getenv('ROOT'));
-require_once getenv('COMPOSER_AUTOLOAD');
+require_once getenv('COMPOSER_VENDOR') . '/autoload.php';
 
 /**
  * Sort an array by the length of it's values.
