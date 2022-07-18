@@ -1,30 +1,21 @@
 #!/usr/bin/env bash
 
-function _lando_on_boot() {
-  [ -e "$APP_ROOT/.lando.yml" ] || return 0
-  local name=$(grep name: < "$APP_ROOT/.lando.yml")
-  LANDO_APP_NAME=${name/name: /}
-}
-
 function lando_on_configtest() {
-  throw ";$0;in function ${FUNCNAME}();$LINENO"
-  local running
-  local assert
+  local $lando_file
+  lando_file="$APP_ROOT/.lando.yml"
+  echo_task "Can read Lando file: $lando_file"
+  ! [[ -f "$lando_file" ]] && echo_task_failed && fail && return 1
 
-  # Assert we have a lando app name.
-  assert="Lando app identified as \"$LANDO_APP_NAME\"."
-  if [[ ! "$LANDO_APP_NAME" ]]; then
-    echo_fail "$assert" && fail
-  else
-    echo_pass "$assert"
-  fi
+  local name=$(grep name: < "$lando_file")
+  LANDO_APP_NAME=${name/name: /}
+  ! [[ "$LANDO_APP_NAME" ]] && echo_task_failed && fail && return 1
+  echo_task_complete
 
-  # Assert that app is running.
-  local message="\"$LANDO_APP_NAME\" is running"
-  if [[ ! "$LANDO_APP_NAME" ]] || [[ "$(lando list --app $LANDO_APP_NAME)" == "[]" ]]; then
-    echo_fail "$message" && fail
+  echo_task "Assert \"$LANDO_APP_NAME\" is running."
+  if [[ "$(lando list --app "$LANDO_APP_NAME")" == "[]" ]]; then
+    echo_task_failed && fail
   else
-    echo_pass "$message"
+    echo_task_complete
   fi
 }
 
@@ -45,7 +36,7 @@ function lando_on_rebuild_config() {
 
     eval $(get_config_as service "$db_pointer.service")
 
-    ! json_set "$(cd $APP_ROOT && lando info -s $service --format=json | tail -1)" && fail_because "Could not read Lando configuration" && return 1
+    ! json_set "$(cd $APP_ROOT && lando info -s $service --format=json 2>/dev/null | tail -1)" && fail_because "Could not read Lando configuration" && return 1
 
     local filepath=$(database_get_defaults_file "$LOCAL_ENV_ID" "$database_id")
     local path_label="$(path_unresolve "$APP_ROOT" "$filepath")"

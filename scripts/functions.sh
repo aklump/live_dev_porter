@@ -275,3 +275,13 @@ function remote_ssh() {
 function echo_time_heading() {
   echo "$LIL $(time_local)"
 }
+
+function echo_red_path_if_nonexistent() {
+  local path="$1"
+
+  if [[ ! -e "$path" ]]; then
+    echo_red "$path"
+  else
+    echo "$path"
+  fi
+}
