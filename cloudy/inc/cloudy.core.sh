@@ -790,7 +790,7 @@ export CONFIG="$(cd $(dirname "$r/$CONFIG") && pwd)/$(basename $CONFIG)"
 # directory, otherwise we will try to find it based on likely scenarios.
 if [[ ! "$COMPOSER_VENDOR" ]]; then
   # If it's installed as a Composer dependency it will be here:
-  COMPOSER_VENDOR="$r/../../vendor/"
+  COMPOSER_VENDOR="$r/../../../vendor/"
   # Otherwise a Cloudy app will have it here:
   [[ ! -d "$COMPOSER_VENDOR" ]] && COMPOSER_VENDOR="$r/vendor/"
 fi
