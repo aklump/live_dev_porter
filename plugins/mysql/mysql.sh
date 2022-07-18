@@ -11,44 +11,43 @@ function mysql_on_clear_cache() {
 #
 # Returns 0 if successful, 1 otherwise.
 function mysql_on_rebuild_config() {
-  for environment_id in "${ENVIRONMENT_IDS[@]}"; do
-    eval $(get_config_keys_as "database_ids" "environments.$environment_id.databases")
-    for database_id in "${database_ids[@]}"; do
-      eval $(get_config_as "plugin" "environments.$environment_id.databases.${database_id}.plugin")
-      [[ "$plugin" != 'mysql' ]] && continue;
+  eval $(get_config_keys_as "database_ids" "environments.$LOCAL_ENV_ID.databases")
+  for database_id in "${database_ids[@]}"; do
+    local db_pointer="environments.$LOCAL_ENV_ID.databases.${database_id}"
 
-      local db_pointer="environments.$environment_id.databases.${database_id}"
-      eval $(get_config_as "host" "$db_pointer.host" "localhost")
-      eval $(get_config_as "port" "$db_pointer.port")
+    eval $(get_config_as "plugin" "$db_pointer.plugin")
+    [[ "$plugin" != 'mysql' ]] && continue;
 
-      eval $(get_config_as "name" "$db_pointer.name")
-      exit_with_failure_if_empty_config "name" "$db_pointer.name"
+    eval $(get_config_as "host" "$db_pointer.host" "localhost")
+    eval $(get_config_as "port" "$db_pointer.port")
 
-      eval $(get_config_as "password" "$db_pointer.password")
-      exit_with_failure_if_empty_config "password" "$db_pointer.password"
+    eval $(get_config_as "name" "$db_pointer.name")
+    exit_with_failure_if_empty_config "name" "$db_pointer.name"
 
-      eval $(get_config_as "user" "$db_pointer.user")
-      exit_with_failure_if_empty_config "user" "$db_pointer.user"
+    eval $(get_config_as "password" "$db_pointer.password")
+    exit_with_failure_if_empty_config "password" "$db_pointer.password"
 
-      local filepath=$(database_get_defaults_file "$environment_id" "$database_id")
-      local path_label="$(path_unresolve "$APP_ROOT" "$filepath")"
+    eval $(get_config_as "user" "$db_pointer.user")
+    exit_with_failure_if_empty_config "user" "$db_pointer.user"
 
-      # Create the .cnf file
-      local directory=""$(dirname "$filepath")""
-      sandbox_directory "$directory"
-      ! mkdir -p "$directory" && fail_because "Could not create $directory" && return 1
-      ! touch "$filepath" && fail_because "Could not create $path_label" && return 1
-      ! chmod 0600 "$filepath" && fail_because "Failed with chmod 0600 $path_label" && return 1
+    local filepath=$(database_get_defaults_file "$LOCAL_ENV_ID" "$database_id")
+    local path_label="$(path_unresolve "$APP_ROOT" "$filepath")"
 
-      echo "[client]" >"$filepath"
-      echo "host=\"$host\"" >>"$filepath"
-      [[ "$port" ]] && echo "port=\"$port\"" >>"$filepath"
-      echo "user=\"$user\"" >>"$filepath"
-      echo "password=\"$password\"" >>"$filepath"
-      [[ "$protocol" ]] && echo "protocol=\"$protocol\"" >>"$filepath"
-      ! chmod 0400 "$filepath" && fail_because "Failed with chmod 0400 $path_label" && return 1
+    # Create the .cnf file
+    local directory=""$(dirname "$filepath")""
+    sandbox_directory "$directory"
+    ! mkdir -p "$directory" && fail_because "Could not create $directory" && return 1
+    ! touch "$filepath" && fail_because "Could not create $path_label" && return 1
+    ! chmod 0600 "$filepath" && fail_because "Failed with chmod 0600 $path_label" && return 1
 
-    done
+    echo "[client]" >"$filepath"
+    echo "host=\"$host\"" >>"$filepath"
+    [[ "$port" ]] && echo "port=\"$port\"" >>"$filepath"
+    echo "user=\"$user\"" >>"$filepath"
+    echo "password=\"$password\"" >>"$filepath"
+    [[ "$protocol" ]] && echo "protocol=\"$protocol\"" >>"$filepath"
+    ! chmod 0400 "$filepath" && fail_because "Failed with chmod 0400 $path_label" && return 1
+
   done
   has_failed && return 1
   succeed_because "$path_label has been created."

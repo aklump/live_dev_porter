@@ -142,6 +142,21 @@ function database_delete_all_defaults_files(){
   return 0
 }
 
+function database_delete_all_name_files() {
+  local pattern=$(database_get_cached_name_filepath "*" "*")
+  for filepath in $pattern; do
+    [[ ! -f "$filepath" ]] && continue
+    sandbox_directory "$(dirname $filepath)"
+    if chmod 0600 "$filepath" && rm "$filepath"; then
+      succeed_because "$(path_unresolve "$APP_ROOT" "$filepath")"
+    else
+      fail_because "Failed to delete $filepath"
+    fi
+  done
+  has_failed && return 1
+  return 0
+}
+
 
 # Echo the database name by environment ID && database ID.
 #
@@ -160,4 +175,14 @@ function database_get_name() {
 
   eval $(get_config_as plugin "environments.$environment_id.databases.$database_id.plugin")
   call_plugin $plugin database_name $@
+}
+
+
+function database_get_cached_name_filepath() {
+  local environment_id="$1"
+  local database_id="$2"
+
+  local filepath
+  filepath=$(database_get_defaults_file "$environment_id" "$database_id")
+  echo "$(dirname $filepath)/db_name.txt"
 }

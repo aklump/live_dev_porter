@@ -1,51 +1,32 @@
 #!/usr/bin/env bash
 
-function _lando_on_boot() {
-  [ -e "$APP_ROOT/.lando.yml" ] || return 0
-  local name=$(grep name: < "$APP_ROOT/.lando.yml")
-  LANDO_APP_NAME=${name/name: /}
-}
-
-function lando_on_configtest() {
-  throw ";$0;in function ${FUNCNAME}();$LINENO"
-  local running
-  local assert
-
-  # Assert we have a lando app name.
-  assert="Lando app identified as \"$LANDO_APP_NAME\"."
-  if [[ ! "$LANDO_APP_NAME" ]]; then
-    echo_fail "$assert" && fail
-  else
-    echo_pass "$assert"
-  fi
-
-  # Assert that app is running.
-  local message="\"$LANDO_APP_NAME\" is running"
-  if [[ ! "$LANDO_APP_NAME" ]] || [[ "$(lando list --app $LANDO_APP_NAME)" == "[]" ]]; then
-    echo_fail "$message" && fail
-  else
-    echo_pass "$message"
-  fi
-}
-
-function lando_on_clear_cache() {
+# Remove the mysql.*.cnf files from the cache directory
+#
+# Returns 0 if successful, 1 otherwise.
+function env_on_clear_cache() {
   database_delete_all_defaults_files || return 1
   database_delete_all_name_files || return 1
   return 0
 }
 
-# Convert lando database to yml file for config API.
+# Rebuild configuration files after a cache clear.
 #
-function lando_on_rebuild_config() {
+# Returns 0 if successful, 1 otherwise.
+function env_on_rebuild_config() {
   eval $(get_config_keys_as "database_ids" "environments.$LOCAL_ENV_ID.databases")
   for database_id in "${database_ids[@]}"; do
     local db_pointer="environments.$LOCAL_ENV_ID.databases.${database_id}"
     eval $(get_config_as "plugin" "$db_pointer.plugin")
-    [[ "$plugin" != 'lando' ]] && continue;
+    [[ "$plugin" != 'env' ]] && continue;
 
-    eval $(get_config_as service "$db_pointer.service")
+    eval $(get_config_path_as "path" "$db_pointer.path")
+    [[ -f "$path" ]] || exit_with_failure "Missing .env file at: $path"
 
-    ! json_set "$(cd $APP_ROOT && lando info -s $service --format=json | tail -1)" && fail_because "Could not read Lando configuration" && return 1
+    exit_with_failure_if_empty_config "path" "$db_pointer.path"
+    eval $(get_config_as "var" "$db_pointer.var")
+    exit_with_failure_if_empty_config "var" "$db_pointer.var"
+    ! result=$($CLOUDY_PHP "$PLUGINS_DIR/env/env.php" "$path" "$var") && exit_with_failure "$result"
+    json_set "$result"
 
     local filepath=$(database_get_defaults_file "$LOCAL_ENV_ID" "$database_id")
     local path_label="$(path_unresolve "$APP_ROOT" "$filepath")"
@@ -82,7 +63,7 @@ function lando_on_rebuild_config() {
 }
 
 # @see database_get_name
-function lando_on_database_name() {
+function env_on_database_name() {
   local environment_id="$1"
   local database_id="$2"
 
@@ -92,18 +73,18 @@ function lando_on_database_name() {
   [[ ! -f "$filepath" ]] && echo "Missing database name; try clearing caches." && return 1
   db_name=$(cat "$filepath")
   [[ "$db_name" ]] && echo "$db_name" && return 0
-  echo "Lando cannot determine the database name" && return 1
+  echo "Env plugin cannot determine the database name." && return 1
 }
 
-function lando_on_db_shell() {
+function env_on_db_shell() {
   call_plugin mysql db_shell $@
 }
-function lando_on_export_db() {
+function env_on_export_db() {
   call_plugin mysql export_db $@
 }
-function lando_on_import_db() {
+function env_on_import_db() {
   call_plugin mysql import_db $@
 }
-function lando_on_pull_db() {
+function env_on_pull_db() {
   call_plugin mysql pull_db $@
 }

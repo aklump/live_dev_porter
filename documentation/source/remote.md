@@ -1,19 +1,34 @@
 # Remote Environment
 
-The remote environment will usually be either production/live or staging/test.
+> You should use key-based authentication to avoid password prompts.
 
-You should use key-based authentication to avoid password prompts.
+## _config.local.yml_
+In _config.local.php_ on a developer's machine, that is to say the _local perspective_ the remote environment will usually be either production/live or staging/test, e.g.,
+
+```yaml
+local: dev
+remote: live
+```
+
+However, this is how _config.local.php_ should look on the production server--the _remote perspective_.
+
+```yaml
+local: live
+remote:
+```
 
 ## Default Configuration
 
 ```yaml
 environments:
-  production:
-    host: 123.mygreathost.com
-    user: foobar
+  dev:
+    write_access: true
+  live:
+    write_access: false
     base_path: /var/www/site.com/app
+    ssh: foobar@123.mygreathost.com
 ```
 
 ## Troubleshooting
 
-`ldp remote` will connect you to the remote environment and `cd` to the base path.  It you do not land in the base path, check _~/.bashrc_ and _~/.bash_profile_ for the presence of a `cd` command in there.  You will need to comment that out or remove that line if you wish for LDP to land you in the basepath. 
+`ldp remote` will connect you to the remote environment and `cd` to the base path. It you do not land in the base path, check _~/.bashrc_ and _~/.bash_profile_ for the presence of a `cd` command in there. You will need to comment that out or remove that line if you wish for LDP to land you in the basepath. 
