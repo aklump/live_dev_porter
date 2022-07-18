@@ -1,12 +1,22 @@
 #!/usr/bin/env bash
 
 function lando_on_configtest() {
-  local $lando_file
+  local lando_file
+  local name
+  local run_lando_tests
+  run_lando_tests=false
+  eval $(get_config_keys_as "database_ids" "environments.$LOCAL_ENV_ID.databases")
+  for database_id in "${database_ids[@]}"; do
+    eval $(get_config_as "plugin" "environments.$LOCAL_ENV_ID.databases.${database_id}.plugin")
+    [[ "$plugin" == 'lando' ]] && run_lando_tests=true && break
+  done
+  [[ "$run_lando_tests" == false ]] && return 0
+
   lando_file="$APP_ROOT/.lando.yml"
   echo_task "Can read Lando file: $lando_file"
   ! [[ -f "$lando_file" ]] && echo_task_failed && fail && return 1
 
-  local name=$(grep name: < "$lando_file")
+  name=$(grep name: < "$lando_file")
   LANDO_APP_NAME=${name/name: /}
   ! [[ "$LANDO_APP_NAME" ]] && echo_task_failed && fail && return 1
   echo_task_complete
