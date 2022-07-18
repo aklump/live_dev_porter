@@ -786,17 +786,16 @@ function _cloudy_validate_input_against_schema() {
 # Expand some vars from our controlling script.
 export CONFIG="$(cd $(dirname "$r/$CONFIG") && pwd)/$(basename $CONFIG)"
 
-# The application script may move the composer autoload to it's own location,
-# otherwise we'll assume it's in the php directory of the framework.
-if [[ "$COMPOSER_VENDOR" ]]; then
-  if [[ ! -f "$COMPOSER_VENDOR" ]]; then
-    COMPOSER_VENDOR="$(cd $(dirname "$r/$COMPOSER_VENDOR") && pwd)/$(basename $COMPOSER_VENDOR)"
-  fi
-else
-  COMPOSER_VENDOR="$(cd $r && pwd)/vendor/"
+# The application script may explicitly define the path to the composer vendor
+# directory, otherwise we will try to find it based on likely scenarios.
+if [[ ! "$COMPOSER_VENDOR" ]]; then
+  # If it's installed as a Composer dependency it will be here:
+  COMPOSER_VENDOR="$r/../../vendor/"
+  # Otherwise a Cloudy app will have it here:
+  [[ ! -d "$COMPOSER_VENDOR" ]] && COMPOSER_VENDOR="$r/vendor/"
 fi
-[[ -f "$COMPOSER_VENDOR/autoload.php" ]] || exit_with_failure "Composer autoloader not found at $COMPOSER_VENDOR"
-export COMPOSER_VENDOR
+[[ -f "$COMPOSER_VENDOR/autoload.php" ]] || exit_with_failure "Composer autoloader not found in $COMPOSER_VENDOR"
+export COMPOSER_VENDOR="$(cd $COMPOSER_VENDOR && pwd)"
 
 if [[ "$LOGFILE" ]]; then
   log_dir="$(dirname $r/$LOGFILE)"

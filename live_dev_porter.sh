@@ -7,9 +7,6 @@
 # Define the configuration file relative to this script.
 CONFIG="live_dev_porter.core.yml";
 
-# Define the composer autoloader relative to this script.
-COMPOSER_AUTOLOAD="../../autoload.php"
-
 # Uncomment this line to enable file logging.
 #LOGFILE="live_dev_porter.core.log"
 
