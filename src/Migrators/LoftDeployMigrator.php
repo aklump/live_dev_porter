@@ -19,8 +19,8 @@ class LoftDeployMigrator {
 
   public function getNewLocalConfig() {
     return [
-      'environment' => 'local',
-      'remote_environment' => 'live',
+      'local' => 'local',
+      'remote' => 'live',
     ];
   }
 

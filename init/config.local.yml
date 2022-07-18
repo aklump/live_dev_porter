@@ -1,2 +1,2 @@
-environment: local
-remote_environment: live
+local: local
+remote: live

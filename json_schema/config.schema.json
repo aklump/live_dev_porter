@@ -21,11 +21,11 @@
     },
     "additionalProperties": false,
     "properties": {
-        "environment": {
+        "local": {
             "type": "string",
             "enum": []
         },
-        "remote_environment": {
+        "remote": {
             "type": "string",
             "enum": []
         },

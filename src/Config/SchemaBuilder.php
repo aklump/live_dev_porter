@@ -36,9 +36,12 @@ final class SchemaBuilder {
       }
     }
     $data = json_decode(file_get_contents($this->jsonSchemaSource), TRUE);
-    $data['properties']['remote_environment']['enum'] = $this->getEnvironmentIds();
+    $data['properties']['remote']['enum'] = $this->getEnvironmentIds();
+    // It's critical to allow for a null remote, as this will be the case when
+    // the configuration is on the read-only, remote perspective.
+    $data['properties']['remote']['enum'][] = NULL;
 
-    $data['properties']['environment']['enum'] = $this->getEnvironmentIds();
+    $data['properties']['local']['enum'] = $this->getEnvironmentIds();
 
     $data['properties']['environments']['items']['properties']['plugin']['enum'] = $this->getPluginIds();
     $data['properties']['environments']['items']['properties']['files']['propertyNames']['enum'] = $this->getFileGroups();

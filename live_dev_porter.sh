@@ -133,9 +133,9 @@ case $COMMAND in
 
 esac
 
-eval $(get_config_as LOCAL_ENV_ID 'environment')
-exit_with_failure_if_empty_config 'LOCAL_ENV_ID' 'environment'
-eval $(get_config_as REMOTE_ENV_ID 'remote_environment')
+eval $(get_config_as LOCAL_ENV_ID 'local')
+exit_with_failure_if_empty_config 'LOCAL_ENV_ID' 'local'
+eval $(get_config_as REMOTE_ENV_ID 'remote')
 
 eval $(get_config_keys_as 'ENVIRONMENT_IDS' "environments")
 for id in "${ENVIRONMENT_IDS[@]}"; do
