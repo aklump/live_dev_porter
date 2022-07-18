@@ -24,23 +24,6 @@ environments:
       public: web/sites/default/files
       private: private/default/files
 
-databases:
-  -
-    id: default
-    exclude_tables:
-      - cache*
-    exclude_table_data:
-      - batch
-      - config_import
-      - config
-      - config_snapshot
-      - key_value_expire
-      - sessions
-      - watchdog
-    # https://dev.mysql.com/doc/refman/5.7/en/mysqldump.html#mysqldump-option-summary
-#    mysqldump_options:
-#      - xml
-
 file_groups:
   -
     id: secrets

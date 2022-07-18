@@ -163,10 +163,10 @@ function mysql_create_local_rollback_file() {
   ! mkdir -p "$dumpfiles_dir" && fail_because "Could not create directory: $dumpfiles_dir" && return 1
 
   # @link https://dev.mysql.com/doc/refman/5.7/en/mysqldump.html#mysqldump-option-summary
-  eval $(get_config_as -a "settings" "environments.$LOCAL_ENV_ID.databases.$database_id.mysqldump_options")
+  eval $(get_config_as -a "mysqldump_base_options" "plugins.mysql.mysqldump_base_options")
   options=' --add-drop-table'
-  if [[ null != ${settings[@]} ]]; then
-    for option in ${settings[@]}; do
+  if [[ null != ${mysqldump_base_options[@]} ]]; then
+    for option in ${mysqldump_base_options[@]}; do
       options="$options --$option"
     done
   fi
@@ -203,11 +203,11 @@ function mysql_on_export_db() {
   ! mkdir -p "$dumpfiles_dir" && fail_because "Could not create directory: $dumpfiles_dir" && return 1
 
   # @link https://dev.mysql.com/doc/refman/5.7/en/mysqldump.html#mysqldump-option-summary
-  eval $(get_config_as -a "settings" "environments.$LOCAL_ENV_ID.databases.$database_id.mysqldump_options")
+  eval $(get_config_as -a "mysqldump_base_options" "plugins.mysql.mysqldump_base_options")
 
   local shared_options=''
-  if [[ null != ${settings[@]} ]]; then
-    for option in ${settings[@]}; do
+  if [[ null != ${mysqldump_base_options[@]} ]]; then
+    for option in ${mysqldump_base_options[@]}; do
       shared_options=" $shared_options --$option"
     done
   fi
