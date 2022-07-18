@@ -24,22 +24,38 @@
   <h1>Remote Environment</h1>
   
 
-<p>The remote environment will usually be either production/live or staging/test.</p>
+<blockquote>
+  <p>You should use key-based authentication to avoid password prompts.</p>
+</blockquote>
 
-<p>You should use key-based authentication to avoid password prompts.</p>
+<h2><em>config.local.yml</em></h2>
+
+<p>In <em>config.local.php</em> on a developer's machine, that is to say the <em>local perspective</em> the remote environment will usually be either production/live or staging/test, e.g.,</p>
+
+<pre><code class="yaml">local: dev
+remote: live
+</code></pre>
+
+<p>However, this is how <em>config.local.php</em> should look on the production server--the <em>remote perspective</em>.</p>
+
+<pre><code class="yaml">local: live
+remote:
+</code></pre>
 
 <h2>Default Configuration</h2>
 
 <pre><code class="yaml">environments:
-  production:
-    host: 123.mygreathost.com
-    user: foobar
+  dev:
+    write_access: true
+  live:
+    write_access: false
     base_path: /var/www/site.com/app
+    ssh: foobar@123.mygreathost.com
 </code></pre>
 
 <h2>Troubleshooting</h2>
 
-<p><code>ldp remote</code> will connect you to the remote environment and <code>cd</code> to the base path.  It you do not land in the base path, check <em>~/.bashrc</em> and <em>~/.bash_profile</em> for the presence of a <code>cd</code> command in there.  You will need to comment that out or remove that line if you wish for LDP to land you in the basepath.</p>
+<p><code>ldp remote</code> will connect you to the remote environment and <code>cd</code> to the base path. It you do not land in the base path, check <em>~/.bashrc</em> and <em>~/.bash_profile</em> for the presence of a <code>cd</code> command in there. You will need to comment that out or remove that line if you wish for LDP to land you in the basepath.</p>
 
 </section>
 
@@ -50,7 +66,7 @@
 <footer>
   <div class="pager"><a href="plugins.html" class="prev plugins">&laquo;Plugins</a><a href="index.html" class="index pager__book-title"></a><a href="index.html" class="next index">Index&raquo;</a></div>  
   <div id="footer-legaleeze">
-    <p class="legaleeze center">Version: 0.0.15 &bull; Last Updated: Sun, 17 Jul 2022 15:48:20 -0700</p>
+    <p class="legaleeze center">Version: 0.0.16 &bull; Last Updated: Mon, 18 Jul 2022 12:26:06 -0700</p>
   </div>
 </footer>
 
