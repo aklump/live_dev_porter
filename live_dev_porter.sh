@@ -138,6 +138,10 @@ eval $(get_config_keys_as 'ENVIRONMENT_IDS' "environments")
 for id in "${ENVIRONMENT_IDS[@]}"; do
   if [[ "$id" == "$LOCAL_ENV_ID" ]]; then
 
+    eval $(get_config_as "write_access" "environments.$LOCAL_ENV_ID.write_access" false)
+    IS_WRITEABLE_ENVIRONMENT=false
+    [[ "$write_access" == true ]] && IS_WRITEABLE_ENVIRONMENT=true
+
     # Assign the default local database.
     eval $(get_config_keys_as "LOCAL_DATABASE_IDS" "environments.$LOCAL_ENV_ID.databases")
     LOCAL_DATABASE_ID=${LOCAL_DATABASE_IDS[0]}

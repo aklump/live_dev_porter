@@ -40,22 +40,17 @@ abstract class ProcessorBase {
   protected $output;
 
   /**
-   * @var string
+   * @var array
    */
-  private $filepath;
-
-  /**
-   * @var string
-   */
-  private $environmentId;
+  private $config;
 
   public function __construct($config) {
+    $this->config = $config;
     $this->command = $config['COMMAND'] ?? '';
-    $this->environmentId = $config['ENVIRONMENT_ID'] ?? '';
     $this->databaseId = $config['DATABASE_ID'] ?? '';
     $this->databaseName = $config['DATABASE_NAME'] ?? '';
     $this->filesGroupId = $config['FILES_GROUP_ID'] ?? '';
-    $this->filepath = $config['FILEPATH'] ?? '';
+    $this->config['FILEPATH'] = $config['FILEPATH'] ?? '';
     $this->shortpath = $config['SHORTPATH'] ?? '';
   }
 
@@ -66,15 +61,19 @@ abstract class ProcessorBase {
    *   Information about the source environment.
    */
   public function getSourceEnvironment(): array {
-    return ['id' => $this->environmentId];
+    return ['id' => $this->config['ENVIRONMENT_ID'] ?? NULL];
+  }
+
+  public function isWriteableEnvironment(): bool {
+    return $this->config['ENVIRONMENT_ID'] ?? FALSE;
   }
 
   public function getFileInfo() {
-    if (empty($this->filepath)) {
+    if (empty($this->config['FILEPATH'])) {
       return [];
     }
 
-    return ['filepath' => $this->filepath] + pathinfo($this->filepath);
+    return ['filepath' => $this->config['FILEPATH']] + pathinfo($this->config['FILEPATH']);
   }
 
   /**
@@ -87,7 +86,7 @@ abstract class ProcessorBase {
    * @throws \AKlump\LiveDevPorter\Processors\ProcessorFailedException If the does not exist or cannot be loaded.
    */
   public function loadFile() {
-    $filepath = $this->filepath;
+    $filepath = $this->config['FILEPATH'];
     if (empty($filepath)) {
       return FALSE;
     }
@@ -127,16 +126,16 @@ abstract class ProcessorBase {
       return TRUE;
     }
 
-    $result = file_put_contents($this->filepath, $this->loadedFile['contents']);
+    $result = file_put_contents($this->config['FILEPATH'], $this->loadedFile['contents']);
     if (FALSE === $result) {
       throw new ProcessorFailedException(sprintf('Failed to save: %s', $save_as));
     }
-    if ($move && $move !== $this->filepath) {
-      $result = rename($this->filepath, $move);
+    if ($move && $move !== $this->config['FILEPATH']) {
+      $result = rename($this->config['FILEPATH'], $move);
       if (FALSE === $result) {
         throw new ProcessorFailedException(sprintf("Could not move file to: %s", $move));
       }
-      $this->filepath = $move;
+      $this->config['FILEPATH'] = $move;
     }
 
     return $result;
