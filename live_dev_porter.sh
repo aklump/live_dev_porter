@@ -298,6 +298,7 @@ case $COMMAND in
       if [[ ! -f "$filepath" ]]; then
         fail_because "$shortpath does not exit" && return 1
       else
+        source "$PLUGINS_DIR/mysql/mysql.sh"
         mysql_create_local_rollback_file "$DATABASE_ID" || fail
         call_plugin $plugin import_db "$DATABASE_ID" "$filepath" || fail
         eval $(get_config_as total_files_to_keep max_database_rollbacks_to_keep 5)

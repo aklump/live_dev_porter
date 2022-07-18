@@ -41,7 +41,7 @@ for id in "${environment_ids[@]}"; do
     table_add_row "$database_id" "$plugin" "$dumpfiles_dir"
   done
   if table_has_rows; then
-    table_set_header "Database" "Plugin" "Path"
+    table_set_header "Database" "Plugin" "Exports"
     echo_slim_table
   fi
 
