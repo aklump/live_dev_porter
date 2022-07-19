@@ -35,48 +35,34 @@
 <h2>Quick Start</h2>
 
 <ul>
-<li>Install using <code>composer require aklump/live-dev-porter</code></li>
-<li>initialize your project <code>./vendor/aklump/live-dev-porter/live_dev_porter.sh init</code></li>
-<li>Migrate from Loft Deploy: <code>./vendor/aklump/live-dev-porter/bin/migrate.php ./.loft_deploy</code> (you will have to delete <em>config.yml</em> first)</li>
-<li>Merge the contents of <em>migrate</em> into <em>.live-dev-porter</em></li>
-<li>And update the configuration <code>./vendor/aklump/live-dev-porter/live_dev_porter.sh config</code></li>
+<li>Require in your project using <code>composer require aklump/live-dev-porter</code></li>
+<li>Ensure execute permissions: <code>chmod u+x ./vendor/bin/ldp</code></li>
+<li>(To migrate from Loft Deploy use, <code>./vendor/bin/ldp config-migrate ./.loft_deploy</code>, otherwise...)</li>
+<li>Initialize your project using <code>./vendor/bin/ldp init</code></li>
 <li>Open <em>.live_dev_porter/config.yml</em> and modify as needed.</li>
-<li>Open <em>.live_dev_porter/config.local.yml</em> and ...; be sure to ignore this file in SCM.</li>
-<li>Try it out with <code>./bin/live_dev_porter SOME_COMMAND</code></li>
+<li><strong>Ensure <em>config.local.yml</em> is ignored by your SCM!</strong></li>
+<li>Open <em>.live_dev_porter/config.local.yml</em> and define the correct <code>local</code> and <code>remote</code> environment IDs as defined in <em>config.yml</em>.</li>
 </ul>
+
+<h3>Optional Shorthand <code>ldp</code> instead of <code>./vendor/bin/ldp</code></h3>
+
+<ol>
+<li>Add <em>./vendor/bin</em> to your <code>$PATH</code> variable (probably in <em>~/.bash_profile</em>).</li>
+<li>Type <code>ldp</code> to test if it worked... you should see available commands</li>
+<li>Now use <code>ldp</code> from anywhere within your project, instead of <code>./vendor/bin/ldp</code> from the root.</li>
+<li>Don't worry if you have more than one project using <em>Live Dev Porter</em> because this alias will work for multiple projects as long as they use the same version, and usually even if the versions differ.</li>
+</ol>
 
 <h2>Installation</h2>
 
 <p>The installation script above will generate the following structure where <code>.</code> is your repository root.</p>
 
 <pre><code>.
-├── .live_dev_porter
-│   ├── backups
-│   │   └── dev
-│   │       └── db
-│   │           ├── data_exclusions.txt
-│   │           └── table_exclusions.txt
+└── .live_dev_porter
 │   ├── config.local.yml
-│   ├── config.yml
-│   └── fetch
-│       └── live
-│           ├── db
-│           └── files
-│               └── *.ignore.txt
-├── bin
-│   ├── live_dev_porter -&gt; ../opt/live_dev_porter/live_dev_porter.sh
-├── opt
-│   ├── cloudy
-│   └── aklump
-│       └── live_dev_porter
+│   └── config.yml
 └── {public web root}
 </code></pre>
-
-<h3>To Update</h3>
-
-<ul>
-<li>Update to the latest version from your repo root: <code>cloudy pm-update aklump/live_dev_porter</code></li>
-</ul>
 
 <h2>Configuration Files</h2>
 
@@ -107,7 +93,7 @@
 <h2>Usage</h2>
 
 <ul>
-<li>To see all commands use <code>./bin/live_dev_porter</code></li>
+<li>To see all commands use <code>./vendor/bin/ldp</code></li>
 </ul>
 
 <h2>Contributing</h2>
@@ -123,7 +109,7 @@
 <footer>
   <div class="pager"><a href="import.html" class="prev import">&laquo;Import</a><a href="index.html" class="index pager__book-title"></a><a href="plugins.html" class="next plugins">Plugins&raquo;</a></div>  
   <div id="footer-legaleeze">
-    <p class="legaleeze center">Version: 0.0.20 &bull; Last Updated: Tue, 19 Jul 2022 13:05:55 -0700</p>
+    <p class="legaleeze center">Version: 0.0.21 &bull; Last Updated: Tue, 19 Jul 2022 16:46:18 -0700</p>
   </div>
 </footer>
 
