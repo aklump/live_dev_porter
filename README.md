@@ -10,44 +10,30 @@ Simplifies the management and transfer of assets between website environments.
 
 ## Quick Start
 
-- Install using `composer require aklump/live-dev-porter`
-- initialize your project `./vendor/aklump/live-dev-porter/live_dev_porter.sh init`
-- Migrate from Loft Deploy: ` ./vendor/aklump/live-dev-porter/bin/migrate.php ./.loft_deploy` (you will have to delete _config.yml_ first)
-- Merge the contents of _migrate_ into _.live-dev-porter_
-- And update the configuration `./vendor/aklump/live-dev-porter/live_dev_porter.sh config`
+- Require in your project using `composer require aklump/live-dev-porter`
+- Ensure execute permissions: `chmod u+x ./vendor/bin/ldp`
+- (To migrate from Loft Deploy use, `./vendor/bin/ldp config-migrate ./.loft_deploy`, otherwise...)
+- Initialize your project using `./vendor/bin/ldp init`
 - Open _.live_dev_porter/config.yml_ and modify as needed.
-- Open _.live_dev_porter/config.local.yml_ and ...; be sure to ignore this file in SCM.
-- Try it out with `./bin/live_dev_porter SOME_COMMAND`
+- **Ensure _config.local.yml_ is ignored by your SCM!**
+- Open _.live_dev_porter/config.local.yml_ and define the correct `local` and `remote` environment IDs as defined in _config.yml_.
+
+### Optional Shorthand `ldp` instead of `./vendor/bin/ldp`
+
+1. Add _./vendor/bin_ to your `$PATH` variable (probably in _~/.bash_profile_).
+2. Type `ldp` to test if it worked... you should see available commands
+3. Now use `ldp` from anywhere within your project, instead of `./vendor/bin/ldp` from the root.
+4. Don't worry if you have more than one project using _Live Dev Porter_ because this alias will work for multiple projects as long as they use the same version, and usually even if the versions differ.
 
 ## Installation
 
 The installation script above will generate the following structure where `.` is your repository root.
 
     .
-    ├── .live_dev_porter
-    │   ├── backups
-    │   │   └── dev
-    │   │       └── db
-    │   │           ├── data_exclusions.txt
-    │   │           └── table_exclusions.txt
+    └── .live_dev_porter
     │   ├── config.local.yml
-    │   ├── config.yml
-    │   └── fetch
-    │       └── live
-    │           ├── db
-    │           └── files
-    │               └── *.ignore.txt
-    ├── bin
-    │   ├── live_dev_porter -> ../opt/live_dev_porter/live_dev_porter.sh
-    ├── opt
-    │   ├── cloudy
-    │   └── aklump
-    │       └── live_dev_porter
+    │   └── config.yml
     └── {public web root}
-
-### To Update
-
-- Update to the latest version from your repo root: `cloudy pm-update aklump/live_dev_porter`
 
 ## Configuration Files
 
@@ -60,7 +46,7 @@ Refer to the file(s) for documentation about configuration options.
 
 ## Usage
 
-* To see all commands use `./bin/live_dev_porter`
+* To see all commands use `./vendor/bin/ldp`
 
 ## Contributing
 
