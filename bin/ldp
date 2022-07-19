@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+#
+# @file
+# Executes live_dev_porter.sh from any directory within a project.
+#
+# See documentation for installation/usage.
+#
+
+function find_live_dev_porter() {
+  test / == "$PWD" && return 1
+  test -e "./vendor/aklump/live-dev-porter/live_dev_porter.sh" && echo "${PWD}/vendor/aklump/live-dev-porter/live_dev_porter.sh" && return 0 || cd .. && find_live_dev_porter
+}
+
+LIVE_DEV_PORTER=$(find_live_dev_porter)
+if [[ "$LIVE_DEV_PORTER" ]]; then
+  . "$LIVE_DEV_PORTER" "$@"
+fi

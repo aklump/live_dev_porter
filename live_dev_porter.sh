@@ -200,9 +200,6 @@ fi
 implement_cloudy_basic
 implement_route_access
 
-# This is used by several commands so put it here as a universal.
-! WORKFLOW_ID=$(get_active_workflow) && fail_because "$WORKFLOW_ID" && exit_with_failure
-
 has_option 'json' && JSON=true
 
 # Handle other commands.
@@ -238,6 +235,11 @@ case $COMMAND in
       ;;
 
     "export")
+      WORKFLOW_ID="$(get_option 'workflow')"
+      if [[ ! "$WORKFLOW_ID" ]]; then
+        ! WORKFLOW_ID=$(get_workflow_by_command $COMMAND) && fail_because "$WORKFLOW_ID" && exit_with_failure
+      fi
+
       filename=$(get_command_arg 0)
       DATABASE_ID=$(get_option 'id' $LOCAL_DATABASE_ID)
       eval $(get_config_as plugin "environments.$LOCAL_ENV_ID.databases.$DATABASE_ID.plugin")
@@ -270,6 +272,8 @@ case $COMMAND in
     ;;
 
     "import")
+      ! WORKFLOW_ID=$(get_workflow_by_command $COMMAND) && fail_because "$WORKFLOW_ID" && exit_with_failure
+
       filepath=$(get_command_arg 0)
       DATABASE_ID=$(get_option 'id' $LOCAL_DATABASE_ID)
       eval $(get_config_as plugin "environments.$LOCAL_ENV_ID.databases.$DATABASE_ID.plugin")
@@ -302,6 +306,7 @@ case $COMMAND in
       if [[ ! -f "$filepath" ]]; then
         fail_because "$shortpath does not exit" && return 1
       else
+        # TODO These rollback functions need to be in database.sh
         source "$PLUGINS_DIR/mysql/mysql.sh"
         mysql_create_local_rollback_file "$DATABASE_ID" || fail
         call_plugin $plugin import_db "$DATABASE_ID" "$filepath" || fail
@@ -330,7 +335,6 @@ case $COMMAND in
 
       eval $(get_config_as label "environments.$REMOTE_ENV_ID.label")
       echo_title "Pull $(array_csv --prose) from $label"
-      [[ "$WORKFLOW_ID" ]] && echo_heading "Using workflow: $WORKFLOW_ID"
 
       if [[ "$has_db" == false ]] && [[ "$has_files" == false ]]; then
         fail_because "Nothing to pull; neither \"databases\" nor \"files_group\" have been configured."
@@ -360,10 +364,6 @@ case $COMMAND in
             echo
             eval $(get_config_as plugin "environments.$LOCAL_ENV_ID.databases.$DATABASE_ID.plugin")
             ! has_failed && call_plugin $plugin pull_db "$DATABASE_ID" || fail
-            if ! has_failed && [[ "$WORKFLOW_ID" ]]; then
-              ENVIRONMENT_ID="$REMOTE_ENV_ID"
-              execute_workflow_processors "$WORKFLOW_ID" || fail
-            fi
           done
         fi
       fi

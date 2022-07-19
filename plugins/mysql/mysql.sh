@@ -174,7 +174,7 @@ function mysql_create_local_rollback_file() {
   defaults_file=$(database_get_defaults_file "$LOCAL_ENV_ID" "$database_id")
   ! db_name=$(database_get_name "$LOCAL_ENV_ID" "$database_id") && fail_because "$db_name" && return 1
   write_log_debug "mysqldump --defaults-file="$defaults_file"$options "$db_name"  >> "${dumpfiles_dir%/}/$filename""
-  echo_task "Create backup as $filename"
+  echo_task "Backup local database to: $filename"
   if ! mysqldump --defaults-file="$defaults_file"$options "$db_name"  > "${dumpfiles_dir%/}/$filename"; then
     echo_task_failed && fail_because "mysqldump failed." && return 1
   fi
@@ -312,12 +312,16 @@ function mysql_on_pull_db() {
 
   local remote_base_path
   local remote_dumpfile_path
+  local ldp_fetch_options
 
   # Create the export at the remote.
   echo_task "Export remote database: $DATABASE_ID."
-  remote_base_path="$(environment_path_resolve $REMOTE_ENV_ID)"
+  ! WORKFLOW_ID=$(get_workflow_by_command 'pull') && fail_because "$WORKFLOW_ID" && exit_with_failure
+  [[ "$WORKFLOW_ID" ]] && ldp_fetch_options=" --workflow="$WORKFLOW_ID""
 
-  ! remote_ssh "(cd $remote_base_path && if [[ -e ./vendor/bin/live-dev-porter ]]; then ./vendor/bin/live-dev-porter export pull --json --id="$DATABASE_ID" --workflow="$WORKFLOW_ID"; elif [[ -e ./vendor/bin/loft_deploy.sh ]]; then ./vendor/bin/loft_deploy.sh export pull -y; else exit 1; fi)" &> /dev/null && echo_task_failed && fail_because "No export tool installed on the remote environment." && return 1
+  remote_base_path="$(environment_path_resolve $REMOTE_ENV_ID)"
+  write_log_debug "remote_ssh \"(cd $remote_base_path || exit 1;if [[ -e ./vendor/aklump/live-dev-porter/live_dev_porter.sh ]]; then ./vendor/aklump/live-dev-porter/live_dev_porter.sh export pull --json --id="$DATABASE_ID"$ldp_options; elif [[ -e ./vendor/bin/loft_deploy.sh ]]; then ./vendor/bin/loft_deploy.sh export pull -y; else exit 1; fi)\""
+  ! remote_ssh "(cd $remote_base_path || exit 1;if [[ -e ./vendor/aklump/live-dev-porter/live_dev_porter.sh ]]; then ./vendor/aklump/live-dev-porter/live_dev_porter.sh export pull --json --id="$DATABASE_ID"$ldp_options; elif [[ -e ./vendor/bin/loft_deploy.sh ]]; then ./vendor/bin/loft_deploy.sh export pull -y; else exit 1; fi)" &> /dev/null && echo_task_failed && fail_because "No export tool installed on the remote environment." && return 1
   echo_task_complete
   remote_dumpfile_path="$remote_base_path/private/default/db/purgeable/aurora_timesheet_drupal-pull.sql.gz"
 
@@ -337,4 +341,10 @@ function mysql_on_pull_db() {
   mysql_on_import_db "$DATABASE_ID" "$save_as" || return 1
   eval $(get_config_as total_files_to_keep max_database_rollbacks_to_keep 5)
   mysql_prune_rollback_files "$DATABASE_ID" "$total_files_to_keep" || return 1
+
+  ! WORKFLOW_ID=$(get_workflow_by_command 'pull') && fail_because "$WORKFLOW_ID" && exit_with_failure
+  if [[ "$WORKFLOW_ID" ]]; then
+    ENVIRONMENT_ID="$LOCAL_ENV_ID"
+    execute_workflow_processors "$WORKFLOW_ID" || fail
+  fi
 }

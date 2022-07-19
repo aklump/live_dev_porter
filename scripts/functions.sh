@@ -59,24 +59,36 @@ function get_container_path() {
   return 0
 }
 
-# Gets the active workflow by command or --workflow.
+# Echo a validated workflow ID for a given command.
 #
-# Returns 1 if invalid workflow.  Echos the workflow ID, if valid and present.
-function get_active_workflow() {
-  local workflow=$(get_option 'workflow')
-  if [[ ! "$workflow" ]]; then
-    eval $(get_config_as "workflow" "environments.$LOCAL_ENV_ID.command_workflows.$COMMAND")
-  fi
+# $1 - The command
+#
+# @code
+# ! WORKFLOW_ID=$(get_workflow_by_command 'export') && fail_because "$WORKFLOW_ID" && exit_with_failure
+# @endcode
+#
+# Returns 0 if and echos workflow ID; returns 1 if no workflow found.
+function get_workflow_by_command() {
+  local command="$1"
 
-  # If there is no workflow, then all is well.
-  [[ ! "$workflow" ]] && return 0
+  local id
+  eval $(get_config_as "id" "environments.$LOCAL_ENV_ID.command_workflows.$command")
+  [[ ! "$id" ]] && return 0
+  ! id=$(validate_workflow "$id") && echo "$id" && return 1
+  echo "$id" && return 0
+}
+
+# Ensure a given workflow ID is valid.
+#
+# $1 - A workflow ID.
+#
+# Returns 0 and echos the ID if valid; otherwise echo error and return 1
+function validate_workflow() {
+  local workflow_id="$1"
+
   eval $(get_config_keys_as array_has_value__array "workflows")
-
-  # Ensure is a configured workflow...
-  array_has_value "$workflow" && echo "$workflow" && return 0
-
-  # ... otherwise fail.
-  echo "\"$workflow\" is not a configured workflow."
+  array_has_value "$workflow_id" && echo "$workflow_id" && return 0
+  echo "\"$workflow_id\" is not a configured workflow."
   return 1
 }
 
