@@ -1,53 +1,75 @@
 environments:
-  -
-    id: local
-    label: Local
+  dev:
+    label: Development
     write_access: true
-    plugin: lando
+    plugin: default
+    base_path: ./
+    command_workflows:
+      pull: develop
+      export: archive
+      import:
+    databases:
+      drupal:
+        plugin: lando
+        service: database
     files:
-      secrets: private/default/secrets
       install: install/default
+      secrets: private/default/secrets
       public: web/sites/default/files
       private: private/default/files
-    databases:
-      default:
-        host: TODO
-        port: TODO
-        name: TODO
-
-  -
-    id: live
+  live:
     label: Dreamhost
     write_access: false
     plugin: default
+    base_path: /foo/bar/baz/app
+    ssh: foo@bar.com
+    databases:
+      drupal:
+        plugin: env
+        path: .env
+        var: DATABASE_URL
     files:
+      install: ./
+      secrets: ./
       public: web/sites/default/files
       private: private/default/files
-
+workflows:
+  archive:
+    -
+      database: drupal
+      exclude_table_data:
+        - 'cache*'
+  develop:
+    - database: drupal
+      exclude_table_data:
+        - 'cache*'
+        - batch
+        - config_import
+        - config
+        - config_snapshot
+        - key_value_expire
+        - sessions
+        - watchdog
 file_groups:
-  -
-    id: secrets
-    include:
-      - /.env
-      - /bin/config/*.local.*
-      - /.loft_deploy/config.yml
-  -
-    id: install
+  install:
     include:
       - /web/.htaccess
+      - /web/sites/default/settings.local.php
       - /.env
-      - /bin/config/*.local.*
-      - /.loft_deploy/config.yml
-  -
-    id: public
+  secrets:
+    include:
+      - /web/sites/default/settings.local.php
+      - /.env
+  public:
     exclude:
-      - .DS_Store
-      - config_*
-      - css/
-      - imagecache/
-      - js/
-      - php/
-      - styles/
-      - tmp
-  -
-    id: private
+      - /.DS_Store
+      - '/config_*/'
+      - /css/
+      - /imagecache/
+      - /js/
+      - /php/
+      - /styles/
+      - /tmp/
+  private:
+    exclude:
+      - /tmp/

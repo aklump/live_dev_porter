@@ -19,6 +19,10 @@ function mysql_on_rebuild_config() {
     [[ "$plugin" != 'mysql' ]] && continue;
 
     eval $(get_config_as "host" "$db_pointer.host" "localhost")
+
+    eval $(get_config_as "protocol" "$db_pointer.protocol")
+    [[ ! "$protocol" ]] && protocol=$(database_get_protocol_by_host "$host")
+
     eval $(get_config_as "port" "$db_pointer.port")
 
     eval $(get_config_as "name" "$db_pointer.name")

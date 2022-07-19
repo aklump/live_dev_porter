@@ -27,7 +27,6 @@ if (array_diff(['host', 'path', 'user', 'pass'], array_keys($data))) {
 
 $data = [
   [
-    'protocol' => $data['protocol'] ?? 'tcp',
     'external_connection' => [
       'host' => $data['host'],
       'port' => $data['port'] ?? NULL,

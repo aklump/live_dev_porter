@@ -39,6 +39,7 @@ function env_on_rebuild_config() {
     ! chmod 0600 "$filepath" && fail_because "Failed with chmod 0600 $path_label" && return 1
 
     local host="$(json_get_value '0.external_connection.host')"
+    local protocol=$(database_get_protocol_by_host "$host")
     local port="$(json_get_value '0.external_connection.port')"
     local user="$(json_get_value '0.creds.user')"
     local password="$(json_get_value '0.creds.password')"
