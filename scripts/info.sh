@@ -83,3 +83,10 @@ done
 #array_csv__array=("${ACTIVE_PLUGINS[@]}")
 #table_add_row "All active plugins" "$(array_csv --prose)"
 #echo_slim_table
+
+echo_title "Workflows"
+eval $(get_config_keys_as workflows "workflows")
+for workflow_id in "${workflows[@]}"; do
+   table_add_row "$workflow_id"
+done
+echo_slim_table

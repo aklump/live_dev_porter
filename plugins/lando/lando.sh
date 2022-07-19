@@ -10,7 +10,7 @@ function lando_on_configtest() {
     eval $(get_config_as "plugin" "environments.$LOCAL_ENV_ID.databases.${database_id}.plugin")
     [[ "$plugin" == 'lando' ]] && run_lando_tests=true && break
   done
-  [[ "$run_lando_tests" == false ]] && return 0
+  [[ "$run_lando_tests" == false ]] && return 255
 
   lando_file="$APP_ROOT/.lando.yml"
   echo_task "Can read Lando file: $lando_file"

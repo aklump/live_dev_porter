@@ -210,9 +210,13 @@ case $COMMAND in
       implement_configtest
       for plugin in "${ACTIVE_PLUGINS[@]}"; do
         if plugin_implements $plugin configtest; then
+          tput sc
           echo
           echo_heading "Plugin: $(string_ucfirst "$plugin")"
           call_plugin $plugin configtest
+          if [[ $? -eq 255 ]]; then
+            tput rc
+          fi
         fi
       done
       has_failed && fail_because "Try clearing caches." && exit_with_failure "Tests failed."

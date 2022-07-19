@@ -21,8 +21,8 @@ function _test_remote_path() {
 function default_on_configtest() {
   local assert
 
+  [[ "$REMOTE_ENV_ID" == null ]] && return 255
   local directory_path
-
   # Test remote connection
   echo_task "Able to connect to $REMOTE_ENV_ID server."
   local did_connect=false

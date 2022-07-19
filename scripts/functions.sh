@@ -201,7 +201,7 @@ function implement_route_access() {
 
   fail_because "write_access is false for this environment ($LOCAL_ENV_ID)."
   fail_because "set to true in the configuration, to allow this command."
-  exit_with_failure "\"$command\" not allowed"
+  exit_with_failure "\"$command\" not allowed in this environment."
 }
 
 # Resolve an environment relative path to absolute
