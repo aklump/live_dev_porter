@@ -1,7 +1,7 @@
 title: 'Live Dev Porter'
 name: 'Live Dev Porter'
 description: 'Simplifies the management and transfer of assets between website environments.'
-version: 0.0.19
+version: 0.0.20
 author: 'Aaron Klump <sourcecode@intheloftstudios.com>'
 config_path_base: ../../..
 path_to_app: .
@@ -13,10 +13,7 @@ default_command: help
 max_database_rollbacks_to_keep: 5
 plugins:
   mysql:
-    mysqldump_base_options:
-      - single-transaction
-      - skip-lock-tables
-      - no-tablespaces
+    mysqldump_base_options: [single-transaction, skip-lock-tables, no-tablespaces]
 commands:
   remote:
     help: 'Enter the remote server shell.'
@@ -27,88 +24,32 @@ commands:
   pull:
     require_write_access: true
     help: 'Pull remote database and files to local.'
-    options:
-      verbose:
-        type: boolean
-        help: 'Output additional information.'
-        aliases:
-          - v
-      database:
-        type: boolean
-        help: 'Only pull the database.'
-        aliases:
-          - d
-      files:
-        type: boolean
-        help: 'Only pull the files.'
-        aliases:
-          - f
-      group:
-        type: string
-        help: 'Limit the operation by group'
-      dry-run:
-        type: boolean
-        help: 'Preview which files will be copied.'
+    options: { verbose: { type: boolean, help: 'Output additional information.', aliases: [v] }, database: { type: boolean, help: 'Only pull the database.', aliases: [d] }, files: { type: boolean, help: 'Only pull the files.', aliases: [f] }, group: { type: string, help: 'Limit the operation by group' }, dry-run: { type: boolean, help: 'Preview which files will be copied.' } }
   import:
     require_write_access: true
     help: 'Import a dumpfile to the local database.'
-    arguments:
-      filepath:
-        help: 'A an absolute (or relative to the working directory) path to an existing export file.  Alternately, it may be a portion of a filename used to search through existing files, or simply omitted and you will be shown files to choose from.'
-    options:
-      id:
-        type: string
-        help: 'Indicate the database ID to import into, this can be omitted when only one database is defined, or when you want the first (default) database to be used.'
+    arguments: { filepath: { help: 'A an absolute (or relative to the working directory) path to an existing export file.  Alternately, it may be a portion of a filename used to search through existing files, or simply omitted and you will be shown files to choose from.' } }
+    options: { id: { type: string, help: 'Indicate the database ID to import into, this can be omitted when only one database is defined, or when you want the first (default) database to be used.' } }
   export:
     help: 'Export the local database.'
-    arguments:
-      filename:
-        help: 'Optional filename to use instead of the default, e.g., "rollback".  Do not include the extension.'
-    options:
-      id:
-        type: string
-        help: 'Indicate the database ID to export, this can be omitted when only one database is defined, or when you want the first (default) database to be used.'
-      workflow:
-        type: string
-        aliases:
-          - wf
-        help: 'A workflow to use for export; this will be used instead of the configured default.'
-      json:
-        type: boolean
-        help: 'Use JSON output mode.  Prints the absolute path to the export string.'
+    arguments: { filename: { help: 'Optional filename to use instead of the default, e.g., "rollback".  Do not include the extension.' } }
+    options: { id: { type: string, help: 'Indicate the database ID to export, this can be omitted when only one database is defined, or when you want the first (default) database to be used.' }, workflow: { type: string, aliases: [wf], help: 'A workflow to use for export; this will be used instead of the configured default.' }, json: { type: boolean, help: 'Use JSON output mode.  Prints the absolute path to the export string.' } }
   db:
     help: 'Enter the local database shell.'
-    aliases:
-      - mysql
-    arguments:
-      id:
-        help: 'Use to enter a database other than the first/default listed for the local environment.'
+    aliases: [mysql]
+    arguments: { id: { help: 'Use to enter a database other than the first/default listed for the local environment.' } }
   config:
     help: 'Open configuration in $EDITOR.'
-    options:
-      local:
-        type: boolean
-        help: 'Use this to open config.local.yml instead of config.yml.'
-        aliases:
-          - l
+    options: { local: { type: boolean, help: 'Use this to open config.local.yml instead of config.yml.', aliases: [l] } }
   config-test:
     help: 'Run tests to validate configuration.'
-    aliases:
-      - configtest
-      - health
+    aliases: [configtest, health]
   config-migrate:
     help: 'Migrate from Loft Deploy configuration.'
-    arguments:
-      loft_deploy:
-        help: 'Optional.  The path to the .loft_deploy directory with the old configuration.  A sibling directory .live_dev_porter will be created.  Defaults to looking in the current directory.'
+    arguments: { loft_deploy: { help: 'Optional.  The path to the .loft_deploy directory with the old configuration.  A sibling directory .live_dev_porter will be created.  Defaults to looking in the current directory.' } }
   init:
     help: 'Initialize local configuration files.'
-    options:
-      version:
-        help: 'Display the current version'
-        type: boolean
+    options: { version: { help: 'Display the current version', type: boolean } }
   clear-cache:
-    aliases:
-      - clearcache
-      - cc
+    aliases: [clearcache, cc]
     help: 'Clear all cached data.'
