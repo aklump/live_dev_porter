@@ -7,17 +7,19 @@
             "AKlump\\LiveDevPorter\\": "src"
         }
     },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "cloudy/"
+        }
+    ],
     "require": {
-        "symfony/yaml": "^3.4|^4|^5",
-        "justinrainbow/json-schema": "^5.2",
-        "aklump/loft-lib": "^1.1",
-        "jasny/dotkey": "^1.0",
-        "ckr/arraymerger": "^2.0"
+        "aklump/cloudy": "^1.4"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.5"
     },
     "bin": [
-        "bin\/ldp"
+        "bin/ldp"
     ]
 }

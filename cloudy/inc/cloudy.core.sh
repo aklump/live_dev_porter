@@ -792,7 +792,7 @@ if [[ ! "$COMPOSER_VENDOR" ]]; then
   # If it's installed as a Composer dependency it will be here:
   COMPOSER_VENDOR="$r/../../../vendor/"
   # Otherwise a Cloudy app will have it here:
-  [[ ! -d "$COMPOSER_VENDOR" ]] && COMPOSER_VENDOR="$r/vendor/"
+  [[ ! -d "$COMPOSER_VENDOR" ]] && COMPOSER_VENDOR="$r/framework/cloudy/vendor/"
 fi
 [[ -f "$COMPOSER_VENDOR/autoload.php" ]] || exit_with_failure "Composer autoloader not found in $COMPOSER_VENDOR"
 export COMPOSER_VENDOR="$(cd $COMPOSER_VENDOR && pwd)"

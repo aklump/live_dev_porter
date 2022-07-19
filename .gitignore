@@ -1,8 +1,8 @@
 /cloudy/.gitignore
 /cloudy/cache/
-/cloudy/php/composer*
-/cloudy/php/vendor/
-/cloudy/php/vendor/*
+/cloudy/composer*
+/cloudy/vendor/
+/cloudy/vendor/*
 /composer.lock
 /documentation/core/
 /documentation/README.md
