@@ -192,16 +192,25 @@ function plugin_implements() {
 function implement_route_access() {
   command=$(get_command)
 
-  eval $(get_config_as requirement "commands.${command}.require_write_access")
-  [[ ! "$requirement" ]] && return 0
-  [[ false == "$requirement" ]] && return 0
+  local access
+
+  eval $(get_config_as require_remote "commands.${command}.require_remote_env")
+  eval $(get_config_as require_write "commands.${command}.require_write_access")
+  # No special perms required.
+  [[ "$require_write" != true ]] && [[ "$require_remote" != true ]] && return 0
 
   eval $(get_config_as write_access "environments.$LOCAL_ENV_ID.write_access")
-  [[ $write_access == true ]] && return 0
+  eval $(get_config_as remote "remote")
 
-  fail_because "write_access is false for this environment ($LOCAL_ENV_ID)."
-  fail_because "set to true in the configuration, to allow this command."
-  exit_with_failure "\"$command\" not allowed in this environment."
+  if [[ "$require_write" == true ]] && [[ "$write_access" != true ]]; then
+    fail_because "write_access is false for this environment ($LOCAL_ENV_ID)."
+    fail_because "set to true in the configuration, to allow this command."
+  fi
+  if [[ "$require_remote" == true ]] && [[ "$remote" == null ]]; then
+    fail_because "This command requires a remote environment be configured."
+  fi
+  has_failed && exit_with_failure "\"$command\" not allowed in this environment."
+  return 0
 }
 
 # Resolve an environment relative path to absolute
