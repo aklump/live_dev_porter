@@ -32,14 +32,14 @@ function default_on_configtest() {
     echo_task_failed
     fail_because "Check $REMOTE_ENV_ID host and user config."
   else
-    echo_task_complete
+    echo_task_completed
   fi
 
   # Test remote base_path
   echo_task "$(string_ucfirst "$REMOTE_ENV_ID") base path exists."
   local exists=false
   if _test_remote_path; then
-    echo_task_complete
+    echo_task_completed
   else
     echo_task_failed
     fail_because "Check \"$remote_base_path\" on $REMOTE_ENV_ID."
@@ -60,13 +60,13 @@ function default_on_configtest() {
         echo_task "$(string_ucfirst $environment_id) file group $group_id exists: $file_group_path"
         if [[ "$environment_id" == "$LOCAL_ENV_ID" ]]; then
           if [[ -e "$file_group_path" ]] || mkdir -p "$file_group_path"; then
-            echo_task_complete
+            echo_task_completed
           else
             echo_task_failed
             fail
           fi
         elif [[ "$environment_id" == "$REMOTE_ENV_ID" ]] && _test_remote_path "$file_group_directory"; then
-          echo_task_complete
+          echo_task_completed
         else
           echo_task_failed
           fail
@@ -152,7 +152,7 @@ function default_on_pull_files() {
       if has_failed; then
         echo_task_failed
       else
-        ! has_option "dry-run" && echo_task_complete
+        ! has_option "dry-run" && echo_task_completed
 
         if [[ "$WORKFLOW_ID" ]]; then
           ENVIRONMENT_ID="$LOCAL_ENV_ID"

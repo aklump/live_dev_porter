@@ -851,17 +851,17 @@ function echo_fail() {
 
 # Echo a task has started, a.k.a, pending.
 #
-# This should be followed by echo_task_complete or echo_task_failed.
+# This should be followed by echo_task_completed or echo_task_failed.
 #
 # $1 - The imperative, e.g., "Download all files"
 #
 # Returns nothing.
 #
-# @see echo_task_complete
+# @see echo_task_completed
 # @see echo_task_failed
 function echo_task() {
   echo_task__task="$1"
-  tput civis && tput sc
+  tput sc && tput civis
   echo "$(echo_blue '[ ]') $(echo_blue "$echo_task__task")"
 }
 
@@ -881,7 +881,7 @@ function clear_task() {
 #
 # @see echo_task
 # @see echo_task_failed
-function echo_task_complete() {
+function echo_task_completed() {
   tput rc && echo_pass "$echo_task__task" && tput cnorm
 }
 
@@ -890,7 +890,7 @@ function echo_task_complete() {
 # Returns nothing.
 #
 # @see echo_task
-# @see echo_task_complete
+# @see echo_task_completed
 function echo_task_failed() {
   tput rc && echo_fail "$echo_task__task" && tput cnorm
 }

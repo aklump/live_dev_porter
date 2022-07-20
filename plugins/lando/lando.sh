@@ -19,14 +19,16 @@ function lando_on_configtest() {
   name=$(grep name: < "$lando_file")
   LANDO_APP_NAME=${name/name: /}
   ! [[ "$LANDO_APP_NAME" ]] && echo_task_failed && fail && return 1
-  echo_task_complete
+  echo_task_completed
 
   echo_task "Assert \"$LANDO_APP_NAME\" is running."
   if [[ "$(lando list --app "$LANDO_APP_NAME")" == "[]" ]]; then
     echo_task_failed && fail
   else
-    echo_task_complete
+    echo_task_completed
   fi
+
+  call_plugin mysql configtest $@
 }
 
 function lando_on_clear_cache() {

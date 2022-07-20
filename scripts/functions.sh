@@ -139,7 +139,7 @@ function execute_workflow_processors() {
       fi
       return 1
     else
-      echo_task_complete
+      echo_task_completed
       [[ "$processor_output" ]] && succeed_because "$processor_output"
     fi
   done

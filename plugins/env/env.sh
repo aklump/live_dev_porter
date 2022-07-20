@@ -76,6 +76,29 @@ function env_on_database_name() {
   echo "Env plugin cannot determine the database name." && return 1
 }
 
+function env_on_configtest() {
+  local run_our_tests
+  run_our_tests=false
+  eval $(get_config_keys_as "database_ids" "environments.$LOCAL_ENV_ID.databases")
+  for database_id in "${database_ids[@]}"; do
+    eval $(get_config_as "plugin" "environments.$LOCAL_ENV_ID.databases.${database_id}.plugin")
+    [[ "$plugin" == 'env' ]] && run_our_tests=true && break
+  done
+  [[ "$run_our_tests" == false ]] && return 255
+
+  for database_id in "${database_ids[@]}"; do
+    local db_pointer="environments.$LOCAL_ENV_ID.databases.${database_id}"
+    eval $(get_config_path_as "path" "$db_pointer.path")
+    echo_task "Able to read dotenv file for $LOCAL_ENV_ID database: $database_id."
+    if [[ ! -f "$path" ]]; then
+      echo_task_failed && fail
+    else
+      echo_task_completed
+    fi
+  done
+
+  call_plugin mysql configtest $@
+}
 function env_on_db_shell() {
   call_plugin mysql db_shell $@
 }

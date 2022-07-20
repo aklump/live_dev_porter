@@ -79,7 +79,7 @@ function mysql_on_configtest() {
     ! db_name=$(database_get_name "$LOCAL_ENV_ID" "$database_id") && echo_fail "$db_name" && fail
     echo_task "Able to connect to $LOCAL_ENV_ID database: $database_id."
     if mysql --defaults-file="$defaults_file" "$db_name" -e ";" 2> /dev/null ; then
-      echo_task_complete
+      echo_task_completed
     else
       echo_task_failed
       fail
@@ -90,8 +90,8 @@ function mysql_on_configtest() {
   if [[ "$REMOTE_ENV_ID" ]]; then
     remote_base_path="$(environment_path_resolve $REMOTE_ENV_ID)"
     echo_task "Ensure remote has export tool installed."
-    if remote_ssh "[[ -e "$remote_base_path"/vendor/bin/live-dev-porter ]] || [[ -e "$remote_base_path"/vendor/bin/loft_deploy.sh ]]"  &> /dev/null; then
-      echo_task_complete
+    if remote_ssh "[[ -e "$remote_base_path"/vendor/bin/ldp ]] || [[ -e "$remote_base_path"/vendor/bin/loft_deploy.sh ]]"  &> /dev/null; then
+      echo_task_completed
     else
       echo_task_failed
       fail
@@ -140,7 +140,7 @@ function mysql_prune_rollback_files() {
     sandbox_directory "$(dirname "${rollback_files[i]}")"
     ! rm "${rollback_files[i]}" && echo_task_failed && return 1
   done
-  echo_task_complete
+  echo_task_completed
   return 0
 }
 
@@ -180,7 +180,7 @@ function mysql_create_local_rollback_file() {
   if ! mysqldump --defaults-file="$defaults_file"$options "$db_name"  > "${dumpfiles_dir%/}/$filename"; then
     echo_task_failed && fail_because "mysqldump failed." && return 1
   fi
-  echo_task_complete
+  echo_task_completed
   return 0
 }
 
@@ -269,13 +269,13 @@ function mysql_on_import_db() {
     echo_task "Decompress file."
     ! gunzip -f "$filepath" && echo_task_failed && return 1
     filepath=${filepath%.*}
-    echo_task_complete
+    echo_task_completed
   fi
 
   echo_task "Import data from $(basename "$filepath")"
   write_log_debug "mysql --defaults-file="$defaults_file" $db_name < $filepath"
   ! mysql --defaults-file="$defaults_file" $db_name < $filepath && echo_task_failed && return 1
-  echo_task_complete
+  echo_task_completed
 
   return 0;
 }
@@ -295,7 +295,7 @@ function mysql_drop_all_tables() {
   echo_task "Drop all tables."
   ! db_name=$(database_get_name "$LOCAL_ENV_ID" "$database_id") && fail_because "$db_name" && return 1
   tables=$(mysql --defaults-file="$defaults_file" $db_name -e 'SHOW TABLES' | awk '{ print $1}' | grep -v '^Tables')
-  [[ ! "${tables[0]}" ]] && echo_task_complete && return 0
+  [[ ! "${tables[0]}" ]] && echo_task_completed && return 0
 
   sql="DROP TABLE "
   for t in $tables; do
@@ -305,7 +305,7 @@ function mysql_drop_all_tables() {
 
   write_log_debug "mysql --defaults-file="$defaults_file" $db_name -e "$sql""
   ! mysql --defaults-file="$defaults_file" $db_name -e "$sql" && echo_task_failed && return 1
-  echo_task_complete
+  echo_task_completed
   return 0
 }
 
@@ -324,7 +324,7 @@ function mysql_on_pull_db() {
   remote_base_path="$(environment_path_resolve $REMOTE_ENV_ID)"
   write_log_debug "remote_ssh \"(cd $remote_base_path || exit 1;if [[ -e ./vendor/aklump/live-dev-porter/live_dev_porter.sh ]]; then ./vendor/aklump/live-dev-porter/live_dev_porter.sh export pull --json --id="$DATABASE_ID"$ldp_options; elif [[ -e ./vendor/bin/loft_deploy.sh ]]; then ./vendor/bin/loft_deploy.sh export pull -y; else exit 1; fi)\""
   ! remote_ssh "(cd $remote_base_path || exit 1;if [[ -e ./vendor/aklump/live-dev-porter/live_dev_porter.sh ]]; then ./vendor/aklump/live-dev-porter/live_dev_porter.sh export pull --json --id="$DATABASE_ID"$ldp_options; elif [[ -e ./vendor/bin/loft_deploy.sh ]]; then ./vendor/bin/loft_deploy.sh export pull -y; else exit 1; fi)" &> /dev/null && echo_task_failed && fail_because "No export tool installed on the remote environment." && return 1
-  echo_task_complete
+  echo_task_completed
   remote_dumpfile_path="$remote_base_path/private/default/db/purgeable/aurora_timesheet_drupal-pull.sql.gz"
 
   # Create the local destination...
@@ -336,7 +336,7 @@ function mysql_on_pull_db() {
   local save_as="$dumpfiles_dir/$(basename "$remote_dumpfile_path")"
   echo_task "Download as $(basename "$save_as")"
   ! scp ${REMOTE_ENV_AUTH}:$remote_dumpfile_path "$save_as" &> /dev/null && echo_task_failed && return 1
-  echo_task_complete
+  echo_task_completed
 
   # Do the rollback and import.
   mysql_create_local_rollback_file "$DATABASE_ID" || return 1
