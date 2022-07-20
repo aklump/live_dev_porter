@@ -322,8 +322,8 @@ function mysql_on_pull_db() {
   [[ "$WORKFLOW_ID" ]] && ldp_fetch_options=" --workflow="$WORKFLOW_ID""
 
   remote_base_path="$(environment_path_resolve $REMOTE_ENV_ID)"
-  write_log_debug "remote_ssh \"(cd $remote_base_path || exit 1;if [[ -e ./vendor/aklump/live-dev-porter/live_dev_porter.sh ]]; then ./vendor/aklump/live-dev-porter/live_dev_porter.sh export pull --json --id="$DATABASE_ID"$ldp_options; elif [[ -e ./vendor/bin/loft_deploy.sh ]]; then ./vendor/bin/loft_deploy.sh export pull -y; else exit 1; fi)\""
-  ! remote_ssh "(cd $remote_base_path || exit 1;if [[ -e ./vendor/aklump/live-dev-porter/live_dev_porter.sh ]]; then ./vendor/aklump/live-dev-porter/live_dev_porter.sh export pull --json --id="$DATABASE_ID"$ldp_options; elif [[ -e ./vendor/bin/loft_deploy.sh ]]; then ./vendor/bin/loft_deploy.sh export pull -y; else exit 1; fi)" &> /dev/null && echo_task_failed && fail_because "No export tool installed on the remote environment." && return 1
+  write_log_debug "remote_ssh \"(cd $remote_base_path || exit 1;if [[ -e ./vendor/bin/ldp ]]; then ./vendor/bin/ldp export pull --json --id="$DATABASE_ID"$ldp_options; elif [[ -e ./vendor/bin/loft_deploy.sh ]]; then ./vendor/bin/loft_deploy.sh export pull -y; else exit 1; fi)\""
+  ! remote_ssh "(cd $remote_base_path || exit 1;if [[ -e ./vendor/bin/ldp ]]; then ./vendor/bin/ldp export pull --json --id="$DATABASE_ID"$ldp_options; elif [[ -e ./vendor/bin/loft_deploy.sh ]]; then ./vendor/bin/loft_deploy.sh export pull -y; else exit 1; fi)" &> /dev/null && echo_task_failed && fail_because "No export tool installed on the remote environment. This can also happen if execute permissions are incorrect." && return 1
   echo_task_completed
   remote_dumpfile_path="$remote_base_path/private/default/db/purgeable/aurora_timesheet_drupal-pull.sql.gz"
 
