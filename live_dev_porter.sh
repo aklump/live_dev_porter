@@ -270,7 +270,7 @@ case $COMMAND in
 
       if [[ "$JSON_RESPONSE" == true ]]; then
         has_failed && exit_with_failure_code_only
-        echo $json_output
+        echo -n $json_output
         exit_with_success_code_only
       fi
       echo_time_heading

@@ -350,8 +350,9 @@ function mysql_on_pull_db() {
   local save_as="$dumpfiles_dir/$(basename "$remote_dumpfile_path")"
   echo_task "Download as $(basename "$save_as")"
 
-  write_log "scp ${REMOTE_ENV_AUTH}:$remote_dumpfile_path "$save_as""
-  ! scp ${REMOTE_ENV_AUTH}:$remote_dumpfile_path "$save_as" &> /dev/null && echo_task_failed && return 1
+  remote_cmd="scp ${REMOTE_ENV_AUTH}:$remote_dumpfile_path "$save_as""
+  write_log "$remote_cmd"
+  ! scp "$remote_cmd" &> /dev/null && echo_task_failed && return 1
   echo_task_completed
 
   # Do the rollback and import.
