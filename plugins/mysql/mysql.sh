@@ -259,7 +259,7 @@ function mysql_on_export_db() {
 
   has_failed && return 1
 
-  [[ "$JSON_RESPONSE" == true ]] && echo "$save_as" && return 0
+  json_set "{\"filepath\":\"$save_as\"}"
   succeed_because "Saved in: $(dirname "$save_as")"
   succeed_because "Filename is: $(basename "$save_as")"
 }

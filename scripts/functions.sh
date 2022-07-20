@@ -149,7 +149,7 @@ function execute_workflow_processors() {
 
 # Call a plugin function.
 #
-# If the named plugin doesn't support the function, the "default" plugin will be tried.
+# NEVER DO $(call_plugin...) AS IT WILL SUPPRESS MESSAGES.
 #
 # $1 - The name of the plugin
 # $2 - The function name without the plugin leader, so for a function

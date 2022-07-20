@@ -257,7 +257,7 @@ case $COMMAND in
       table_clear
       table_add_row "export directory" "$dumpfiles_dir"
       [[ "$JSON_RESPONSE" != true ]] && echo_slim_table
-      json_output=$(call_plugin $plugin export_db "$DATABASE_ID" "$filename") || fail
+      call_plugin $plugin export_db "$DATABASE_ID" "$filename" || fail
       if has_failed; then
         [[ "$JSON_RESPONSE" == true ]] && exit_with_failure_code_only
         fail_because "$json_output" && exit_with_failure "Failed to export database."
@@ -270,7 +270,7 @@ case $COMMAND in
 
       if [[ "$JSON_RESPONSE" == true ]]; then
         has_failed && exit_with_failure_code_only
-        echo -n $json_output
+        echo -n "$(json_get_value "filepath")"
         exit_with_success_code_only
       fi
       echo_time_heading
