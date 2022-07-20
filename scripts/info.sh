@@ -14,7 +14,7 @@ environment_ids=("$LOCAL_ENV_ID")
 for id in "${environment_ids[@]}"; do
   eval $(get_config_as -a 'label' "environments.$id.label")
   eval $(get_config_as -a 'write_access' "environments.$id.write_access")
-  eval $(get_config_as -a 'plugin' "environments.$id.plugin")
+#  eval $(get_config_as -a 'plugin' "environments.$id.plugin")
   eval $(get_config_as -a 'ssh' "environments.$id.ssh")
   base_path=$(environment_path_resolve "$id")
 
@@ -23,14 +23,14 @@ for id in "${environment_ids[@]}"; do
 
   echo_title "$perspective Environment ($id) : $label"
   [[ "$ssh" ]] && table_add_row "SSH" "$ssh"
-  table_add_row "Writeable" "$write_access"
-  table_add_row "Plugin" "$plugin"
-
   if [[ "$id" == "$LOCAL_ENV_ID" ]]; then
     table_add_row "Root" "$(echo_red_path_if_nonexistent "$base_path")"
   else
     table_add_row "Root" "$base_path"
   fi
+  table_add_row "Writeable" "$write_access"
+#  table_add_row "Plugin" "$plugin"
+
   echo_slim_table
 
   # List out the environment's databases
@@ -41,7 +41,7 @@ for id in "${environment_ids[@]}"; do
     table_add_row "$database_id" "$plugin" "$dumpfiles_dir"
   done
   if table_has_rows; then
-    table_set_header "Database" "Plugin" "Exports"
+    table_set_header "DATABASE" "PLUGIN" "EXPORTS"
     echo_slim_table
   fi
 
@@ -61,7 +61,7 @@ for id in "${environment_ids[@]}"; do
     fi
   done
   if table_has_rows; then
-    table_set_header "File group" "Path"
+    table_set_header "FILE GROUP" "PATH"
     echo_slim_table
   fi
 done
