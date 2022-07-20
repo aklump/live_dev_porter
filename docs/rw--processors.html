@@ -86,6 +86,7 @@ echo "$(cat $query_result) total users remain in $DATABASE_NAME"
 #debug "$SHORTPATH;\$SHORTPATH"
 
 # Only do processing when we have a file event.
+[[ "$COMMAND" != "pull" ]] &amp;&amp; exit 255
 [[ "$FILES_GROUP_ID" ]] || exit 255
 
 contents=$(cat "$FILEPATH")
@@ -147,7 +148,7 @@ final class RemoveSecrets extends ProcessorBase {
 <footer>
   <div class="pager"><a href="rw--loft-deploy-migrations.html" class="prev rw--loft-deploy-migrations">&laquo;Migrating From Loft Deploy</a><a href="index.html" class="index pager__book-title"></a><a href="rw--sanitation.html" class="next rw--sanitation">Sanitation of Vulnerable Data&raquo;</a></div>  
   <div id="footer-legaleeze">
-    <p class="legaleeze center">Version: 0.0.30 &bull; Last Updated: Tue, 19 Jul 2022 23:12:34 -0700</p>
+    <p class="legaleeze center">Version: 0.0.31 &bull; Last Updated: Wed, 20 Jul 2022 13:29:57 -0700</p>
   </div>
 </footer>
 
