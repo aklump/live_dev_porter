@@ -7,12 +7,19 @@ namespace AKlump\LiveDevPorter\Config;
  */
 final class SchemaBuilder {
 
-  private $plugins;
-
+  /**
+   * @var array
+   */
   private $config;
 
+  /**
+   * @var string
+   */
   private $jsonSchemaSource;
 
+  /**
+   * @var string
+   */
   private $jsonSchemaDist;
 
   public function __construct(array $config, array $cloudy_config) {
@@ -36,33 +43,37 @@ final class SchemaBuilder {
       }
     }
     $data = json_decode(file_get_contents($this->jsonSchemaSource), TRUE);
-    $data['properties']['remote']['enum'] = $this->getEnvironmentIds();
+    if (!is_array($data) || empty($data)) {
+      throw new \RuntimeException(sprintf('Failed to load json schema:  %s', $this->jsonSchemaSource));
+    }
+
+    // This step replaces our tokens with user-configured, realtime values.
+    $this->populateEnum($data, [
+      'DATABASE_IDS' => $this->getDatabaseIds(),
+      'FILE_GROUP_IDS' => $this->getFileGroups(),
+      'ENVIRONMENT_IDS' => $this->getEnvironmentIds(),
+      'PLUGIN_IDS' => $this->getPluginIds(),
+    ]);
+
     // It's critical to allow for a null remote, as this will be the case when
     // the configuration is on the read-only, remote perspective.
     $data['properties']['remote']['enum'][] = NULL;
-
-    $data['properties']['local']['enum'] = $this->getEnvironmentIds();
-
-    $data['properties']['environments']['items']['properties']['plugin']['enum'] = $this->getPluginIds();
-    $data['properties']['environments']['items']['properties']['files']['propertyNames']['enum'] = $this->getFileGroups();
-    $data['properties']['environments']['items']['properties']['databases']['propertyNames']['enum'] = $this->getDatabaseIds();
-    $this->removeEmptyEnum($data);
 
     file_put_contents($this->jsonSchemaDist, json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
 
     return "JSON Schema has been rebuilt.";
   }
 
-  private function removeEmptyEnum(&$value) {
+  private function populateEnum(&$value, array $context) {
     if (!is_array($value)) {
       return;
     }
     foreach (array_keys($value) as $k) {
-      if ('enum' === $k && empty($value[$k])) {
-        unset($value[$k]);
+      if ('enum' === $k && array_key_exists($value[$k][0], $context)) {
+        $value[$k] = $context[$value[$k][0]];
       }
       else {
-        $this->removeEmptyEnum($value[$k]);
+        $this->populateEnum($value[$k], $context);
       }
     }
   }
@@ -72,14 +83,11 @@ final class SchemaBuilder {
   }
 
   private function getPluginIds(): array {
-    if (empty($this->plugins)) {
-      $directory = $this->config["__cloudy"]["ROOT"] . '/plugins';
-      $this->plugins = array_values(array_filter(scandir($directory), function ($path) {
-        return substr($path, 0, 1) !== '.';
-      }));
-    }
+    $directory = $this->config["__cloudy"]["ROOT"] . '/plugins';
 
-    return $this->plugins;
+    return array_values(array_filter(scandir($directory), function ($path) {
+      return substr($path, 0, 1) !== '.';
+    }));
   }
 
   private function getFileGroups(): array {
@@ -87,7 +95,11 @@ final class SchemaBuilder {
   }
 
   private function getDatabaseIds(): array {
-    // TODO This is not correct.
-    return array_keys($this->config['databases'] ?? []);
+    $ids = [];
+    foreach ($this->config['environments'] as $environment) {
+      $ids = array_merge($ids, array_keys($environment['databases'] ?? []));
+    }
+    return array_unique($ids);
   }
+
 }

@@ -12,9 +12,13 @@ function mysql_on_clear_cache() {
 #
 # Returns 0 if successful, 1 otherwise.
 function mysql_on_rebuild_config() {
+  local db_pointer
+  local directory
+  local filepath
+  local path_label
   eval $(get_config_keys_as "database_ids" "environments.$LOCAL_ENV_ID.databases")
   for database_id in "${database_ids[@]}"; do
-    local db_pointer="environments.$LOCAL_ENV_ID.databases.${database_id}"
+    db_pointer="environments.$LOCAL_ENV_ID.databases.${database_id}"
 
     eval $(get_config_as "plugin" "$db_pointer.plugin")
     [[ "$plugin" != 'mysql' ]] && continue;
@@ -32,11 +36,11 @@ function mysql_on_rebuild_config() {
     eval $(get_config_as "user" "$db_pointer.user")
     exit_with_failure_if_empty_config "user" "$db_pointer.user"
 
-    local filepath=$(database_get_defaults_file "$LOCAL_ENV_ID" "$database_id")
-    local path_label="$(path_unresolve "$APP_ROOT" "$filepath")"
+    filepath=$(database_get_defaults_file "$LOCAL_ENV_ID" "$database_id")
+    path_label="$(path_unresolve "$APP_ROOT" "$filepath")"
 
     # Create the .cnf file
-    local directory=""$(dirname "$filepath")""
+    directory=""$(dirname "$filepath")""
     sandbox_directory "$directory"
     ! mkdir -p "$directory" && fail_because "Could not create $directory" && return 1
     ! touch "$filepath" && fail_because "Could not create $path_label" && return 1
@@ -49,10 +53,9 @@ function mysql_on_rebuild_config() {
     echo "password=\"$password\"" >>"$filepath"
     echo "protocol=\"${protocol:-tcp}\"" >>"$filepath"
     ! chmod 0400 "$filepath" && fail_because "Failed with chmod 0400 $path_label" && return 1
-
+    succeed_because "$path_label has been created."
   done
   has_failed && return 1
-  succeed_because "$path_label has been created."
   return 0
 }
 

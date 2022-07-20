@@ -40,6 +40,15 @@ function lando_on_clear_cache() {
 # Convert lando database to yml file for config API.
 #
 function lando_on_rebuild_config() {
+  local db_pointer
+  local directory
+  local filepath
+  local host
+  local name_label
+  local password
+  local path_label
+  local port
+  local user
   eval $(get_config_keys_as "database_ids" "environments.$LOCAL_ENV_ID.databases")
   for database_id in "${database_ids[@]}"; do
     local db_pointer="environments.$LOCAL_ENV_ID.databases.${database_id}"
@@ -50,20 +59,20 @@ function lando_on_rebuild_config() {
 
     ! json_set "$(cd $APP_ROOT && lando info -s $service --format=json 2>/dev/null | tail -1)" && fail_because "Could not read Lando configuration" && return 1
 
-    local filepath=$(database_get_defaults_file "$LOCAL_ENV_ID" "$database_id")
-    local path_label="$(path_unresolve "$APP_ROOT" "$filepath")"
+    filepath=$(database_get_defaults_file "$LOCAL_ENV_ID" "$database_id")
+    path_label="$(path_unresolve "$APP_ROOT" "$filepath")"
 
     # Create the .cnf file
-    local directory=""$(dirname "$filepath")""
+    directory=""$(dirname "$filepath")""
     sandbox_directory "$directory"
     ! mkdir -p "$directory" && fail_because "Could not create $directory" && return 1
     ! touch "$filepath" && fail_because "Could not create $path_label" && return 1
     ! chmod 0600 "$filepath" && fail_because "Failed with chmod 0600 $path_label" && return 1
 
-    local host="$(json_get_value '0.external_connection.host')"
-    local port="$(json_get_value '0.external_connection.port')"
-    local user="$(json_get_value '0.creds.user')"
-    local password="$(json_get_value '0.creds.password')"
+    host="$(json_get_value '0.external_connection.host')"
+    port="$(json_get_value '0.external_connection.port')"
+    user="$(json_get_value '0.creds.user')"
+    password="$(json_get_value '0.creds.password')"
 
     echo "[client]" >"$filepath"
     echo "host=\"$host\"" >>"$filepath"
@@ -72,15 +81,15 @@ function lando_on_rebuild_config() {
     echo "password=\"$password\"" >>"$filepath"
     echo "protocol=\"${protocol:-tcp}\"" >>"$filepath"
     ! chmod 0400 "$filepath" && fail_because "Failed with chmod 0400 $path_label" && return 1
+    succeed_because "$path_label has been created."
 
     # Save the database name
     name_path="$(database_get_cached_name_filepath "$LOCAL_ENV_ID" "$database_id")"
-    local name_label="$(path_unresolve "$APP_ROOT" "$name_path")"
-    echo "$(json_get_value '0.creds.database')" > $name_path
+    name_label="$(path_unresolve "$APP_ROOT" "$name_path")"
+    echo "$(json_get_value '0.creds.database')" > $name_path || return 1
     succeed_because "$name_label has been created."
   done
   has_failed && return 1
-  succeed_because "$path_label has been created."
   return 0
 }
 

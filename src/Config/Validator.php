@@ -13,17 +13,20 @@ final class Validator {
 
       // Remove known keys that are okay, but will invalidate the schema.
       '__cloudy',
-      'title',
-      'name',
-      'description',
-      'version',
-      'author',
-      'config_path_base',
-      'path_to_app',
-      'additional_config',
       'additional_bootstrap',
-      'default_command',
+      'additional_config',
+      'author',
+      'bin',
       'commands',
+      'config_path_base',
+      'default_command',
+      'description',
+      'max_database_rollbacks_to_keep',
+      'name',
+      'path_to_app',
+      'plugins',
+      'title',
+      'version',
     ]));
     $this->jsonSchema = $config['CACHE_DIR'] . '/config.schema.json';
   }
@@ -43,7 +46,7 @@ final class Validator {
           $value = (object) $value;
         }
       }
-      if (is_iterable($value)) {
+      if (is_iterable($value) || $value instanceof \stdClass) {
         foreach ($value as &$v) {
           $v = $js_like_array($v, $init);
         }
