@@ -106,17 +106,17 @@ function env_on_configtest() {
     fi
   done
 
-  call_plugin mysql configtest $@
+  call_plugin mysql configtest "$@"
 }
 function env_on_db_shell() {
-  call_plugin mysql db_shell $@
+  call_plugin mysql db_shell "$@"
 }
 function env_on_export_db() {
-  call_plugin mysql export_db $@
+  call_plugin mysql export_db "$@"
 }
 function env_on_import_db() {
-  call_plugin mysql import_db $@
+  call_plugin mysql import_db "$@"
 }
 function env_on_pull_db() {
-  call_plugin mysql pull_db $@
+  call_plugin mysql pull_db "$@"
 }

@@ -174,7 +174,7 @@ function database_get_name() {
   local database_id="$2"
 
   eval $(get_config_as plugin "environments.$environment_id.databases.$database_id.plugin")
-  call_plugin $plugin database_name $@
+  call_plugin $plugin database_name "$@"
 }
 
 

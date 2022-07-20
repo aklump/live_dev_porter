@@ -230,7 +230,7 @@ function mysql_on_export_db() {
   if [[ "$structure_tables" ]]; then
     options="$shared_options --add-drop-table --no-data "
     write_log_debug "mysqldump --defaults-file="$defaults_file"$options "$db_name" $structure_tables"
-    mysqldump --defaults-file="$defaults_file"$options "$db_name" ${structure_tables[*]} >> "$save_as" || return 1
+    ! mysqldump --defaults-file="$defaults_file"$options "$db_name" ${structure_tables[*]} >> "$save_as" && fail_because "mysqldump failed to write table structure." && return 1
     succeed_because "Structure for ${#structure_tables[@]} table(s) exported."
   fi
   # This will write the data to the export file.
@@ -239,7 +239,7 @@ function mysql_on_export_db() {
   if [[ "$data_tables" ]]; then
     options="$shared_options --skip-add-drop-table --no-create-info"
     write_log_debug "mysqldump --defaults-file="$defaults_file"$options "$db_name" $data_tables"
-    mysqldump --defaults-file="$defaults_file"$options "$db_name" ${data_tables[*]} >> "$save_as" || return 1
+    ! mysqldump --defaults-file="$defaults_file"$options "$db_name" ${data_tables[*]} >> "$save_as" && fail_because "mysqldump failed to write table data." && return 1
     succeed_because "Data for ${#data_tables[@]} table(s) exported."
   else
     succeed_because "No table data has been exported."
@@ -328,13 +328,11 @@ function mysql_on_pull_db() {
 
   # Create the export at the remote.
   echo_task "Export remote database: $DATABASE_ID."
-  ! WORKFLOW_ID=$(get_workflow_by_command 'pull') && fail_because "$WORKFLOW_ID" && exit_with_failure
   [[ "$WORKFLOW_ID" ]] && remote_ldp_options=" --workflow="$WORKFLOW_ID""
 
   remote_base_path="$(environment_path_resolve $REMOTE_ENV_ID)"
-  remote_cmd="(cd $remote_base_path || exit 1;[[ -e ./vendor/bin/ldp ]] || exit 2; ./vendor/bin/ldp export pull --json --id="$DATABASE_ID"$remote_ldp_options || exit 3)"
-  write_log_debug "$remote_cmd"
-  remote_dumpfile_path=$(remote_ssh "$remote_cmd")
+  write_log_debug "remote_ssh \"(cd $remote_base_path || exit 1;[[ -e ./vendor/bin/ldp ]] || exit 2; ./vendor/bin/ldp export pull --json --id="$DATABASE_ID"$remote_ldp_options || exit 3)\""
+  remote_dumpfile_path=$(remote_ssh "(cd $remote_base_path || exit 1;[[ -e ./vendor/bin/ldp ]] || exit 2; ./vendor/bin/ldp export pull --json --id="$DATABASE_ID"$remote_ldp_options || exit 3)")
 
   [[ $? -eq 1 ]] && echo_task_failed && fail_because "$remote_base_path does not exist." && return 1
   [[ $? -eq 2 ]] && echo_task_failed && fail_because "$remote_base_path/vendor/bin/ldp is missing or does not have execute permissions." && return 1
@@ -349,10 +347,7 @@ function mysql_on_pull_db() {
   # Download the dumpfile.
   local save_as="$dumpfiles_dir/$(basename "$remote_dumpfile_path")"
   echo_task "Download as $(basename "$save_as")"
-
-  remote_cmd="scp ${REMOTE_ENV_AUTH}:$remote_dumpfile_path "$save_as""
-  write_log "$remote_cmd"
-  ! scp "$remote_cmd" &> /dev/null && echo_task_failed && return 1
+  ! scp "${REMOTE_ENV_AUTH}:$remote_dumpfile_path" "$save_as" &> /dev/null && echo_task_failed && return 1
   echo_task_completed
 
   # Do the rollback and import.
@@ -361,7 +356,6 @@ function mysql_on_pull_db() {
   eval $(get_config_as total_files_to_keep max_database_rollbacks_to_keep 5)
   mysql_prune_rollback_files "$DATABASE_ID" "$total_files_to_keep" || return 1
 
-  ! WORKFLOW_ID=$(get_workflow_by_command 'pull') && fail_because "$WORKFLOW_ID" && exit_with_failure
   if [[ "$WORKFLOW_ID" ]]; then
     ENVIRONMENT_ID="$LOCAL_ENV_ID"
     execute_workflow_processors "$WORKFLOW_ID" || fail

@@ -28,7 +28,7 @@ function lando_on_configtest() {
     echo_task_completed
   fi
 
-  call_plugin mysql configtest $@
+  call_plugin mysql configtest "$@"
 }
 
 function lando_on_clear_cache() {
@@ -108,14 +108,14 @@ function lando_on_database_name() {
 }
 
 function lando_on_db_shell() {
-  call_plugin mysql db_shell $@
+  call_plugin mysql db_shell "$@"
 }
 function lando_on_export_db() {
-  call_plugin mysql export_db $@
+  call_plugin mysql export_db "$@"
 }
 function lando_on_import_db() {
-  call_plugin mysql import_db $@
+  call_plugin mysql import_db "$@"
 }
 function lando_on_pull_db() {
-  call_plugin mysql pull_db $@
+  call_plugin mysql pull_db "$@"
 }

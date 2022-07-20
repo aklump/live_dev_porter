@@ -260,7 +260,7 @@ case $COMMAND in
       json_output=$(call_plugin $plugin export_db "$DATABASE_ID" "$filename") || fail
       if has_failed; then
         [[ "$JSON_RESPONSE" == true ]] && exit_with_failure_code_only
-        exit_with_failure "Failed to export database."
+        fail_because "$json_output" && exit_with_failure "Failed to export database."
       fi
 
       if [[ "$WORKFLOW_ID" ]]; then
@@ -331,6 +331,8 @@ case $COMMAND in
     ;;
 
     "pull")
+      ! WORKFLOW_ID=$(get_workflow_by_command 'pull') && fail_because "$WORKFLOW_ID" && exit_with_failure
+
       [[ ${#LOCAL_DATABASE_IDS[@]} -eq 0 ]] && has_db=false || has_db=true
       [[ ${#FILE_GROUP_IDS[@]} -eq 0 ]] && has_files=false || has_files=true
 
@@ -343,6 +345,7 @@ case $COMMAND in
 
       eval $(get_config_as label "environments.$REMOTE_ENV_ID.label")
       echo_title "Pull $(array_csv --prose) from $label"
+      [[ "$WORKFLOW_ID" ]] && echo_heading "Using workflow: $WORKFLOW_ID"
 
       if [[ "$has_db" == false ]] && [[ "$has_files" == false ]]; then
         fail_because "Nothing to pull; neither \"databases\" nor \"files_group\" have been configured."
