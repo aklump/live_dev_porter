@@ -175,7 +175,7 @@ function mysql_create_local_rollback_file() {
 
   defaults_file=$(database_get_defaults_file "$LOCAL_ENV_ID" "$database_id")
   ! db_name=$(database_get_name "$LOCAL_ENV_ID" "$database_id") && fail_because "$db_name" && return 1
-  write_log_debug "mysqldump --defaults-file="$defaults_file"$options "$db_name"  >> "${dumpfiles_dir%/}/$filename""
+  write_log_debug "mysqldump --defaults-file="$defaults_file"$options "$db_name""
   echo_task "Backup local database to: $filename"
   if ! mysqldump --defaults-file="$defaults_file"$options "$db_name"  > "${dumpfiles_dir%/}/$filename"; then
     echo_task_failed && fail_because "mysqldump failed." && return 1
@@ -226,7 +226,7 @@ function mysql_on_export_db() {
   structure_tables=($(database_get_export_tables --structure "$LOCAL_ENV_ID" "$database_id" "$db_name" "$WORKFLOW_ID"))
   if [[ "$structure_tables" ]]; then
     options="$shared_options --add-drop-table --no-data "
-    write_log_debug "mysqldump --defaults-file="$defaults_file"$options "$db_name" $structure_tables >> "$save_as""
+    write_log_debug "mysqldump --defaults-file="$defaults_file"$options "$db_name" $structure_tables"
     mysqldump --defaults-file="$defaults_file"$options "$db_name" ${structure_tables[*]} >> "$save_as" || return 1
     succeed_because "Structure for ${#structure_tables[@]} table(s) exported."
   fi
@@ -235,7 +235,7 @@ function mysql_on_export_db() {
 
   if [[ "$data_tables" ]]; then
     options="$shared_options --skip-add-drop-table --no-create-info"
-    write_log_debug "mysqldump --defaults-file="$defaults_file"$options "$db_name" $data_tables >> "$save_as""
+    write_log_debug "mysqldump --defaults-file="$defaults_file"$options "$db_name" $data_tables"
     mysqldump --defaults-file="$defaults_file"$options "$db_name" ${data_tables[*]} >> "$save_as" || return 1
     succeed_because "Data for ${#data_tables[@]} table(s) exported."
   else
@@ -314,16 +314,16 @@ function mysql_on_pull_db() {
 
   local remote_base_path
   local remote_dumpfile_path
-  local ldp_fetch_options
+  local remote_ldp_options
 
   # Create the export at the remote.
   echo_task "Export remote database: $DATABASE_ID."
   ! WORKFLOW_ID=$(get_workflow_by_command 'pull') && fail_because "$WORKFLOW_ID" && exit_with_failure
-  [[ "$WORKFLOW_ID" ]] && ldp_fetch_options=" --workflow="$WORKFLOW_ID""
+  [[ "$WORKFLOW_ID" ]] && remote_ldp_options=" --workflow="$WORKFLOW_ID""
 
   remote_base_path="$(environment_path_resolve $REMOTE_ENV_ID)"
-  write_log_debug "remote_ssh \"(cd $remote_base_path || exit 1;if [[ -e ./vendor/bin/ldp ]]; then ./vendor/bin/ldp export pull --json --id="$DATABASE_ID"$ldp_options; elif [[ -e ./vendor/bin/loft_deploy.sh ]]; then ./vendor/bin/loft_deploy.sh export pull -y; else exit 1; fi)\""
-  ! remote_ssh "(cd $remote_base_path || exit 1;if [[ -e ./vendor/bin/ldp ]]; then ./vendor/bin/ldp export pull --json --id="$DATABASE_ID"$ldp_options; elif [[ -e ./vendor/bin/loft_deploy.sh ]]; then ./vendor/bin/loft_deploy.sh export pull -y; else exit 1; fi)" &> /dev/null && echo_task_failed && fail_because "No export tool installed on the remote environment. This can also happen if execute permissions are incorrect." && return 1
+  write_log_debug "remote_ssh \"(cd $remote_base_path || exit 1;if [[ -e ./vendor/bin/ldp ]]; then ./vendor/bin/ldp export pull --json --id="$DATABASE_ID"$remote_ldp_options; elif [[ -e ./vendor/bin/loft_deploy.sh ]]; then ./vendor/bin/loft_deploy.sh export pull -y; else exit 1; fi)\""
+  ! remote_ssh "(cd $remote_base_path || exit 1;if [[ -e ./vendor/bin/ldp ]]; then ./vendor/bin/ldp export pull --json --id="$DATABASE_ID"$remote_ldp_options; elif [[ -e ./vendor/bin/loft_deploy.sh ]]; then ./vendor/bin/loft_deploy.sh export pull -y; else exit 1; fi)" &> /dev/null && echo_task_failed && fail_because "No export tool installed on the remote environment. This can also happen if execute permissions are incorrect." && return 1
   echo_task_completed
   remote_dumpfile_path="$remote_base_path/private/default/db/purgeable/aurora_timesheet_drupal-pull.sql.gz"
 
