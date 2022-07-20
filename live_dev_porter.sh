@@ -145,7 +145,7 @@ for id in "${ENVIRONMENT_IDS[@]}"; do
     LOCAL_DATABASE_ID=${LOCAL_DATABASE_IDS[0]}
 
   # Configure remote variables if we have that environment.
-  elif [[ "$REMOTE_ENV_ID" !== null ]] && [[ "$id" == "$REMOTE_ENV_ID" ]]; then
+  elif [[ "$REMOTE_ENV_ID" != null ]] && [[ "$id" == "$REMOTE_ENV_ID" ]]; then
     eval $(get_config_as REMOTE_ENV_AUTH "environments.$REMOTE_ENV_ID.ssh")
     exit_with_failure_if_empty_config REMOTE_ENV_AUTH "environments.$REMOTE_ENV_ID.ssh"
 

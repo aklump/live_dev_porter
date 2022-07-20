@@ -87,7 +87,7 @@ function mysql_on_configtest() {
   done
 
   # Check if remote has an export tool installed.
-  if [[ "$REMOTE_ENV_ID" !== null ]]; then
+  if [[ "$REMOTE_ENV_ID" != null ]]; then
     remote_base_path="$(environment_path_resolve $REMOTE_ENV_ID)"
     echo_task "Ensure remote has export tool installed."
     if remote_ssh "[[ -e "$remote_base_path"/vendor/bin/ldp ]] || [[ -e "$remote_base_path"/vendor/bin/loft_deploy.sh ]]"  &> /dev/null; then
