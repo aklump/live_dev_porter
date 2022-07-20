@@ -316,6 +316,7 @@ function mysql_on_pull_db() {
   local DATABASE_ID="$1"
 
   local remote_base_path
+  local remote_cmd
   local remote_dumpfile_path
   local remote_ldp_options
 
@@ -325,12 +326,16 @@ function mysql_on_pull_db() {
   [[ "$WORKFLOW_ID" ]] && remote_ldp_options=" --workflow="$WORKFLOW_ID""
 
   remote_base_path="$(environment_path_resolve $REMOTE_ENV_ID)"
-  write_log_debug "remote_ssh \"(cd $remote_base_path || exit 1;if [[ -e ./vendor/bin/ldp ]]; then ./vendor/bin/ldp export pull --json --id="$DATABASE_ID"$remote_ldp_options; elif [[ -e ./vendor/bin/loft_deploy.sh ]]; then ./vendor/bin/loft_deploy.sh export pull -y; else exit 1; fi)\""
-  ! remote_ssh "(cd $remote_base_path || exit 1;if [[ -e ./vendor/bin/ldp ]]; then ./vendor/bin/ldp export pull --json --id="$DATABASE_ID"$remote_ldp_options; elif [[ -e ./vendor/bin/loft_deploy.sh ]]; then ./vendor/bin/loft_deploy.sh export pull -y; else exit 1; fi)" &> /dev/null && echo_task_failed && fail_because "No export tool installed on the remote environment. This can also happen if execute permissions are incorrect." && return 1
-  echo_task_completed
-  remote_dumpfile_path="$remote_base_path/private/default/db/purgeable/aurora_timesheet_drupal-pull.sql.gz"
+  remote_cmd="(cd $remote_base_path || exit 1;[[ -e ./vendor/bin/ldp ]] || exit 2; ./vendor/bin/ldp export pull --json --id="$DATABASE_ID"$remote_ldp_options || exit 3)"
+  write_log_debug "$remote_cmd"
+  remote_dumpfile_path=$(remote_ssh "$remote_cmd")
 
-  # Create the local destination...
+  [[ $? -eq 1 ]] && echo_task_failed && fail_because "$remote_base_path does not exist." && return 1
+  [[ $? -eq 2 ]] && echo_task_failed && fail_because "$remote_base_path/vendor/bin/ldp is missing or does not have execute permissions." && return 1
+  [[ $? -eq 3 ]] && echo_task_failed && fail_because "Remote export failed." && return 1
+  echo_task_completed
+
+  # Create the local destination for the dumpfile...
   local dumpfiles_dir="$(database_get_dumpfiles_directory "$REMOTE_ENV_ID" "$DATABASE_ID")"
   sandbox_directory "$dumpfiles_dir"
   ! mkdir -p "$dumpfiles_dir" && fail_because "Could not create directory: $dumpfiles_dir" && return 1
@@ -338,6 +343,8 @@ function mysql_on_pull_db() {
   # Download the dumpfile.
   local save_as="$dumpfiles_dir/$(basename "$remote_dumpfile_path")"
   echo_task "Download as $(basename "$save_as")"
+
+  write_log "scp ${REMOTE_ENV_AUTH}:$remote_dumpfile_path "$save_as""
   ! scp ${REMOTE_ENV_AUTH}:$remote_dumpfile_path "$save_as" &> /dev/null && echo_task_failed && return 1
   echo_task_completed
 

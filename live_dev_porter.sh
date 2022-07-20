@@ -198,7 +198,7 @@ fi
 implement_cloudy_basic
 implement_route_access
 
-has_option 'json' && JSON=true
+has_option 'json' && JSON_RESPONSE=true
 
 # Handle other commands.
 case $COMMAND in
@@ -246,7 +246,7 @@ case $COMMAND in
       filename=$(get_command_arg 0)
       DATABASE_ID=$(get_option 'id' $LOCAL_DATABASE_ID)
       eval $(get_config_as plugin "environments.$LOCAL_ENV_ID.databases.$DATABASE_ID.plugin")
-      if [[ ! "$JSON" ]]; then
+      if [[ "$JSON_RESPONSE" != true ]]; then
         echo_title "Export $LOCAL_ENV_ID database \"$DATABASE_ID\""
         [[ "$WORKFLOW_ID" ]] && echo_heading "Using workflow: $WORKFLOW_ID"
         echo_time_heading
@@ -256,7 +256,7 @@ case $COMMAND in
       dumpfiles_dir=$(database_get_dumpfiles_directory "$LOCAL_ENV_ID" "$DATABASE_ID")
       table_clear
       table_add_row "export directory" "$dumpfiles_dir"
-      [[ "$JSON" ]] || echo_slim_table
+      [[ "$JSON_RESPONSE" != true ]] && echo_slim_table
       json_output=$(call_plugin $plugin export_db "$DATABASE_ID" "$filename") || fail
       has_failed && exit_with_failure "Failed to export database."
 
@@ -264,7 +264,7 @@ case $COMMAND in
         ENVIRONMENT_ID="$LOCAL_ENV_ID"
         execute_workflow_processors "$WORKFLOW_ID" || fail
       fi
-      if [[ "$JSON" ]]; then
+      if [[ "$JSON_RESPONSE" == true ]]; then
         has_failed && exit_with_failure_code_only
         echo $json_output
         exit_with_success_code_only

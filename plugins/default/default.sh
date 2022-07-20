@@ -45,6 +45,10 @@ function default_on_configtest() {
     fail_because "Check \"$remote_base_path\" on $REMOTE_ENV_ID."
   fi
 
+  # Test for ionice on remote server
+  echo_task "Assert \"ionice\" is installed on $REMOTE_ENV_ID."
+  remote_ssh "which ionice >/dev/null" &> /dev/null && echo_task_completed || echo_task_failed
+
   # Test for file sync groups.
   for environment_id in "${ENVIRONMENT_IDS[@]}"; do
     eval $(get_config_keys_as group_ids "environments.$environment_id.files")

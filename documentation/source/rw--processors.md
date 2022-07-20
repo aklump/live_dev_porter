@@ -56,6 +56,7 @@ _An example bash processor for a file:_
 #debug "$SHORTPATH;\$SHORTPATH"
 
 # Only do processing when we have a file event.
+[[ "$COMMAND" != "pull" ]] && exit 255
 [[ "$FILES_GROUP_ID" ]] || exit 255
 
 contents=$(cat "$FILEPATH")
