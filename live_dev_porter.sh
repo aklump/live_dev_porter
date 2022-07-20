@@ -258,12 +258,16 @@ case $COMMAND in
       table_add_row "export directory" "$dumpfiles_dir"
       [[ "$JSON_RESPONSE" != true ]] && echo_slim_table
       json_output=$(call_plugin $plugin export_db "$DATABASE_ID" "$filename") || fail
-      has_failed && exit_with_failure "Failed to export database."
+      if has_failed; then
+        [[ "$JSON_RESPONSE" == true ]] && exit_with_failure_code_only
+        exit_with_failure "Failed to export database."
+      fi
 
       if [[ "$WORKFLOW_ID" ]]; then
         ENVIRONMENT_ID="$LOCAL_ENV_ID"
         execute_workflow_processors "$WORKFLOW_ID" || fail
       fi
+
       if [[ "$JSON_RESPONSE" == true ]]; then
         has_failed && exit_with_failure_code_only
         echo $json_output
