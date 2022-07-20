@@ -242,6 +242,7 @@ case $COMMAND in
         ! WORKFLOW_ID=$(get_workflow_by_command $COMMAND) && fail_because "$WORKFLOW_ID" && exit_with_failure
       fi
 
+      process_in_the_background
       filename=$(get_command_arg 0)
       DATABASE_ID=$(get_option 'id' $LOCAL_DATABASE_ID)
       eval $(get_config_as plugin "environments.$LOCAL_ENV_ID.databases.$DATABASE_ID.plugin")
@@ -276,6 +277,7 @@ case $COMMAND in
     "import")
       ! WORKFLOW_ID=$(get_workflow_by_command $COMMAND) && fail_because "$WORKFLOW_ID" && exit_with_failure
 
+      process_in_the_background
       filepath=$(get_command_arg 0)
       DATABASE_ID=$(get_option 'id' $LOCAL_DATABASE_ID)
       eval $(get_config_as plugin "environments.$LOCAL_ENV_ID.databases.$DATABASE_ID.plugin")
@@ -341,6 +343,8 @@ case $COMMAND in
       if [[ "$has_db" == false ]] && [[ "$has_files" == false ]]; then
         fail_because "Nothing to pull; neither \"databases\" nor \"files_group\" have been configured."
       fi
+
+      process_in_the_background
       if ! has_failed && [[ "$do_database" == true ]]; then
         if [[ "$has_db" == false ]]; then
           if has_option d; then

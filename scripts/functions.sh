@@ -306,3 +306,17 @@ function echo_red_path_if_nonexistent() {
     echo "$path"
   fi
 }
+
+# Sets the process priority as low as possible to not affect server performance.
+#
+# Returns nothing.
+#
+# @see man ionice for more info
+# @link https://www.tutorialspoint.com/unix_commands/ionice.htm
+# @link https://www.tiger-computing.co.uk/linux-tips-nice-and-ionice/
+function process_in_the_background {
+  which ionice >/dev/null || return
+
+  ionice -c 2 -n 7 -p $BASHPID >/dev/null
+  renice  +10 -p  $BASHPID >/dev/null
+}
