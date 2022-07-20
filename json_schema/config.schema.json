@@ -36,9 +36,16 @@
       ]
     },
     "remote": {
-      "type": "string",
-      "enum": [
-        "ENVIRONMENT_IDS"
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string",
+          "enum": [
+            "ENVIRONMENT_IDS"
+          ]
+        }
       ]
     },
     "workflows": {
@@ -145,7 +152,10 @@
                   "oneOf": [
                     {
                       "type": "object",
-                      "required": ["plugin", "service"],
+                      "required": [
+                        "plugin",
+                        "service"
+                      ],
                       "properties": {
                         "plugin": {
                           "const": "lando"
@@ -158,7 +168,11 @@
                     },
                     {
                       "type": "object",
-                      "required": ["plugin", "path", "var"],
+                      "required": [
+                        "plugin",
+                        "path",
+                        "var"
+                      ],
                       "properties": {
                         "plugin": {
                           "const": "env"

@@ -55,10 +55,6 @@ final class SchemaBuilder {
       'PLUGIN_IDS' => $this->getPluginIds(),
     ]);
 
-    // It's critical to allow for a null remote, as this will be the case when
-    // the configuration is on the read-only, remote perspective.
-    $data['properties']['remote']['enum'][] = NULL;
-
     file_put_contents($this->jsonSchemaDist, json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
 
     return "JSON Schema has been rebuilt.";
