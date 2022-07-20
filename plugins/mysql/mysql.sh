@@ -328,16 +328,17 @@ function mysql_on_pull_db() {
   local remote_ldp_options
 
   # Create the export at the remote.
-  echo_task "Export remote database: $DATABASE_ID."
+  echo_task "Export remote database: $DATABASE_ID"
   [[ "$WORKFLOW_ID" ]] && remote_ldp_options=" --workflow="$WORKFLOW_ID""
 
   remote_base_path="$(environment_path_resolve $REMOTE_ENV_ID)"
-  write_log_debug "remote_ssh \"(cd $remote_base_path || exit 1;[[ -e ./vendor/bin/ldp ]] || exit 2; ./vendor/bin/ldp export pull --json --id="$DATABASE_ID"$remote_ldp_options || exit 3)\""
-  remote_dumpfile_path=$(remote_ssh "(cd $remote_base_path || exit 1;[[ -e ./vendor/bin/ldp ]] || exit 2; ./vendor/bin/ldp export pull --json --id="$DATABASE_ID"$remote_ldp_options || exit 3)")
+  write_log_debug "remote_ssh \"cd $remote_base_path || exit 1;[[ -e ./vendor/bin/ldp ]] || exit 2; ./vendor/bin/ldp export pull --json --id="$DATABASE_ID"$remote_ldp_options || exit 3\""
+  remote_dumpfile_path=$(remote_ssh "cd $remote_base_path || exit 1;[[ -e ./vendor/bin/ldp ]] || exit 2; ./vendor/bin/ldp export pull --json --id="$DATABASE_ID"$remote_ldp_options || exit 3")
+  remote_status=$?
 
-  [[ $? -eq 1 ]] && echo_task_failed && fail_because "$remote_base_path does not exist." && return 1
-  [[ $? -eq 2 ]] && echo_task_failed && fail_because "$remote_base_path/vendor/bin/ldp is missing or does not have execute permissions." && return 1
-  [[ $? -eq 3 ]] && echo_task_failed && fail_because "Remote export failed." && return 1
+  [[ $remote_status -eq 1 ]] && echo_task_failed && fail_because "$remote_base_path does not exist." && return 1
+  [[ $remote_status -eq 2 ]] && echo_task_failed && fail_because "$remote_base_path/vendor/bin/ldp is missing or does not have execute permissions." && return 1
+  [[ $remote_status -eq 3 ]] && echo_task_failed && fail_because "Remote export failed" && return 1
   echo_task_completed
 
   # Create the local destination for the dumpfile...
@@ -349,6 +350,11 @@ function mysql_on_pull_db() {
   local save_as="$dumpfiles_dir/$(basename "$remote_dumpfile_path")"
   echo_task "Download as $(basename "$save_as")"
   ! scp "${REMOTE_ENV_AUTH}:$remote_dumpfile_path" "$save_as" &> /dev/null && echo_task_failed && return 1
+  echo_task_completed
+
+  # Delete the remote file
+  echo_task "Delete remote file"
+  ! remote_ssh "[[ -f \"$remote_dumpfile_path\" ]] && rm \"$remote_dumpfile_path\"" &> /dev/null && echo_task_failed && return 1
   echo_task_completed
 
   # Do the rollback and import.
