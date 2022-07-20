@@ -1,5 +1,7 @@
 # MySQL Plugin
 
+> There is a bug in this plugin related to cloudy not merging the config correctly, and option A does not work Jul 19, 2022, aklump.
+
 * Provide hard-coded database credentials
 * Be careful with the password, notice it gets added to _config.local.yml_!
 
@@ -13,9 +15,10 @@ environments:
     databases:
       bar:
         plugin: mysql
+        protocol: tcp
         host: <HOST>
         port: <PORT>
-        name: <NAME>
+        database: <NAME>
         user: <USER>
 ```
 
@@ -48,9 +51,10 @@ environments:
   foo:
     databases:
       bar:
+        protocol: tcp
         host: <HOST>
         port: <PORT>
-        name: <NAME>
+        database: <NAME>
         user: <USER>
         password: <PASSWORD>
 ```

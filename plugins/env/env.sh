@@ -49,7 +49,7 @@ function env_on_rebuild_config() {
     [[ "$port" ]] && echo "port=\"$port\"" >>"$filepath"
     echo "user=\"$user\"" >>"$filepath"
     echo "password=\"$password\"" >>"$filepath"
-    [[ "$protocol" ]] && echo "protocol=\"$protocol\"" >>"$filepath"
+    echo "protocol=\"${protocol:-tcp}\"" >>"$filepath"
     ! chmod 0400 "$filepath" && fail_because "Failed with chmod 0400 $path_label" && return 1
 
     # Save the database name

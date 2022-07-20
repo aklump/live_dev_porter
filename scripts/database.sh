@@ -186,12 +186,3 @@ function database_get_cached_name_filepath() {
   filepath=$(database_get_defaults_file "$environment_id" "$database_id")
   echo "$(dirname $filepath)/db_name.txt"
 }
-
-function database_get_protocol_by_host() {
-  local host="$1"
-
-  if [[ "$host" == 'localhost' ]] || [[ "$host" == '127.0.0.1' ]]; then
-    echo "socket" && return 0
-  fi
-  echo "tcp" && return 0
-}

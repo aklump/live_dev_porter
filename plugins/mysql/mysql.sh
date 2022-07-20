@@ -8,6 +8,7 @@ function mysql_on_clear_cache() {
 }
 
 # Rebuild configuration files after a cache clear.
+# # TODO This is not working because additional config is not merging correctly in the cloudy cc.
 #
 # Returns 0 if successful, 1 otherwise.
 function mysql_on_rebuild_config() {
@@ -19,14 +20,11 @@ function mysql_on_rebuild_config() {
     [[ "$plugin" != 'mysql' ]] && continue;
 
     eval $(get_config_as "host" "$db_pointer.host" "localhost")
-
     eval $(get_config_as "protocol" "$db_pointer.protocol")
-    [[ ! "$protocol" ]] && protocol=$(database_get_protocol_by_host "$host")
-
     eval $(get_config_as "port" "$db_pointer.port")
 
-    eval $(get_config_as "name" "$db_pointer.name")
-    exit_with_failure_if_empty_config "name" "$db_pointer.name"
+    eval $(get_config_as "database" "$db_pointer.database")
+    exit_with_failure_if_empty_config "database" "$db_pointer.database"
 
     eval $(get_config_as "password" "$db_pointer.password")
     exit_with_failure_if_empty_config "password" "$db_pointer.password"
@@ -49,7 +47,7 @@ function mysql_on_rebuild_config() {
     [[ "$port" ]] && echo "port=\"$port\"" >>"$filepath"
     echo "user=\"$user\"" >>"$filepath"
     echo "password=\"$password\"" >>"$filepath"
-    [[ "$protocol" ]] && echo "protocol=\"$protocol\"" >>"$filepath"
+    echo "protocol=\"${protocol:-tcp}\"" >>"$filepath"
     ! chmod 0400 "$filepath" && fail_because "Failed with chmod 0400 $path_label" && return 1
 
   done
@@ -63,7 +61,7 @@ function mysql_on_database_name() {
     local environment_id="$1"
     local database_id="$2"
 
-    eval $(get_config_as "db_name" "environments.$environment_id.databases.$database_id.name")
+    eval $(get_config_as "db_name" "environments.$environment_id.databases.$database_id.database")
     [[ "$db_name" ]] && echo "$db_name" && return 0
     echo "The database ID \"$database_id\" is not in the \"$environment_id\" environment configuration."
     return 1
