@@ -250,7 +250,12 @@ function mysql_on_export_db() {
     fail_because "A database export file was not created."
   fi
 
-  ! gzip -f "$save_as" && fail_because "Could not compress dumpfile"
+  if ! gzip -f "$save_as"; then
+    fail_because "Could not compress dumpfile"
+  else
+    # Get the new name with added extension
+    save_as="$save_as"*
+  fi
 
   has_failed && return 1
 
