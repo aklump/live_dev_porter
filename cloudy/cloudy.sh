@@ -861,7 +861,7 @@ function echo_fail() {
 # @see echo_task_failed
 function echo_task() {
   echo_task__task="$1"
-  tput sc && tput civis
+  tput sc
   echo "$(echo_blue '[ ]') $(echo_blue "$echo_task__task")"
 }
 
@@ -872,7 +872,7 @@ function echo_task() {
 #
 # Returns nothing.
 function clear_task() {
-  tput rc && tput sc && echo && tput rc && tput cnorm
+  tput rc && tput sc && echo && tput rc
 }
 
 # Replace the task pending with success.
@@ -882,7 +882,7 @@ function clear_task() {
 # @see echo_task
 # @see echo_task_failed
 function echo_task_completed() {
-  tput rc && echo_pass "$echo_task__task" && tput cnorm
+  tput rc && echo_pass "$echo_task__task"
 }
 
 # Replace the task pending with failure.
@@ -892,7 +892,7 @@ function echo_task_completed() {
 # @see echo_task
 # @see echo_task_completed
 function echo_task_failed() {
-  tput rc && echo_fail "$echo_task__task" && tput cnorm
+  tput rc && echo_fail "$echo_task__task"
 }
 
 
