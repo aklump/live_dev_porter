@@ -203,6 +203,7 @@ function mysql_on_export_db() {
 
   # Ensure we don't clobber an existing.
   [[ -f "$save_as" ]] && fail_because "$save_as already exists." && return 1
+  [[ -f "$save_as.gz" ]] && fail_because "$save_as.gz already exists." && return 1
 
   sandbox_directory "$dumpfiles_dir"
   ! mkdir -p "$dumpfiles_dir" && fail_because "Could not create directory: $dumpfiles_dir" && return 1
@@ -254,7 +255,7 @@ function mysql_on_export_db() {
     fail_because "Could not compress dumpfile"
   else
     # Get the new name with added extension
-    save_as="$save_as"*
+    save_as="$save_as.gz"
   fi
 
   has_failed && return 1
