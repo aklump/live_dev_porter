@@ -93,6 +93,9 @@ class LoftDeployMigrator {
           if (preg_match('/(install|secrets)\//', $item, $matches)) {
             $group_id = $matches[1];
             $files[$group_id] = dirname($item);
+            if (strstr($files[$group_id], 'install/default/scaffold') === FALSE) {
+              $files[$group_id] = str_replace('install/default', 'install/default/scaffold', $files[$group_id]);
+            }
           }
         }
 
@@ -203,9 +206,9 @@ class LoftDeployMigrator {
               $include_path = '/' . ltrim($value, '/');
               if (preg_match('/(bin\/config\/)(.+)(\.local\..+)/', $include_path, $m)) {
                 $include_path = '/' . $m[1] . '*' . $m[3];
-//                if (!in_array($include_path, $groups['secrets']['include'])) {
-//                  $groups['secrets']['include'][] = $include_path;
-//                }
+                //                if (!in_array($include_path, $groups['secrets']['include'])) {
+                //                  $groups['secrets']['include'][] = $include_path;
+                //                }
               }
               $group_id = $matches[1];
               if (!in_array($include_path, $groups[$group_id]['include'])) {

@@ -147,7 +147,7 @@ function default_on_pull_files() {
 
       has_option v && echo "$rsync_options"
       write_log "rsync $rsync_options "${REMOTE_ENV_AUTH}$source_path/" "$destination_path/""
-      echo_task "Save "$FILES_GROUP_ID" to: $destination"
+      echo_task "Pull files group \"$FILES_GROUP_ID\" to: $destination"
       rsync $rsync_options "${REMOTE_ENV_AUTH}$source_path/" "$destination_path/" || fail
 
       if has_failed; then

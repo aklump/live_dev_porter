@@ -30,7 +30,7 @@ workflows:
 environments:
   local:
     files:
-      install: install/default
+      install: install/default/scaffold
     command_workflows:
       pull: development
 ```

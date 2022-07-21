@@ -13,7 +13,7 @@ environments:
         plugin: lando
         service: database
     files:
-      install: install/default
+      install: install/default/scaffold
       secrets: private/default/secrets
       public: web/sites/default/files
       private: private/default/files
