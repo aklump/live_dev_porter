@@ -145,8 +145,8 @@ class LoftDeployMigrator {
         ];
       },
       'workflows.develop' => function ($conf) {
-        $has_drupal = $conf('local.drupal.root');
-        if (!$has_drupal) {
+        $has_database = $conf('local.database');
+        if (!$has_database) {
           return [];
         }
 
