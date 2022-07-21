@@ -34,15 +34,25 @@
 
 <h2>Quick Start</h2>
 
-<ul>
+<ol>
 <li>Require in your project using <code>composer require aklump/live-dev-porter</code></li>
 <li>Ensure execute permissions: <code>chmod u+x ./vendor/bin/ldp</code></li>
-<li>(To migrate from Loft Deploy use, <code>./vendor/bin/ldp config-migrate ./.loft_deploy</code>, otherwise...)</li>
 <li>Initialize your project using <code>./vendor/bin/ldp init</code></li>
+<li>(To migrate from Loft Deploy jump below...)</li>
 <li>Open <em>.live_dev_porter/config.yml</em> and modify as needed.</li>
 <li><strong>Ensure <em>config.local.yml</em> is ignored by your SCM!</strong></li>
 <li>Open <em>.live_dev_porter/config.local.yml</em> and define the correct <code>local</code> and <code>remote</code> environment IDs as defined in <em>config.yml</em>.</li>
-</ul>
+<li>Run <code>./vendor/bin/ldp configtest</code> and work through any failed tests.</li>
+</ol>
+
+<h3>Migrating from Loft Deploy?</h3>
+
+<ol>
+<li><code>rm .live_dev_porter/config.yml</code></li>
+<li><code>./vendor/bin/ldp config-migrate</code></li>
+<li>Rewrite any hooks as processors.</li>
+<li>Return to where you left off above.</li>
+</ol>
 
 <h3>Optional Shorthand <code>ldp</code> instead of <code>./vendor/bin/ldp</code></h3>
 
@@ -109,7 +119,7 @@
 <footer>
   <div class="pager"><a href="index.html" class="prev index">&laquo;Live Dev Porter: Documentation</a><a href="index.html" class="index pager__book-title">Live Dev Porter: Documentation</a><a href="CHANGELOG.html" class="next changelog">Changelog&raquo;</a></div>  
   <div id="footer-legaleeze">
-    <p class="legaleeze center">Version: 0.0.42 &bull; Last Updated: Wed, 20 Jul 2022 21:40:05 -0700</p>
+    <p class="legaleeze center">Version: 0.0.43 &bull; Last Updated: Wed, 20 Jul 2022 22:46:37 -0700</p>
   </div>
 </footer>
 
