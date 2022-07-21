@@ -33,7 +33,8 @@ if (file_exists($new_config_filepath)) {
 mkdir($directory, 0755, TRUE);
 echo "Saved $directory";
 
-$migrator = new LoftDeployMigrator($loft_deploy_config_dir);
+$initial_config = Yaml::parseFile(__DIR__ . '/../init/config.yml');
+$migrator = new LoftDeployMigrator($loft_deploy_config_dir, $initial_config);
 $new_config = $migrator->getNewConfig();
 $yaml = Yaml::dump($new_config, 6, 2);
 file_put_contents("$new_config_filepath", $yaml);

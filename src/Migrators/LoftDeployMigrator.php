@@ -13,14 +13,21 @@ use Symfony\Component\Yaml\Yaml;
  */
 class LoftDeployMigrator {
 
-  public function __construct(string $loft_deploy_config_dir) {
+  const LOCAL = 'dev';
+
+  const LOCAL_FILES = 'dev_build';
+
+  const REMOTE = 'live';
+
+  public function __construct(string $loft_deploy_config_dir, array $initial_config) {
     $this->sourceDir = $loft_deploy_config_dir;
+    $this->initialConfig = $initial_config;
   }
 
   public function getNewLocalConfig() {
     return [
-      'local' => 'local',
-      'remote' => 'live',
+      'local' => self::LOCAL,
+      'remote' => self::REMOTE,
     ];
   }
 
@@ -42,21 +49,24 @@ class LoftDeployMigrator {
 
   private function map($conf): array {
     return [
-      'environments.local.label' => $conf('local.location'),
-      'environments.local.write_access' => function ($conf) {
+      'environments.' . self::LOCAL . '.label' => $conf('local.location'),
+      'environments.' . self::LOCAL . '.write_access' => function ($conf) {
         return $conf('local.role') === 'dev';
       },
-      'environments.local.plugin' => 'default',
-      'environments.local.base_path' => './',
-      //      'environments.local.base_path' => $conf('local.basepath'),
-      'environments.local.command_workflows' => [
+      'environments.' . self::LOCAL . '.plugin' => 'default',
+      'environments.' . self::LOCAL . '.base_path' => './',
+      //      'environments.'.self::LOCAL.'.base_path' => $conf('local.basepath'),
+      'environments.' . self::LOCAL . '.command_workflows' => [
         'pull' => 'develop',
         'export' => 'archive',
       ],
-      'environments.local.databases' => function ($conf) {
+      'environments.' . self::LOCAL . '.databases' => function ($conf) {
         $databases = [];
         if ($conf('local.database')) {
-          $database_id = $conf('local.drupal.root') ? 'drupal' : 'default';
+          $database_id = $conf('local.database.name');
+          if (strstr($database_id, 'drupal')) {
+            $database_id = 'drupal';
+          }
           $databases[$database_id]['plugin'] = $conf('local.database.lando') ? 'lando' : 'mysql';
           if ($databases[$database_id]['plugin'] === 'lando') {
             $databases[$database_id] += [
@@ -76,7 +86,7 @@ class LoftDeployMigrator {
 
         return $databases;
       },
-      'environments.local.files' => function ($conf) {
+      'environments.' . self::LOCAL . '.files' => function ($conf) {
         $files = [];
         $items = $conf('local.copy_production_to') ?? [];
         foreach ($items as $item) {
@@ -98,16 +108,48 @@ class LoftDeployMigrator {
 
         return $files;
       },
-      'environments.live.label' => '@todo',
-      'environments.live.write_access' => FALSE,
-      'environments.live.plugin' => 'default',
-      'environments.live.base_path' => function ($conf) {
+      'environments.' . self::LOCAL_FILES . '.label' => $conf('local.location'),
+      'environments.' . self::LOCAL_FILES . '.write_access' => FALSE,
+      'environments.' . self::LOCAL_FILES . '.plugin' => 'default',
+      'environments.' . self::LOCAL_FILES . '.base_path' => './',
+      'environments.' . self::LOCAL_FILES . '.files' => function ($conf) {
+        $files = [];
+        $items = $conf('local.copy_local_to') ?? [];
+        foreach ($items as $item) {
+          if (preg_match('/(install|secrets)\//', $item, $matches)) {
+            $group_id = $matches[1];
+            $files[$group_id] = './';
+          }
+        }
+
+        return $files;
+      },
+      'environments.' . self::REMOTE . '.label' => '@todo',
+      'environments.' . self::REMOTE . '.write_access' => FALSE,
+      'environments.' . self::REMOTE . '.plugin' => 'default',
+      'environments.' . self::REMOTE . '.base_path' => function ($conf) {
         return dirname($conf('production.config'));
       },
-      'environments.live.ssh' => function ($conf) {
+      'environments.' . self::REMOTE . '.ssh' => function ($conf) {
         return $conf('production.user') . '@' . $conf('production.host');
       },
-      'environments.live.files' => function ($conf) {
+      'environments.' . self::REMOTE . '.databases' => function ($conf) {
+        $databases = [];
+        if ($conf('local.database')) {
+          $database_id = $conf('local.database.name');
+          if (strstr($database_id, 'drupal')) {
+            $database_id = 'drupal';
+          }
+          $databases[$database_id] = [
+            'plugin' => 'env',
+            'path' => '.env',
+            'var' => 'DATABASE_URL',
+          ];
+        }
+
+        return $databases;
+      },
+      'environments.' . self::REMOTE . '.files' => function ($conf) {
         $files = [];
         $items = $conf('local.copy_production_to') ?? [];
         foreach ($items as $item) {
@@ -129,43 +171,11 @@ class LoftDeployMigrator {
 
         return $files;
       },
-      'workflows.archive' => function ($conf) {
-        $has_drupal = $conf('local.drupal.root');
-        if (!$has_drupal) {
-          return [];
-        }
-
-        return [
-          [
-            'database' => 'drupal',
-            'exclude_table_data' => [
-              'cache*',
-            ],
-          ],
-        ];
+      'workflows' => function ($conf) {
+        return $this->initialConfig['workflows'];
       },
       'workflows.develop' => function ($conf) {
-        $has_database = $conf('local.database');
-        if (!$has_database) {
-          return [];
-        }
-
-        $items = [
-          [
-            'database' => 'drupal',
-            'exclude_table_data' => [
-              'cache*',
-              'batch',
-              'config_import',
-              'config',
-              'config_snapshot',
-              'key_value_expire',
-              'sessions',
-              'watchdog',
-            ],
-          ],
-        ];
-
+        $items = $this->initialConfig['workflows']['develop'] ?? [];
         $hooks = glob($this->sourceDir . '/hooks/*.sh');
         foreach ($hooks as $hook) {
           $items[] = [
@@ -178,12 +188,31 @@ class LoftDeployMigrator {
       'file_groups' => function ($conf) {
         $groups = [];
         $copy_source = $conf('local.copy_source') ?? [];
-        $items = $conf('local.copy_production_to') ?? [];
-        foreach ($items as $delta => $item) {
-          if (preg_match('/(install|secrets)\//', $item, $matches)) {
-            $group_id = $matches[1];
-            $value = $copy_source[$delta];
-            $groups[$group_id]['include'][] = '/' . ltrim($value, '/');
+        foreach ([
+                   'local.copy_local_to',
+                   'local.copy_production_to',
+                   'local.copy_staging_to',
+                 ] as $key) {
+          $items = $conf($key) ?? [];
+          foreach ($items as $delta => $item) {
+            if (preg_match('/(install|secrets)\//', $item, $matches)) {
+              $value = $copy_source[$delta] ?? NULL;
+              if (!$value) {
+                continue;
+              }
+              $include_path = '/' . ltrim($value, '/');
+              if (preg_match('/(bin\/config\/)(.+)(\.local\..+)/', $include_path, $m)) {
+                $include_path = '/' . $m[1] . '*' . $m[3];
+//                if (!in_array($include_path, $groups['secrets']['include'])) {
+//                  $groups['secrets']['include'][] = $include_path;
+//                }
+              }
+              $group_id = $matches[1];
+              if (!in_array($include_path, $groups[$group_id]['include'])) {
+                $groups[$group_id]['include'][] = $include_path;
+              }
+
+            }
           }
         }
 

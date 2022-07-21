@@ -26,8 +26,8 @@ Simplifies the management and transfer of assets between website environments.
 
 ### Migrating from Loft Deploy?
 
-1. `rm .live_dev_porter/config.yml`
-2. `./vendor/bin/ldp config-migrate`
+1. `rm .live_dev_porter/config*`
+2. `./vendor/bin/ldp config-migrate .loft_deploy`
 3. Rewrite any hooks as processors.
 4. Return to where you left off above.
 
