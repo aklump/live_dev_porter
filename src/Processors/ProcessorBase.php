@@ -60,7 +60,7 @@ abstract class ProcessorBase {
    * @return array
    *   Information about the source environment.
    */
-  public function getSourceEnvironment(): array {
+  protected function getSourceEnvironment(): array {
     if ($this->command === 'pull') {
       return ['id' => $this->config['REMOTE_ENV_ID']];
     }
@@ -68,11 +68,50 @@ abstract class ProcessorBase {
     return ['id' => $this->config['LOCAL_ENV_ID']];
   }
 
-  public function isWriteableEnvironment(): bool {
+  /**
+   * Generate a filepath based on the source environment.
+   *
+   * @code
+   * $move_to = $this->getSourceBasedFilepath([
+   *   'dev' => 'dev',
+   *   'local' => 'dev',
+   *   'live' => 'prod',
+   * ]);
+   * $this->saveFile($move_to);
+   * @endcode
+   *
+   * @param array $map
+   *   An array which maps environment ids to their corresponding file extension
+   *   prefix.  Keys are environment ids and the values are modifiers that will
+   *   be appended to dotfiles and prepended to the extensions of all other
+   *   files.
+   *
+   * @return string
+   *   The new filepath with the extension modified if the source environment is
+   *   matched to an item in $map.  Otherwise the original filepath is returned
+   *   without modification.
+   */
+  protected function getSourceBasedFilepath(array $map): string {
+    $source = $this->getSourceEnvironment()['id'];
+    $info = $this->getFileInfo();
+    $modifier = $map[$source] ?? NULL;
+    if (is_null($modifier)) {
+      return $info['filepath'];
+    }
+    if (strpos($info['basename'], '.') === 0) {
+      return sprintf('%s.%s', $info['filepath'], $modifier);
+    }
+
+    return sprintf('%s/%s.%s.%s',
+      $info['dirname'], $info['filename'], $modifier, $info['extension']
+    );
+  }
+
+  protected function isWriteableEnvironment(): bool {
     return $this->config['IS_WRITEABLE_ENVIRONMENT'] ?? FALSE;
   }
 
-  public function getFileInfo() {
+  protected function getFileInfo() {
     if (empty($this->config['FILEPATH'])) {
       return [];
     }
@@ -89,7 +128,7 @@ abstract class ProcessorBase {
    *   FALSE if $filepath is empty.  TRUE if $filepath was loaded.
    * @throws \AKlump\LiveDevPorter\Processors\ProcessorFailedException If the does not exist or cannot be loaded.
    */
-  public function loadFile() {
+  protected function loadFile() {
     $filepath = $this->config['FILEPATH'];
     if (empty($filepath)) {
       return FALSE;
@@ -125,7 +164,7 @@ abstract class ProcessorBase {
    *
    * @throws \AKlump\LiveDevPorter\Processors\ProcessorFailedException If the file could not be saved.
    */
-  public function saveFile(string $move = NULL) {
+  protected function saveFile(string $move = NULL) {
     $this->validateFileIsLoaded();
     $is_moving = $move !== NULL && $move !== $this->config['FILEPATH'];
     if (!$is_moving && $this->loadedFile['contents'] === $this->loadedFile['original']) {
@@ -153,7 +192,7 @@ abstract class ProcessorBase {
     }
   }
 
-  public function query(string $statement) {
+  protected function query(string $statement) {
     // TODO Copy the code from processor_support.sh
   }
 

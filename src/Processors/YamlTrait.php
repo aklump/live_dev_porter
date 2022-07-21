@@ -28,7 +28,9 @@ trait YamlTrait {
   protected function yamlReplaceValue(string $variable_name, string $replace_with = '') {
     $this->validateFileIsLoaded();
     $data = Yaml::parse($this->loadedFile['contents']);
-    $data = DotKey::on($data)->set($variable_name, $replace_with);
+    if (DotKey::on($data)->exists($variable_name)) {
+      $data = DotKey::on($data)->set($variable_name, $replace_with);
+    }
     $this->loadedFile['contents'] = Yaml::dump($data, 2, 6);
   }
 
