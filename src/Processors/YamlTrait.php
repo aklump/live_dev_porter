@@ -27,11 +27,14 @@ trait YamlTrait {
    */
   protected function yamlReplaceValue(string $variable_name, string $replace_with = '') {
     $this->validateFileIsLoaded();
+    if (empty($this->loadedFile['contents'])) {
+      return;
+    }
     $data = Yaml::parse($this->loadedFile['contents']);
     if (DotKey::on($data)->exists($variable_name)) {
       $data = DotKey::on($data)->set($variable_name, $replace_with);
     }
-    $this->loadedFile['contents'] = Yaml::dump($data, 2, 6);
+    $this->loadedFile['contents'] = is_null($data) ? '' : Yaml::dump($data, 2, 6);
   }
 
 }

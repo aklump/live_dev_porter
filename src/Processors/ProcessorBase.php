@@ -112,6 +112,7 @@ abstract class ProcessorBase {
   }
 
   protected function getFileInfo() {
+    $this->validateFileIsLoaded();
     if (empty($this->config['FILEPATH'])) {
       return [];
     }
@@ -188,7 +189,7 @@ abstract class ProcessorBase {
 
   protected function validateFileIsLoaded() {
     if (!array_key_exists('original', $this->loadedFile)) {
-      throw new ProcessorFailedException(sprintf('You must call ::loadFile before calling %s; nothing to save', __FUNCTION__));
+      throw new ProcessorFailedException('::loadFile has not yet been called.');
     }
   }
 

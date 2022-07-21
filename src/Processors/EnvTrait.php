@@ -26,6 +26,9 @@ trait EnvTrait {
    */
   protected function envReplaceValue(string $variable_name, string $replace_with = '""') {
     $this->validateFileIsLoaded();
+    if (empty($this->loadedFile['contents'])) {
+      return;
+    }
     $this->loadedFile['contents'] = preg_replace('/(' . preg_quote($variable_name) . '=).+$/m', '$1' . $replace_with, $this->loadedFile['contents']);
   }
 
@@ -51,6 +54,9 @@ trait EnvTrait {
    */
   protected function envReplaceUrlPassword(string $variable_name, string $replace_with = "PASSWORD") {
     $this->validateFileIsLoaded();
+    if (empty($this->loadedFile['contents'])) {
+      return;
+    }
     $this->loadedFile['contents'] = preg_replace_callback('/(' . preg_quote($variable_name) . '=)(.+)$/m', function ($matches) use ($replace_with) {
       $url = parse_url($matches[2]);
       $url['pass'] = $replace_with;
