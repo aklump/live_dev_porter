@@ -159,7 +159,6 @@ function default_on_pull_files() {
         ! has_option "dry-run" && echo_task_completed
 
         if [[ "$WORKFLOW_ID" ]]; then
-          ENVIRONMENT_ID="$LOCAL_ENV_ID"
           DATABASE_ID=""
           eval $(get_config_as -a includes "file_groups.$FILES_GROUP_ID.include")
           for include in "${includes[@]}"; do

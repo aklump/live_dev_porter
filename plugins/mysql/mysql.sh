@@ -364,7 +364,6 @@ function mysql_on_pull_db() {
   mysql_prune_rollback_files "$DATABASE_ID" "$total_files_to_keep" || return 1
 
   if [[ "$WORKFLOW_ID" ]]; then
-    ENVIRONMENT_ID="$LOCAL_ENV_ID"
     execute_workflow_processors "$WORKFLOW_ID" || fail
   fi
 }

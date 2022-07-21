@@ -25,10 +25,10 @@ trait YamlTrait {
    * @param string $replace_with
    *   The value to replace with.
    */
-  protected function yamlReplaceValue(string $variable_name, string $replace_with = '""') {
+  protected function yamlReplaceValue(string $variable_name, string $replace_with = '') {
     $this->validateFileIsLoaded();
     $data = Yaml::parse($this->loadedFile['contents']);
-    DotKey::on($data)->set($variable_name, $replace_with);
+    $data = DotKey::on($data)->set($variable_name, $replace_with);
     $this->loadedFile['contents'] = Yaml::dump($data, 2, 6);
   }
 

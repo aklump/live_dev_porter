@@ -61,11 +61,15 @@ abstract class ProcessorBase {
    *   Information about the source environment.
    */
   public function getSourceEnvironment(): array {
-    return ['id' => $this->config['ENVIRONMENT_ID'] ?? NULL];
+    if ($this->command === 'pull') {
+      return ['id' => $this->config['REMOTE_ENV_ID']];
+    }
+
+    return ['id' => $this->config['LOCAL_ENV_ID']];
   }
 
   public function isWriteableEnvironment(): bool {
-    return $this->config['ENVIRONMENT_ID'] ?? FALSE;
+    return $this->config['IS_WRITEABLE_ENVIRONMENT'] ?? FALSE;
   }
 
   public function getFileInfo() {
@@ -114,7 +118,8 @@ abstract class ProcessorBase {
    *   Move the file to a different location on save.
    *
    * @return bool
-   *   If the contents have not changed since loading, false is returned;
+   *   If the contents have not changed since loading AND $move is not being
+   *   used (null or the original path), false is returned;
    *   otherwise true on success saving of the file.  Errors are thrown as
    *   exceptions.
    *
@@ -122,7 +127,8 @@ abstract class ProcessorBase {
    */
   public function saveFile(string $move = NULL) {
     $this->validateFileIsLoaded();
-    if ($this->loadedFile['contents'] === $this->loadedFile['original']) {
+    $is_moving = $move !== NULL && $move !== $this->config['FILEPATH'];
+    if (!$is_moving && $this->loadedFile['contents'] === $this->loadedFile['original']) {
       return TRUE;
     }
 

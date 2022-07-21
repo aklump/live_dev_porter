@@ -264,7 +264,6 @@ case $COMMAND in
       fi
 
       if [[ "$WORKFLOW_ID" ]]; then
-        ENVIRONMENT_ID="$LOCAL_ENV_ID"
         execute_workflow_processors "$WORKFLOW_ID" || fail
       fi
 
@@ -326,7 +325,6 @@ case $COMMAND in
         mysql_prune_rollback_files "$DATABASE_ID" "$total_files_to_keep"
       fi
       if ! has_failed && [[ "$WORKFLOW_ID" ]]; then
-        ENVIRONMENT_ID="$LOCAL_ENV_ID"
         execute_workflow_processors "$WORKFLOW_ID" || fail
       fi
       echo_time_heading
