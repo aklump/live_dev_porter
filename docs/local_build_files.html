@@ -31,11 +31,11 @@
 <p>This is how you do that.</p>
 
 <ol>
-<li>Configure a second, local environment, e.g. <code>dev_scaffold</code>.</li>
+<li>Configure a second, local environment, e.g. <code>local</code>.</li>
 <li>Set <code>write_access</code> to <code>false</code>.</li>
 <li>Setup <code>files</code> as you would a normal remote, that is, with paths to the original files.</li>
 <li>Do not define <code>databases</code> because this will ensure only files are pulled, even without using <code>pull -f</code>.</li>
-<li>Now run <code>ldp pull dev_scaffold</code> to copy the files; notice how you specify the "remote" in the CLI argument.</li>
+<li>Now run <code>ldp pull local</code> to copy the files; notice how you specify the "remote" in the CLI argument.</li>
 </ol>
 
 <p><em>.live_dev_porter/config.yml</em></p>
@@ -56,7 +56,7 @@
       install: install
       public: web/sites/default/files
       private: private/default/files
-  dev_scaffold:
+  local:
     label: ITLS
     write_access: false
     plugin: default
@@ -74,7 +74,7 @@
 <footer>
   <div class="pager"><a href="CHANGELOG.html" class="prev CHANGELOG">&laquo;Changelog</a><a href="index.html" class="index pager__book-title">Live Dev Porter: Documentation</a><a href="databases.html" class="next databases">Databases&raquo;</a></div>  
   <div id="footer-legaleeze">
-    <p class="legaleeze center">Version: 0.0.47 &bull; Last Updated: Thu, 21 Jul 2022 12:13:06 -0700</p>
+    <p class="legaleeze center">Version: 0.0.48 &bull; Last Updated: Thu, 21 Jul 2022 12:16:47 -0700</p>
   </div>
 </footer>
 
