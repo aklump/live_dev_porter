@@ -1,5 +1,7 @@
 # Plugins
 
+> This page is not current and needs updating.
+
 1. Plugins are folders saved to the _plugins/_ directory, resembling the following structure.
     ```
     └── mysql
