@@ -36,10 +36,13 @@ class LoftDeployMigrator {
     $conf = function ($path) use ($loft_deploy_config) {
       return DotKey::on($loft_deploy_config)->get($path);
     };
+    $init = function ($path) {
+      return DotKey::on($this->initialConfig)->get($path);
+    };
     $new_config = [];
-    foreach ($this->map($conf) as $key => $value) {
+    foreach ($this->map($conf, $init) as $key => $value) {
       if (is_callable($value)) {
-        $value = $value($conf);
+        $value = $value($conf, $init);
       }
       $new_config = DotKey::on($new_config)->put($key, $value);
     }
@@ -47,19 +50,15 @@ class LoftDeployMigrator {
     return $new_config;
   }
 
-  private function map($conf): array {
+  private function map($conf, $init): array {
     return [
       'environments.' . self::LOCAL . '.label' => $conf('local.location'),
       'environments.' . self::LOCAL . '.write_access' => function ($conf) {
         return $conf('local.role') === 'dev';
       },
-      'environments.' . self::LOCAL . '.plugin' => 'default',
-      'environments.' . self::LOCAL . '.base_path' => './',
-      //      'environments.'.self::LOCAL.'.base_path' => $conf('local.basepath'),
-      'environments.' . self::LOCAL . '.command_workflows' => [
-        'pull' => 'develop',
-        'export' => 'archive',
-      ],
+      'environments.' . self::LOCAL . '.plugin' => $init('environments.' . self::LOCAL . '.plugin'),
+      'environments.' . self::LOCAL . '.base_path' => $init('environments.' . self::LOCAL . '.base_path'),
+      'environments.' . self::LOCAL . '.command_workflows' => $init('environments.' . self::LOCAL . '.command_workflows') ?? [],
       'environments.' . self::LOCAL . '.databases' => function ($conf) {
         $databases = [];
         if ($conf('local.database')) {
@@ -127,9 +126,9 @@ class LoftDeployMigrator {
 
         return $files;
       },
-      'environments.' . self::REMOTE . '.label' => '@todo',
-      'environments.' . self::REMOTE . '.write_access' => FALSE,
-      'environments.' . self::REMOTE . '.plugin' => 'default',
+      'environments.' . self::REMOTE . '.label' => 'TODO',
+      'environments.' . self::REMOTE . '.write_access' => $init('environments.' . self::REMOTE . '.write_access'),
+      'environments.' . self::REMOTE . '.plugin' => $init('environments.' . self::REMOTE . '.plugin'),
       'environments.' . self::REMOTE . '.base_path' => function ($conf) {
         return dirname($conf('production.config'));
       },
@@ -174,11 +173,11 @@ class LoftDeployMigrator {
 
         return $files;
       },
-      'workflows' => function ($conf) {
-        return $this->initialConfig['workflows'];
+      'workflows' => function ($conf, $init) {
+        return $init('workflows');
       },
-      'workflows.develop' => function ($conf) {
-        $items = $this->initialConfig['workflows']['develop'] ?? [];
+      'workflows.develop' => function ($conf, $init) {
+        $items = $init('workflows.develop') ?? [];
         $hooks = glob($this->sourceDir . '/hooks/*.sh');
         foreach ($hooks as $hook) {
           $items[] = [
@@ -189,32 +188,36 @@ class LoftDeployMigrator {
         return $items;
       },
       'file_groups' => function ($conf) {
-        $groups = [];
-        $copy_source = $conf('local.copy_source') ?? [];
+        $groups = [
+          'install' => ['include' => ['/.live_dev_porter/config.local.yml']],
+        ];
         foreach ([
                    'local.copy_local_to',
                    'local.copy_production_to',
                    'local.copy_staging_to',
                  ] as $key) {
           $items = $conf($key) ?? [];
-          foreach ($items as $delta => $item) {
-            if (preg_match('/(install|secrets)\//', $item, $matches)) {
-              $value = $copy_source[$delta] ?? NULL;
-              if (!$value) {
-                continue;
-              }
-              $include_path = '/' . ltrim($value, '/');
-              if (preg_match('/(bin\/config\/)(.+)(\.local\..+)/', $include_path, $m)) {
-                $include_path = '/' . $m[1] . '*' . $m[3];
-                //                if (!in_array($include_path, $groups['secrets']['include'])) {
-                //                  $groups['secrets']['include'][] = $include_path;
-                //                }
-              }
-              $group_id = $matches[1];
-              if (!in_array($include_path, $groups[$group_id]['include'])) {
-                $groups[$group_id]['include'][] = $include_path;
-              }
-
+          foreach ($items as $item) {
+            if (!preg_match('/(install|secrets)\//', $item, $matches)) {
+              continue;
+            }
+            $group_id = $matches[1];
+            $include_path = preg_replace('/\.(dev|prod|staging)/', '', $item);
+            switch ($group_id) {
+              case 'install':
+                list(, $include_path) = explode('install/default/', $include_path);
+                if (preg_match('/(.+)(\.local\..+)/', $include_path, $m)) {
+                  $include_path = '*' . $m[2];
+                }
+                break;
+              case 'secrets':
+                list(, $include_path) = explode('default/secrets/', $include_path);
+                break;
+            }
+            $groups[$group_id]['include'] = $groups[$group_id]['include'] ?? [];
+            $include_path = 'TODO' . ltrim($include_path, '/');
+            if (!in_array($include_path, $groups[$group_id]['include'])) {
+              $groups[$group_id]['include'][] = $include_path;
             }
           }
         }

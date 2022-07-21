@@ -30,7 +30,7 @@ if (file_exists($new_config_filepath)) {
   exit(1);
 }
 
-mkdir($directory, 0755, TRUE);
+!file_exists($directory) && mkdir($directory, 0755, TRUE);
 echo "Saved $directory";
 
 $initial_config = Yaml::parseFile(__DIR__ . '/../init/config.yml');

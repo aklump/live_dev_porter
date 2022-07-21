@@ -7,7 +7,7 @@ environments:
     command_workflows:
       pull: develop
       export: archive
-      import:
+      import: develop
     databases:
       drupal:
         plugin: lando
