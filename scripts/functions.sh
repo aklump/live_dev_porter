@@ -78,9 +78,14 @@ function get_workflow_by_command() {
   echo "$id" && return 0
 }
 
-# Ensure a given workflow ID is valid.
+# Ensure a given environment ID is valid.
 #
-# $1 - A workflow ID.
+# $1 - A environment ID.
+#
+# @code
+# ! id=$(validate_workflow "$id") && echo "$id" && return 1
+# echo "$id" && return 0
+# @endcode
 #
 # Returns 0 and echos the ID if valid; otherwise echo error and return 1
 function validate_workflow() {
@@ -89,6 +94,26 @@ function validate_workflow() {
   eval $(get_config_keys_as array_has_value__array "workflows")
   array_has_value "$workflow_id" && echo "$workflow_id" && return 0
   echo "\"$workflow_id\" is not a configured workflow."
+  return 1
+}
+
+
+# Ensure a given environment ID is valid.
+#
+# $1 - A environment ID.
+#
+# @code
+# ! id=$(validate_environment "$id") && echo "$id" && return 1
+# echo "$id" && return 0
+# @endcode
+#
+# Returns 0 and echos the ID if valid; otherwise echo error and return 1
+function validate_environment() {
+  local environment_id="$1"
+
+  eval $(get_config_keys_as array_has_value__array "environments")
+  array_has_value "$environment_id" && echo "$environment_id" && return 0
+  echo "\"$environment_id\" is not a configured environment."
   return 1
 }
 
@@ -290,7 +315,7 @@ function implement_configtest() {
 #
 # Returns 0 if .
 function remote_ssh() {
-  ssh -t -o BatchMode=yes "$REMOTE_ENV_AUTH" "$@"
+  ssh -t -o BatchMode=yes "${REMOTE_ENV_AUTH%:}" "$@"
 }
 
 function echo_time_heading() {

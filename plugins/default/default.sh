@@ -62,18 +62,15 @@ function default_on_configtest() {
         # Create local directories if they don't exist to prevent failure.
         file_group_path="$(environment_path_resolve "$environment_id" "$file_group_directory")"
         echo_task "$(string_ucfirst $environment_id) file group $group_id exists: $file_group_path"
-        if [[ "$environment_id" == "$LOCAL_ENV_ID" ]]; then
+        if [[ "$environment_id" == "$REMOTE_ENV_ID" ]] && _test_remote_path "$file_group_directory"; then
+          echo_task_completed
+        else
           if [[ -e "$file_group_path" ]] || mkdir -p "$file_group_path"; then
             echo_task_completed
           else
             echo_task_failed
             fail
           fi
-        elif [[ "$environment_id" == "$REMOTE_ENV_ID" ]] && _test_remote_path "$file_group_directory"; then
-          echo_task_completed
-        else
-          echo_task_failed
-          fail
         fi
       done
     done
@@ -149,9 +146,9 @@ function default_on_pull_files() {
       has_failed && return 1
 
       has_option v && echo "$rsync_options"
-      write_log "rsync $rsync_options "$REMOTE_ENV_AUTH:$source_path/" "$destination_path/""
+      write_log "rsync $rsync_options "${REMOTE_ENV_AUTH}$source_path/" "$destination_path/""
       echo_task "Save "$FILES_GROUP_ID" to: $destination"
-      rsync $rsync_options "$REMOTE_ENV_AUTH:$source_path/" "$destination_path/" || fail
+      rsync $rsync_options "${REMOTE_ENV_AUTH}$source_path/" "$destination_path/" || fail
 
       if has_failed; then
         echo_task_failed

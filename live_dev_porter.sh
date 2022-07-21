@@ -132,6 +132,12 @@ eval $(get_config_as LOCAL_ENV_ID 'local')
 exit_with_failure_if_empty_config 'LOCAL_ENV_ID' 'local'
 eval $(get_config_as REMOTE_ENV_ID 'remote')
 
+# Alter the remote environment via CLI when appropriate.
+if [[ 'pull' == $COMMAND ]]; then
+  REMOTE_ENV_ID=$(get_command_arg 0 "$REMOTE_ENV_ID")
+  ! REMOTE_ENV_ID=$(validate_environment "$REMOTE_ENV_ID") && fail_because "$REMOTE_ENV_ID" && exit_with_failure
+fi
+
 eval $(get_config_keys_as 'ENVIRONMENT_IDS' "environments")
 for id in "${ENVIRONMENT_IDS[@]}"; do
   if [[ "$id" == "$LOCAL_ENV_ID" ]]; then
@@ -147,7 +153,9 @@ for id in "${ENVIRONMENT_IDS[@]}"; do
   # Configure remote variables if we have that environment.
   elif [[ "$REMOTE_ENV_ID" != null ]] && [[ "$id" == "$REMOTE_ENV_ID" ]]; then
     eval $(get_config_as REMOTE_ENV_AUTH "environments.$REMOTE_ENV_ID.ssh")
-    exit_with_failure_if_empty_config REMOTE_ENV_AUTH "environments.$REMOTE_ENV_ID.ssh"
+
+    # The remote may not always be using SSH, it may actually be another local.
+    [[ "$REMOTE_ENV_AUTH" ]] && REMOTE_ENV_AUTH="${REMOTE_ENV_AUTH}:"
 
     eval $(get_config_keys_as "REMOTE_DATABASE_IDS" "environments.$REMOTE_ENV_ID.databases")
     REMOTE_DATABASE_ID=${REMOTE_DATABASE_IDS[0]}
@@ -335,12 +343,12 @@ case $COMMAND in
     "pull")
       ! WORKFLOW_ID=$(get_workflow_by_command 'pull') && fail_because "$WORKFLOW_ID" && exit_with_failure
 
-      [[ ${#LOCAL_DATABASE_IDS[@]} -eq 0 ]] && has_db=false || has_db=true
+      [[ ${#REMOTE_DATABASE_IDS[@]} -eq 0 ]] && has_db=false || has_db=true
       [[ ${#FILE_GROUP_IDS[@]} -eq 0 ]] && has_files=false || has_files=true
 
       array_csv__array=()
-      [[ "$do_database" == true ]] && array_csv__array=("${array_csv__array[@]}" "databases")
-      [[ "$do_files" == true ]] && array_csv__array=("${array_csv__array[@]}" "files")
+      [[ "$has_db" == true ]] && [[ "$do_database" == true ]] && array_csv__array=("${array_csv__array[@]}" "databases")
+      [[ "$has_files" == true ]] && [[ "$do_files" == true ]] && array_csv__array=("${array_csv__array[@]}" "files")
 
       eval $(get_config_as label "environments.$LOCAL_ENV_ID.label")
       echo_title "$label"
