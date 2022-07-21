@@ -38,6 +38,10 @@ Simplifies the management and transfer of assets between website environments.
 3. Now use `ldp` from anywhere within your project, instead of `./vendor/bin/ldp` from the root.
 4. Don't worry if you have more than one project using _Live Dev Porter_ because this alias will work for multiple projects as long as they use the same version, and usually even if the versions differ.
 
+## Quick Start Remote
+
+1. Deploy your code to your remote server.
+2. On the remote server type `./vendor/bin/ldp config -l`
 ## Installation
 
 The installation script above will generate the following structure where `.` is your repository root.
