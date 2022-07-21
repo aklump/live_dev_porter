@@ -4,11 +4,11 @@
 
 This is how you do that.
 
-1. Configure a second, local environment, e.g. `dev_scaffold`.
+1. Configure a second, local environment, e.g. `local`.
 3. Set `write_access` to `false`.
 2. Setup `files` as you would a normal remote, that is, with paths to the original files.
 4. Do not define `databases` because this will ensure only files are pulled, even without using `pull -f`.
-5. Now run `ldp pull dev_scaffold` to copy the files; notice how you specify the "remote" in the CLI argument.
+5. Now run `ldp pull local` to copy the files; notice how you specify the "remote" in the CLI argument.
 
 _.live_dev_porter/config.yml_
 
@@ -29,7 +29,7 @@ environments:
       install: install
       public: web/sites/default/files
       private: private/default/files
-  dev_scaffold:
+  local:
     label: ITLS
     write_access: false
     plugin: default

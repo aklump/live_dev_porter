@@ -15,7 +15,7 @@ class LoftDeployMigrator {
 
   const LOCAL = 'dev';
 
-  const LOCAL_FILES = 'dev_build';
+  const LOCAL_FILES = 'local';
 
   const REMOTE = 'live';
 
