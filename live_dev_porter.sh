@@ -255,7 +255,7 @@ case $COMMAND in
       # This will create a quick link for the user to "open in Finder"
       dumpfiles_dir=$(database_get_dumpfiles_directory "$LOCAL_ENV_ID" "$DATABASE_ID")
       table_clear
-      table_add_row "export directory" "$dumpfiles_dir"
+      table_add_row "export directory" "$backups_dir"
       [[ "$JSON_RESPONSE" != true ]] && echo_slim_table
       call_plugin $plugin export_db "$DATABASE_ID" "$filename" || fail
       if has_failed; then
@@ -293,26 +293,30 @@ case $COMMAND in
       if [[ -f "$filepath" ]]; then
         shortpath=$(path_unresolve "$PWD" "$filepath")
       else
-        dumpfiles_dir=$(database_get_dumpfiles_directory "$LOCAL_ENV_ID" "$DATABASE_ID")
+        pull_dir=$(database_get_dumpfiles_directory "$REMOTE_ENV_ID" "$DATABASE_ID")
+        backups_dir=$(database_get_dumpfiles_directory "$LOCAL_ENV_ID" "$DATABASE_ID")
         table_clear
-        table_add_row "export directory" "$dumpfiles_dir"
+        table_add_row "$REMOTE_ENV_ID" "$(path_unresolve "$PWD" "$pull_dir")"
+        table_add_row "$LOCAL_ENV_ID" "$(path_unresolve "$PWD" "$backups_dir")"
         echo; echo_slim_table
 
         choose__array=()
         # http://mywiki.wooledge.org/ParsingLs
+        for i in "${pull_dir%/}"/*$filepath*.sql*; do
+          [[ -f "$i" ]] && choose__array=("${choose__array[@]}" "$(path_unresolve "$PWD" "$i")")
+        done
         for i in *$filepath*.sql*; do
           [[ -f "$i" ]] && choose__array=("${choose__array[@]}" "$i")
         done
-        for i in "${dumpfiles_dir%/}"/*$filepath*.sql*; do
+        for i in "${backups_dir%/}"/*$filepath*.sql*; do
           [[ -f "$i" ]] && choose__array=("${choose__array[@]}" "$(path_unresolve "$PWD" "$i")")
         done
         ! shortpath=$(choose "Type the number of the file to import") && exit_with_failure "Import cancelled."
-        filepath=${PWD%/}/${shortpath#/}
+        filepath=$(path_resolve "${PWD%/}" "$shortpath")
         echo
       fi
-
       if [[ ! -f "$filepath" ]]; then
-        fail_because "$shortpath does not exit" && return 1
+        fail_because "$shortpath does not exit"
       else
         # TODO These rollback functions need to be in database.sh
         source "$PLUGINS_DIR/mysql/mysql.sh"

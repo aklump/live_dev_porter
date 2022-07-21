@@ -45,7 +45,6 @@ workflows:
         - 'cache*'
         - batch
         - config_import
-        - config
         - config_snapshot
         - key_value_expire
         - sessions

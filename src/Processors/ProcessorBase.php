@@ -149,6 +149,12 @@ abstract class ProcessorBase {
 
   public function query(string $statement) {
 
+    // TODO Copy the code from processor_support.sh
+//    if [[ "$ENVIRONMENT_ID" != "$LOCAL_ENV_ID" ]]; then
+//    write_log_error "query() can only be used in the \"$LOCAL_ENV_ID\" environment."
+//    return 1
+  fi
+
   }
 
 }

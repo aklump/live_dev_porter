@@ -1,24 +1,36 @@
 #!/usr/bin/env bash
 
 
-# Query the current database being processed.
+# Query the current database being processed and echo a message.
 #
-# The result can be seen in the file indicated by $query_result, which is a
-# filepath.
+# If the result succeeded the query will be echoed.  If it failed, it will be
+# preceded by "Failed query: ..."  This behavior is consistent with plugins
+# providing feedback via echo.
+#
+# The result of the query can be seen in the file indicated by $query_result,
+# which is a filepath.
 #
 # $1 - The SQL statement to execute.
 #
-# Returns 0 if successful; 1 otherwise.
+# Returns 0 if successful and echos query; 1 otherwise and echos failure message.
 function query() {
   local query="$1"
+
+  local feedback
+  eval $(get_config_as "write_access" "environments.$ENVIRONMENT_ID.write_access" false)
+  if [[ "$write_access" != true ]]; then
+    feedback="query() can only be used if the environment \"$ENVIRONMENT_ID\" has write_access, you must change your configuration to allow this."
+    write_log_error "$feedback"
+    throw "$feedback;$0;in function ${FUNCNAME}();$LINENO"
+  fi
 
   local defaults_file
   local db_name
   query_result="$CACHE_DIR/database_result.sql"
   defaults_file=$(database_get_defaults_file "$ENVIRONMENT_ID" "$DATABASE_ID")
   db_name=$(database_get_name "$ENVIRONMENT_ID" "$DATABASE_ID") || return 1
-  mysql --defaults-file="$defaults_file" "$db_name" -e "$query" > "$query_result" || return 1
+  ! mysql --defaults-file="$defaults_file" "$db_name" -e "$query" > "$query_result" && "Failed query: $query" && return 1
   # This removes the header row
   tail -n +2 "$query_result" > "$query_result.tmp" && mv "$query_result.tmp" "$query_result"
-  return 0
+  echo "$query" && return 0
 }
