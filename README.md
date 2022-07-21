@@ -15,13 +15,21 @@ Simplifies the management and transfer of assets between website environments.
 
 ## Quick Start
 
-- Require in your project using `composer require aklump/live-dev-porter`
-- Ensure execute permissions: `chmod u+x ./vendor/bin/ldp`
-- (To migrate from Loft Deploy use, `./vendor/bin/ldp config-migrate ./.loft_deploy`, otherwise...)
-- Initialize your project using `./vendor/bin/ldp init`
-- Open _.live_dev_porter/config.yml_ and modify as needed.
-- **Ensure _config.local.yml_ is ignored by your SCM!**
-- Open _.live_dev_porter/config.local.yml_ and define the correct `local` and `remote` environment IDs as defined in _config.yml_.
+1. Require in your project using `composer require aklump/live-dev-porter`
+2. Ensure execute permissions: `chmod u+x ./vendor/bin/ldp`
+3. Initialize your project using `./vendor/bin/ldp init`
+4. (To migrate from Loft Deploy jump below...)
+5. Open _.live_dev_porter/config.yml_ and modify as needed.
+6. **Ensure _config.local.yml_ is ignored by your SCM!**
+7. Open _.live_dev_porter/config.local.yml_ and define the correct `local` and `remote` environment IDs as defined in _config.yml_.
+8. Run `./vendor/bin/ldp configtest` and work through any failed tests.
+
+### Migrating from Loft Deploy?
+
+1. `rm .live_dev_porter/config.yml`
+2. `./vendor/bin/ldp config-migrate`
+3. Rewrite any hooks as processors.
+4. Return to where you left off above.
 
 ### Optional Shorthand `ldp` instead of `./vendor/bin/ldp`
 
