@@ -74,9 +74,11 @@ function mysql_on_database_name() {
 #
 # Returns nothing.
 function mysql_on_configtest() {
-  local defaults_file
   local db_name
+  local defaults_file
+  local ldp_pull_command
   local message
+
   for database_id in "${LOCAL_DATABASE_IDS[@]}"; do
     defaults_file=$(database_get_defaults_file "$LOCAL_ENV_ID" "$database_id")
     ! db_name=$(database_get_name "$LOCAL_ENV_ID" "$database_id") && echo_fail "$db_name" && fail
@@ -90,16 +92,21 @@ function mysql_on_configtest() {
   done
 
   # Check if remote has an export tool installed.
-  if [[ "$REMOTE_ENV_ID" != null ]]; then
-    remote_base_path="$(environment_path_resolve $REMOTE_ENV_ID)"
-    echo_task "Ensure remote has export tool installed."
-    if remote_ssh "[[ -e "$remote_base_path"/vendor/bin/ldp ]] || [[ -e "$remote_base_path"/vendor/bin/loft_deploy.sh ]]"  &> /dev/null; then
+  for environment_id in "${ENVIRONMENT_IDS[@]}"; do
+    ! is_remote_environment "$environment_id" && continue
+
+    eval $(get_config_as env_label "environments.$environment_id.label")
+    remote_base_path="$(environment_path_resolve $environment_id)"
+    ldp_pull_command="ldp pull $environment_id"
+    [[ "$environment_id" == "$REMOTE_ENV_ID" ]] && ldp_pull_command="ldp pull"
+    echo_task "Check \"$ldp_pull_command\" availability."
+    if remote_ssh "[[ -e "$remote_base_path"/vendor/bin/ldp ]]" &> /dev/null; then
       echo_task_completed
     else
       echo_task_failed
-      fail
+      fail_because "${remote_base_path%/}/vendor/bin/ldp is missing from $environment_id."
     fi
-  fi
+  done
 }
 
 # Enter a local database shell

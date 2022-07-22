@@ -7,64 +7,90 @@
 
 # Check if a remote path exists
 #
-# $1 - The path on the remote server; relative will be resolved to remote base_path.
+# $1 - The (remote) environment ID.
+# $2 - The path on the remote server; relative will be resolved to remote base_path.
 #
 # Returns 0 if exist; 1 if not.
 function _test_remote_path() {
-  local remote_path="$1"
+  local environment_id="$1"
+  local remote_path="$2"
 
-  remote_path=$(environment_path_resolve "$REMOTE_ENV_ID" "$remote_path") || return 1
-  remote_ssh [ -e "$remote_path" ] &> /dev/null && return 0
+  remote_path=$(environment_path_resolve "$environment_id" "$remote_path") || return 1
+  remote_ssh_by_environment "$environment_id" [ -e "$remote_path" ] &> /dev/null && return 0
   return 1
 }
 
 function default_on_configtest() {
-  local assert
-
-  [[ "$REMOTE_ENV_ID" == null ]] && return 255
+  local did_connect
   local directory_path
-  # Test remote connection
-  echo_task "Able to connect to $REMOTE_ENV_ID server."
-  local did_connect=false
-  # @link https://unix.stackexchange.com/a/264477
-  remote_ssh pwd &> /dev/null && did_connect=true
-  if [[ false == "$did_connect" ]]; then
-    echo_task_failed
-    fail_because "Check $REMOTE_ENV_ID host and user config."
-  else
-    echo_task_completed
-  fi
-
-  # Test remote base_path
-  echo_task "$(string_ucfirst "$REMOTE_ENV_ID") base path exists."
-  local exists=false
-  if _test_remote_path; then
-    echo_task_completed
-  else
-    echo_task_failed
-    fail_because "Check \"$remote_base_path\" on $REMOTE_ENV_ID."
-  fi
-
-  # Test for ionice on remote server
-  echo_task "Assert \"ionice\" is installed on $REMOTE_ENV_ID."
-  remote_ssh "which ionice >/dev/null" &> /dev/null && echo_task_completed || echo_task_failed
+  local exits
+  local file_group_path
+  local file_group_shortpath
+  local heading
+  local is_remote
 
   # Test for file sync groups.
   for environment_id in "${ENVIRONMENT_IDS[@]}"; do
+    is_remote_environment "$environment_id" && is_remote=true || is_remote=''
+    eval $(get_config_as env_label "environments.$environment_id.label")
+    [[ "$is_remote" ]] && heading="Remote" || heading="Local"
+    echo
+    echo_heading "$heading Environment: $env_label"
+
+    if [[ "$is_remote" ]]; then
+      # Test remote connection
+      echo_task "Able to connect to $environment_id server."
+      did_connect=false
+      # @link https://unix.stackexchange.com/a/264477
+      remote_ssh_by_environment "$environment_id" pwd &> /dev/null && did_connect=true
+      if [[ false == "$did_connect" ]]; then
+        echo_task_failed
+        fail_because "Check $environment_id host and user config."
+      else
+        echo_task_completed
+      fi
+
+      # Test remote base_path
+      echo_task "$(string_ucfirst "$environment_id") base path exists."
+      exists=false
+      if _test_remote_path "$environment_id"; then
+        echo_task_completed
+      else
+        echo_task_failed
+        fail_because "Check \"$remote_base_path\" on $environment_id."
+      fi
+
+      # Test for ionice on remote server
+      echo_task "Assert \"ionice\" is installed on $environment_id."
+      if remote_ssh "which ionice >/dev/null" &> /dev/null; then
+        echo_task_completed
+      else
+        echo_task_failed
+        fail_because "ionice is missing and performance of the $environment_id server can be affected during some commands like pull, export, and import."
+        fail_because "Learn more at: https://www.tiger-computing.co.uk/linux-tips-nice-and-ionice"
+      fi
+    fi
+
     eval $(get_config_keys_as group_ids "environments.$environment_id.files")
     for group_id in "${group_ids[@]}"; do
       eval $(get_config_as -a file_group_directories "environments.$environment_id.files.$group_id")
       for file_group_directory in "${file_group_directories[@]}"; do
 
-        # Create a nice message
-#        assert="$(string_ucfirst "$environment_id"), files group: $group_id directory exists: $file_group_directory"
-
-        # Create local directories if they don't exist to prevent failure.
         file_group_path="$(environment_path_resolve "$environment_id" "$file_group_directory")"
-        echo_task "$(string_ucfirst $environment_id) file group $group_id exists: $file_group_path"
-        if [[ "$environment_id" == "$REMOTE_ENV_ID" ]] && _test_remote_path "$file_group_directory"; then
+
+        # Sometimes the path ends in foo/./
+        file_group_shortpath=${file_group_path%/}
+        file_group_shortpath=${file_group_shortpath%.}
+        file_group_shortpath=${file_group_shortpath%/}
+
+        echo_task "$(string_ucfirst $environment_id) file group \"$group_id\" exists: $file_group_shortpath"
+
+        if [[ "$is_remote" ]] && _test_remote_path "$environment_id" "$file_group_directory"; then
           echo_task_completed
+
+        # ... it does not, so it's a local one.
         else
+          # Create local directories if they don't exist to prevent failure.
           if [[ -e "$file_group_path" ]] || mkdir -p "$file_group_path"; then
             echo_task_completed
           else

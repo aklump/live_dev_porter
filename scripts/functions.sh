@@ -238,6 +238,18 @@ function implement_route_access() {
   return 0
 }
 
+# Test if a given environment is remote.
+#
+# $1 - The environment ID.
+#
+# Returns 0 if remote. 1 if local.
+function is_remote_environment() {
+  local environment_id="$1"
+
+  eval $(get_config_as env_auth "environments.$environment_id.ssh")
+  [[ "$env_auth" ]] && return 0 || return 1
+}
+
 # Resolve an environment relative path to absolute
 #
 # $1 - The environment ID.
@@ -308,14 +320,27 @@ function implement_configtest() {
   has_failed && fail_because "Use 'init' to create configuration files"
 }
 
+# Connect to the default remote environment.
 #
 # If you use ssh -o “BatchMode yes”, then it will do ssh only if the
 # password-less login is enabled, else it will return error and continues.
-# $1 -
 #
 # Returns 0 if .
 function remote_ssh() {
   ssh -t -o BatchMode=yes "${REMOTE_ENV_AUTH%:}" "$@"
+}
+
+# Connect to a remote environment by ID.
+#
+# $1 - The (remote) environment ID.
+#
+# Returns 0 if .
+function remote_ssh_by_environment() {
+  local environment_id="$1"
+
+  eval $(get_config_as env_auth "environments.$environment_id.ssh")
+  [[ "$env_auth" ]] || return 1
+  ssh -t -o BatchMode=yes "$env_auth" "${@:2}"
 }
 
 function echo_time_heading() {
