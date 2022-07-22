@@ -3,7 +3,7 @@
 # Remove the mysql.*.cnf files from the cache directory
 #
 # Returns 0 if successful, 1 otherwise.
-function env_on_clear_cache() {
+function drupal_on_clear_cache() {
   database_delete_all_defaults_files || return 1
   database_delete_all_name_files || return 1
   return 0
@@ -12,7 +12,7 @@ function env_on_clear_cache() {
 # Rebuild configuration files after a cache clear.
 #
 # Returns 0 if successful, 1 otherwise.
-function env_on_rebuild_config() {
+function drupal_on_rebuild_config() {
   local db_pointer
   local directory
   local filepath
@@ -26,14 +26,14 @@ function env_on_rebuild_config() {
   for database_id in "${database_ids[@]}"; do
     db_pointer="environments.$LOCAL_ENV_ID.databases.${database_id}"
     eval $(get_config_as "plugin" "$db_pointer.plugin")
-    [[ "$plugin" != 'env' ]] && continue;
+    [[ "$plugin" != 'drupal' ]] && continue;
 
-    eval $(get_config_path_as "path" "$db_pointer.path")
-    exit_with_failure_if_config_is_not_path "path" "$db_pointer.path"
+    eval $(get_config_path_as "settings" "$db_pointer.settings")
+    exit_with_failure_if_config_is_not_path "settings" "$db_pointer.settings"
 
-    eval $(get_config_as "var" "$db_pointer.var")
-    exit_with_failure_if_empty_config "var" "$db_pointer.var"
-    ! result=$($CLOUDY_PHP "$PLUGINS_DIR/env/env.php" "$path" "$var") && exit_with_failure "$result"
+    eval $(get_config_path_as "database" "$db_pointer.database" "default")
+
+    ! result=$($CLOUDY_PHP "$PLUGINS_DIR/drupal/drupal.php" "$settings" "$database") && exit_with_failure "$result"
     json_set "$result"
 
     filepath=$(database_get_defaults_file "$LOCAL_ENV_ID" "$database_id")
@@ -71,7 +71,7 @@ function env_on_rebuild_config() {
 }
 
 # @see database_get_name
-function env_on_database_name() {
+function drupal_on_database_name() {
   local environment_id="$1"
   local database_id="$2"
 
@@ -81,23 +81,23 @@ function env_on_database_name() {
   [[ ! -f "$filepath" ]] && echo "Missing database name; try clearing caches." && return 1
   db_name=$(cat "$filepath")
   [[ "$db_name" ]] && echo "$db_name" && return 0
-  echo "Env plugin cannot determine the database name." && return 1
+  echo "Drupal plugin cannot determine the database name." && return 1
 }
 
-function env_on_configtest() {
+function drupal_on_configtest() {
   local run_our_tests
   run_our_tests=false
   eval $(get_config_keys_as "database_ids" "environments.$LOCAL_ENV_ID.databases")
   for database_id in "${database_ids[@]}"; do
     eval $(get_config_as "plugin" "environments.$LOCAL_ENV_ID.databases.${database_id}.plugin")
-    [[ "$plugin" == 'env' ]] && run_our_tests=true && break
+    [[ "$plugin" == 'drupal' ]] && run_our_tests=true && break
   done
   [[ "$run_our_tests" == false ]] && return 255
 
   for database_id in "${database_ids[@]}"; do
     local db_pointer="environments.$LOCAL_ENV_ID.databases.${database_id}"
-    eval $(get_config_path_as "path" "$db_pointer.path")
-    echo_task "Able to read dotenv file for $LOCAL_ENV_ID database: $database_id."
+    eval $(get_config_path_as "path" "$db_pointer.settings")
+    echo_task "Able to read settings.php file for $LOCAL_ENV_ID database: $database_id."
     if [[ ! -f "$path" ]]; then
       echo_task_failed && fail
     else
@@ -107,15 +107,15 @@ function env_on_configtest() {
 
   call_plugin mysql configtest "$@"
 }
-function env_on_db_shell() {
+function drupal_on_db_shell() {
   call_plugin mysql db_shell "$@"
 }
-function env_on_export_db() {
+function drupal_on_export_db() {
   call_plugin mysql export_db "$@"
 }
-function env_on_import_db() {
+function drupal_on_import_db() {
   call_plugin mysql import_db "$@"
 }
-function env_on_pull_db() {
+function drupal_on_pull_db() {
   call_plugin mysql pull_db "$@"
 }
