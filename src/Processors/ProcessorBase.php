@@ -177,7 +177,16 @@ abstract class ProcessorBase {
       throw new ProcessorFailedException(sprintf('Failed to save: %s', $this->config['FILEPATH']));
     }
     if ($move && $move !== $this->config['FILEPATH']) {
+
       $result = rename($this->config['FILEPATH'], $move);
+      if (FALSE === $result) {
+        // It's possible that the permissions on this directory were rsynced in
+        // without write access, in which case the rename will fail.  This step
+        // handles that.  I've chosen to only change perms when we need it since
+        // we will be assuming the *55 part.
+        chmod(dirname($move), 0755);
+        $result = rename($this->config['FILEPATH'], $move);
+      }
       if (FALSE === $result) {
         throw new ProcessorFailedException(sprintf("Could not move file to: %s", $move));
       }
