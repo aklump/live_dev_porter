@@ -230,9 +230,11 @@ case $COMMAND in
       ;;
 
     "remote")
+      eval $(get_config_as label "environments.$REMOTE_ENV_ID.label")
+      echo_title "Connection to $label ($REMOTE_ENV_ID)"
       call_plugin default remote_shell || fail
       has_failed && exit_with_failure
-      exit_with_success_elapsed
+      exit_with_success "You were connected for $(echo_elapsed)"
       ;;
 
     "db")
@@ -351,10 +353,10 @@ case $COMMAND in
       [[ "$has_files" == true ]] && [[ "$do_files" == true ]] && array_csv__array=("${array_csv__array[@]}" "files")
 
       eval $(get_config_as label "environments.$LOCAL_ENV_ID.label")
-      echo_title "$label"
+      echo_title "$label ($LOCAL_ENV_ID)"
 
       eval $(get_config_as label "environments.$REMOTE_ENV_ID.label")
-      echo_title "Pull $(array_csv --prose) from $label"
+      echo_title "Pull $(array_csv --prose) from $label ($REMOTE_ENV_ID)"
       [[ "$WORKFLOW_ID" ]] && echo_heading "Using workflow: $WORKFLOW_ID"
 
       if [[ "$has_db" == false ]] && [[ "$has_files" == false ]]; then
