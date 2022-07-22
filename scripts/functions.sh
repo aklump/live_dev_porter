@@ -238,7 +238,7 @@ function implement_route_access() {
   return 0
 }
 
-# Test if a given environment is remote.
+# Test if an environment has SSH credentials indicating it's a remote.
 #
 # $1 - The environment ID.
 #

@@ -31,7 +31,10 @@ function default_on_configtest() {
 
   # Test for file sync groups.
   for environment_id in "${ENVIRONMENT_IDS[@]}"; do
-    is_remote_environment "$environment_id" && is_remote=true || is_remote=''
+    is_remote=''
+    if [[ "$LOCAL_ENV_ID" != "$environment_id" ]] && is_remote_environment "$environment_id"; then
+      is_remote=true
+    fi
     eval $(get_config_as env_label "environments.$environment_id.label")
     [[ "$is_remote" ]] && heading="Remote" || heading="Local"
     echo
