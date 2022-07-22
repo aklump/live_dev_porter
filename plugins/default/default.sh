@@ -85,8 +85,8 @@ function default_on_configtest() {
 
         echo_task "$(string_ucfirst $environment_id) file group \"$group_id\" exists: $file_group_shortpath"
 
-        if [[ "$is_remote" ]] && _test_remote_path "$environment_id" "$file_group_directory"; then
-          echo_task_completed
+        if [[ "$is_remote" ]]; then
+          _test_remote_path "$environment_id" "$file_group_directory" && echo_task_completed || echo_task_failed
 
         # ... it does not, so it's a local one.
         else
