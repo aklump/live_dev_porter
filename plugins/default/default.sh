@@ -120,7 +120,11 @@ function default_on_pull_files() {
   local destination_base
 
   # @link https://linux.die.net/man/1/rsync
-  local base_rsync_options="-az --copy-unsafe-links --size-only --delete"
+  # @link https://stackoverflow.com/a/4114979/3177610 (chmod) File permissions
+  # if not properly set on the receiving end will wreak havoc during processing,
+  # renaming, etc.  Therefor we ensure the user caen read and write at this
+  # point.  It sets up for success.
+  local base_rsync_options="-az --copy-unsafe-links --size-only --delete --chmod=u+rw"
   has_option v && base_rsync_options="$base_rsync_options --progress"
   if has_option "dry-run"; then
     echo_yellow_highlight "This is only a preview.  Remove --dry-run to copy files."

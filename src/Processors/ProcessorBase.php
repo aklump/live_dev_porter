@@ -152,25 +152,6 @@ abstract class ProcessorBase {
   }
 
   /**
-   * Set user write permissions on $filepath if necessary.
-   *
-   * @param string $filepath
-   *
-   * @return bool
-   */
-  private function ensureUserWritePermissions(string $filepath) {
-    $u = substr(sprintf('%o', fileperms($filepath)), -3, 1);
-    if ($u < 6) {
-      $go = substr(sprintf('%o', fileperms($filepath)), -2);
-      if (!chmod($filepath, intval("06$go"))) {
-        throw new ProcessorFailedException("Could not ensure user write permissions on $filepath");
-      }
-    }
-
-    return TRUE;
-  }
-
-  /**
    * Save any loaded file changes.
    *
    * @param string $move
@@ -190,13 +171,11 @@ abstract class ProcessorBase {
     if (!$is_moving && $this->loadedFile['contents'] === $this->loadedFile['original']) {
       return FALSE;
     }
-    $this->ensureUserWritePermissions($this->config['FILEPATH']);
     $save_result = file_put_contents($this->config['FILEPATH'], $this->loadedFile['contents']);
     if (FALSE === $save_result) {
       throw new ProcessorFailedException(sprintf('Failed to save: %s', $this->config['FILEPATH']));
     }
     if ($move && $move !== $this->config['FILEPATH']) {
-      $this->ensureUserWritePermissions($move);
       $move_result = rename($this->config['FILEPATH'], $move);
       if (FALSE === $move_result) {
         throw new ProcessorFailedException(sprintf("Could not move file to: %s", $move));
