@@ -262,11 +262,12 @@ case $COMMAND in
         echo_time_heading
       fi
 
-      # This will create a quick link for the user to "open in Finder"
-      dumpfiles_dir=$(database_get_dumpfiles_directory "$LOCAL_ENV_ID" "$DATABASE_ID")
       table_clear
-      table_add_row "export directory" "$backups_dir"
-      [[ "$JSON_RESPONSE" != true ]] && echo_slim_table
+      export_directory="$(database_get_dumpfiles_directory "$LOCAL_ENV_ID" "$DATABASE_ID")"
+      export_directory_shortpath="$(path_unresolve "$PWD" "$export_directory")"
+      # This will create a quick link for the user to "open in Finder"
+      table_add_row "export directory" "$export_directory_shortpath"
+      [[ "$JSON_RESPONSE" != true ]] && echo && echo_slim_table
       call_plugin $plugin export_db "$DATABASE_ID" "$filename" || fail
       if has_failed; then
         [[ "$JSON_RESPONSE" == true ]] && exit_with_failure_code_only
@@ -282,8 +283,8 @@ case $COMMAND in
         echo -n "$(json_get_value "filepath")"
         exit_with_success_code_only
       fi
-      echo_time_heading
       has_failed && exit_with_failure "Failed to export database."
+      echo_time_heading
       exit_with_success_elapsed "Database exported."
     ;;
 
@@ -352,8 +353,8 @@ case $COMMAND in
       [[ "$has_db" == true ]] && [[ "$do_database" == true ]] && array_csv__array=("${array_csv__array[@]}" "databases")
       [[ "$has_files" == true ]] && [[ "$do_files" == true ]] && array_csv__array=("${array_csv__array[@]}" "files")
 
-      eval $(get_config_as label "environments.$LOCAL_ENV_ID.label")
-      echo_title "$label ($LOCAL_ENV_ID)"
+#      eval $(get_config_as label "environments.$LOCAL_ENV_ID.label")
+#      echo_title "$label ($LOCAL_ENV_ID)"
 
       eval $(get_config_as label "environments.$REMOTE_ENV_ID.label")
       echo_title "Pull $(array_csv --prose) from $label ($REMOTE_ENV_ID)"
