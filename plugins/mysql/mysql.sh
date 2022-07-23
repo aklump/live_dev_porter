@@ -334,6 +334,7 @@ function mysql_on_pull_db() {
 
   local remote_base_path
   local remote_cmd
+  local remote_json
   local remote_dumpfile_path
   local remote_ldp_options
 
@@ -350,10 +351,9 @@ function mysql_on_pull_db() {
 
   # Create the export at the remote.
   remote_base_path="$(environment_path_resolve $REMOTE_ENV_ID)"
-  write_log_debug "remote_ssh \"cd $remote_base_path || exit 1;[[ -e ./vendor/bin/ldp ]] || exit 2; ./vendor/bin/ldp export pull --force --json --id="$DATABASE_ID"$remote_ldp_options || exit 3\""
-  remote_dumpfile_path=$(remote_ssh "cd $remote_base_path || exit 1;[[ -e ./vendor/bin/ldp ]] || exit 2; ./vendor/bin/ldp export pull --force --json --id="$DATABASE_ID"$remote_ldp_options || exit 3")
+  write_log_debug "remote_ssh \"cd $remote_base_path || exit 1;[[ -e ./vendor/bin/ldp ]] || exit 2; ./vendor/bin/ldp export pull --force --format=json --id="$DATABASE_ID"$remote_ldp_options || exit 3\""
+  remote_json=$(remote_ssh "cd $remote_base_path || exit 1;[[ -e ./vendor/bin/ldp ]] || exit 2; ./vendor/bin/ldp export pull --force --format=json --id="$DATABASE_ID"$remote_ldp_options || exit 3")
   remote_status=$?
-
   [[ $remote_status -eq 1 ]] && echo_task_failed && fail_because "$remote_base_path does not exist." && return 1
   [[ $remote_status -eq 2 ]] && echo_task_failed && fail_because "$remote_base_path/vendor/bin/ldp is missing or does not have execute permissions." && return 1
   [[ $remote_status -eq 3 ]] && echo_task_failed && fail_because "Remote export failed" && return 1
@@ -361,6 +361,8 @@ function mysql_on_pull_db() {
   echo_time_heading
 
   # Download the dumpfile.
+  json_set "$remote_json"
+  remote_dumpfile_path="$(json_get "filepath")"
   local save_as="$dumpfiles_dir/$(basename "$remote_dumpfile_path")"
   echo_task "Download as $(basename "$save_as")"
   ! scp "${REMOTE_ENV_AUTH}$remote_dumpfile_path" "$save_as" &> /dev/null && echo_task_failed && return 1

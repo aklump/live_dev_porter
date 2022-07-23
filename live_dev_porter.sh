@@ -206,7 +206,7 @@ fi
 implement_cloudy_basic
 implement_route_access
 
-has_option 'json' && JSON_RESPONSE=true
+[[ "$(get_option format)" == "json" ]] && JSON_RESPONSE=true
 
 # Handle other commands.
 case $COMMAND in
@@ -280,7 +280,7 @@ case $COMMAND in
 
       if [[ "$JSON_RESPONSE" == true ]]; then
         has_failed && exit_with_failure_code_only
-        echo -n "$(json_get_value "filepath")"
+        json_get
         exit_with_success_code_only
       fi
       has_failed && exit_with_failure "Failed to export database."
