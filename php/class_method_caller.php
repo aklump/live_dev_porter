@@ -22,8 +22,11 @@ $config = [];
 parse_str($query_string, $config);
 try {
   list($class, $method) = explode('::', $callback);
-  if (!class_exists($class) && isset($config['autoload']) && file_exists($config['autoload'] . "/$class.php")) {
-    require_once $config['autoload'] . "/$class.php";
+  if (!class_exists($class)
+    && isset($config['autoload'])
+    && ($basename = $config['autoload'] . '/' . ltrim($class, '\\') . '.php')
+    && file_exists($basename)) {
+    require_once $basename;
   }
   $cloudy_config = json_decode(getenv('CLOUDY_CONFIG_JSON'), TRUE) ?? [];
   $method_reflection = new ReflectionMethod($callback);
