@@ -60,7 +60,8 @@ trait EnvTrait {
     $this->loadedFile['contents'] = preg_replace_callback('/(' . preg_quote($variable_name) . '=)(.+)$/m', function ($matches) use ($replace_with) {
       $url = parse_url($matches[2]);
       $url['pass'] = $replace_with;
-      $replace = sprintf('%s://%s:%s@%s%s', $url['scheme'], $url['user'], $url['pass'], $url['host'], $url['path']);
+      $host_port = rtrim($url['host'] . ':' . ($url['port'] ?? ''), ':');
+      $replace = sprintf('%s://%s:%s@%s%s', $url['scheme'], $url['user'], $url['pass'], $host_port, $url['path']);
 
       return str_replace($matches[2], $replace, $matches[0]);
     }, $this->loadedFile['contents']);

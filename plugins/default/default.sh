@@ -40,6 +40,22 @@ function default_on_configtest() {
     echo
     echo_heading "$heading Environment: $env_label"
 
+    # Test for all CLI tool dependencies.
+    tools=('gzip' 'mysqldump' 'mysql')
+    for tool in "${tools[@]}"; do
+      echo_task "$(string_ucfirst "$environment_id") has \"$tool\" installed."
+      if [[ "$is_remote" ]]; then
+        remote_ssh_by_environment "$environment_id" which $tool > /dev/null
+      else
+        which $tool > /dev/null
+      fi
+      if [[ $? -gt 0 ]]; then
+        echo_task_failed && fail_because "Is the directory containing $tool found in your \$PATH variable on $environment_id?"
+      else
+        echo_task_completed
+      fi
+    done
+
     if [[ "$is_remote" ]]; then
       # Test remote connection
       echo_task "Able to connect to $environment_id server."
@@ -115,12 +131,13 @@ function default_on_remote_shell() {
 }
 
 function default_on_pull_files() {
-  local source
   local destination
-  local include_from
-  local exclude_from
-  local source_base
   local destination_base
+  local exclude_from
+  local include_from
+  local source
+  local source_base
+  local stat_arguments
 
   # @link https://linux.die.net/man/1/rsync
   # @link https://stackoverflow.com/a/4114979/3177610 (chmod) File permissions
@@ -160,6 +177,10 @@ function default_on_pull_files() {
     eval $(get_config_as destination "environments.$LOCAL_ENV_ID.files.$FILES_GROUP_ID")
 
     if [[ "$source" ]] && [[ "$destination" ]]; then
+
+      stat_arguments="CACHE_DIR=$CACHE_DIR&COMMAND=pull&TYPE=2&ID=$FILES_GROUP_ID&SOURCE=$REMOTE_ENV_ID"
+      call_php_class_method "\AKlump\LiveDevPorter\Statistics::start" "$stat_arguments"
+
       rsync_options="$base_rsync_options"
       source_path=$(path_resolve "$source_base" "$source")
       destination_path=$(path_resolve "$destination_base" "$destination")
@@ -202,6 +223,8 @@ function default_on_pull_files() {
           done
           has_failed && return 1
         fi
+
+        call_php_class_method "\AKlump\LiveDevPorter\Statistics::stop" "$stat_arguments"
       fi
     fi
   done

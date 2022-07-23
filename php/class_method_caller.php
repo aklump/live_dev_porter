@@ -15,8 +15,10 @@
 
 require_once __DIR__ . '/../cloudy/php/bootstrap.php';
 
-$callback = $argv[1];
-$query_string = $argv[2];
+$method_args = $argv;
+array_shift($method_args);
+$callback = array_shift($method_args);
+$query_string = array_shift($method_args);
 
 $config = [];
 parse_str($query_string, $config);
@@ -31,11 +33,13 @@ try {
   $cloudy_config = json_decode(getenv('CLOUDY_CONFIG_JSON'), TRUE) ?? [];
   $method_reflection = new ReflectionMethod($callback);
   if ($method_reflection->isStatic()) {
-    $result = call_user_func_array($callback, [$config, $cloudy_config]);
+    $method_args[] = $config;
+    $method_args[] = $cloudy_config;
+    $result = call_user_func_array($callback, $method_args);
   }
   else {
     $instance = new $class($config, $cloudy_config);
-    $result = call_user_func_array([$instance, $method], []);
+    $result = call_user_func_array([$instance, $method], $method_args);
   }
   echo $result;
   exit(0);

@@ -10,7 +10,7 @@ CONFIG="live_dev_porter.core.yml";
 # Uncomment this line to enable file logging.
 #LOGFILE="live_dev_porter.core.log"
 
-# Call a php class method
+# Call a php class method as set success/failure status and messaging.
 #
 # $1 - The PHP class (not-static) method, e.g. "\SchemaBuilder::build".
 # $2 - An encoded query string.  This will be passed to the class constructor
@@ -23,7 +23,7 @@ function call_php_class_method() {
   local query_string="$2"
 
   export CLOUDY_CONFIG_JSON
-  message="$($CLOUDY_PHP "$ROOT/php/class_method_caller.php" "$callback" "$query_string")"
+  message="$($CLOUDY_PHP "$ROOT/php/class_method_caller.php" "$callback" "$query_string" "${@:3}")"
   status=$?
   if [[ $status -ne 0 ]]; then
     fail_because "$message"
@@ -31,6 +31,22 @@ function call_php_class_method() {
   elif [[ "$message" ]]; then
     succeed_because "$message"
   fi
+}
+
+# Echo the return value of a php class method
+#
+# $1 - The PHP class (not-static) method, e.g. "\SchemaBuilder::build".
+# $2 - An encoded query string.  This will be passed to the class constructor
+# as the first argument.  Note: The class constructor will receive cloudy config
+# as the second argument; see caller.php for more info.
+#
+# Returns 0 if .
+function echo_php_class_method() {
+  local callback="$1"
+  local query_string="$2"
+
+  export CLOUDY_CONFIG_JSON
+  $CLOUDY_PHP "$ROOT/php/class_method_caller.php" "$callback" "$query_string" "${@:3}"
 }
 
 function on_pre_config() {
@@ -96,6 +112,7 @@ s="${BASH_SOURCE[0]}";while [ -h "$s" ];do dir="$(cd -P "$(dirname "$s")" && pwd
 validate_input || exit_with_failure "Input validation failed."
 
 COMMAND=$(get_command)
+
 case $COMMAND in
     "config-migrate")
       echo_title "Migrate from Loft Deploy"
@@ -255,10 +272,16 @@ case $COMMAND in
       process_in_the_background
       filename=$(get_command_arg 0)
       DATABASE_ID=$(get_option 'id' $LOCAL_DATABASE_ID)
+
+      stat_arguments="CACHE_DIR=$CACHE_DIR&COMMAND=$COMMAND&TYPE=1&ID=$DATABASE_ID&SOURCE=$LOCAL_ENV_ID"
+      call_php_class_method "\AKlump\LiveDevPorter\Statistics::start" "$stat_arguments"
+
       eval $(get_config_as plugin "environments.$LOCAL_ENV_ID.databases.$DATABASE_ID.plugin")
       if [[ "$JSON_RESPONSE" != true ]]; then
         echo_title "Export $LOCAL_ENV_ID database \"$DATABASE_ID\""
         [[ "$WORKFLOW_ID" ]] && echo_heading "Using workflow: $WORKFLOW_ID"
+        time_estimate=$(echo_php_class_method "\AKlump\LiveDevPorter\Statistics::getDuration" "$stat_arguments")
+        [[ "$time_estimate" ]] && echo_heading "Time estimate: $time_estimate"
         echo_time_heading
       fi
 
@@ -285,6 +308,8 @@ case $COMMAND in
       fi
       has_failed && exit_with_failure "Failed to export database."
       echo_time_heading
+
+      call_php_class_method "\AKlump\LiveDevPorter\Statistics::stop" "$stat_arguments"
       exit_with_success_elapsed "Database exported."
     ;;
 
@@ -294,10 +319,10 @@ case $COMMAND in
       process_in_the_background
       filepath=$(get_command_arg 0)
       DATABASE_ID=$(get_option 'id' $LOCAL_DATABASE_ID)
+
       eval $(get_config_as plugin "environments.$LOCAL_ENV_ID.databases.$DATABASE_ID.plugin")
       echo_title "Replace Existing Data in $LOCAL_ENV_ID database \"$DATABASE_ID\""
       [[ "$WORKFLOW_ID" ]] && echo_heading "Using workflow: $WORKFLOW_ID"
-      echo_time_heading
 
       # Give the the user a select menu.
       if [[ -f "$filepath" ]]; then
@@ -328,6 +353,12 @@ case $COMMAND in
       if [[ ! -f "$filepath" ]]; then
         fail_because "$shortpath does not exit"
       else
+        stat_arguments="CACHE_DIR=$CACHE_DIR&COMMAND=$COMMAND&TYPE=1&ID=$DATABASE_ID&SOURCE=$(basename "$filepath")"
+        call_php_class_method "\AKlump\LiveDevPorter\Statistics::start" "$stat_arguments"
+        time_estimate=$(echo_php_class_method "\AKlump\LiveDevPorter\Statistics::getDuration" "$stat_arguments")
+        [[ "$time_estimate" ]] && echo_heading "Time estimate: $time_estimate"
+        echo_time_heading
+
         # TODO These rollback functions need to be in database.sh
         source "$PLUGINS_DIR/mysql/mysql.sh"
         mysql_create_local_rollback_file "$DATABASE_ID" || fail
@@ -340,6 +371,7 @@ case $COMMAND in
       fi
       echo_time_heading
       has_failed && exit_with_failure "Failed to import database."
+      call_php_class_method "\AKlump\LiveDevPorter\Statistics::stop" "$stat_arguments"
       exit_with_success_elapsed "$shortpath was imported to $DATABASE_ID"
     ;;
 
@@ -364,6 +396,37 @@ case $COMMAND in
         fail_because "Nothing to pull; neither \"databases\" nor \"files_group\" have been configured."
       fi
 
+      # Determine the estimated time for all pending tasks.  Note that if we
+      # don't have data for only one of the pending tasks, then we will not
+      # provide a total estimate, as the estimate would be missing data, hence
+      # the provide_estimate variable.
+      estimates=''
+      provide_estimate=true
+      if ! has_failed; then
+        if [[ "$do_database" == true ]] && "$has_db" != false ]]; then
+          for DATABASE_ID in "${LOCAL_DATABASE_IDS[@]}"; do
+            stat_arguments="CACHE_DIR=$CACHE_DIR&COMMAND=$COMMAND&TYPE=1&ID=$DATABASE_ID&SOURCE=$REMOTE_ENV_ID"
+            previous="$(echo_php_class_method "\AKlump\LiveDevPorter\Statistics::getDuration" "$stat_arguments")"
+            [[ ! "$previous" ]] && provide_estimate=false && break
+            estimates="$estimates,$previous" || estimates="$previous"
+          done
+        fi
+        if [[ "$provide_estimate" == true ]] && [[ "$do_files" == true ]] && "$has_files" != false ]]; then
+          eval $(get_config_keys_as group_ids "environments.$LOCAL_ENV_ID.files")
+          for FILES_GROUP_ID in ${group_ids[@]} ; do
+            has_option group && [[ "$(get_option group)" != "$FILES_GROUP_ID" ]] && continue
+            stat_arguments="CACHE_DIR=$CACHE_DIR&COMMAND=$COMMAND&TYPE=2&ID=$FILES_GROUP_ID&SOURCE=$REMOTE_ENV_ID"
+            previous="$(echo_php_class_method "\AKlump\LiveDevPorter\Statistics::getDuration" "$stat_arguments")"
+            [[ ! "$previous" ]] && provide_estimate=false && break;
+            estimates="$estimates,$previous" || estimates="$previous"
+          done
+        fi
+      fi
+      if [[ "$provide_estimate" == true ]]; then
+        time_estimate="$(echo_php_class_method "\AKlump\LiveDevPorter\Statistics::sumDurations" "$stat_arguments" "$estimates")"
+        [[ "$time_estimate" ]] && echo_heading "Time estimate: $time_estimate"
+      fi
+
       process_in_the_background
       if ! has_failed && [[ "$do_database" == true ]]; then
         if [[ "$has_db" == false ]]; then
@@ -375,6 +438,8 @@ case $COMMAND in
         else
           for DATABASE_ID in "${LOCAL_DATABASE_IDS[@]}"; do
             echo_heading "Database: $DATABASE_ID"
+            stat_arguments="CACHE_DIR=$CACHE_DIR&COMMAND=$COMMAND&TYPE=1&ID=$DATABASE_ID&SOURCE=$REMOTE_ENV_ID"
+            call_php_class_method "\AKlump\LiveDevPorter\Statistics::start" "$stat_arguments"
 
             # This will create a quick link for the user to "open in Finder"
             save_dir=$(database_get_dumpfiles_directory "$REMOTE_ENV_ID" "$DATABASE_ID")
@@ -390,6 +455,7 @@ case $COMMAND in
             echo
             eval $(get_config_as plugin "environments.$LOCAL_ENV_ID.databases.$DATABASE_ID.plugin")
             ! has_failed && call_plugin $plugin pull_db "$DATABASE_ID" || fail
+            ! has_failed && call_php_class_method "\AKlump\LiveDevPorter\Statistics::stop" "$stat_arguments"
           done
         fi
       fi

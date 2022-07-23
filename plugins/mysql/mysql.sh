@@ -362,7 +362,7 @@ function mysql_on_pull_db() {
 
   # Download the dumpfile.
   json_set "$remote_json"
-  remote_dumpfile_path="$(json_get "filepath")"
+  remote_dumpfile_path="$(json_get_value "filepath")"
   local save_as="$dumpfiles_dir/$(basename "$remote_dumpfile_path")"
   echo_task "Download as $(basename "$save_as")"
   ! scp "${REMOTE_ENV_AUTH}$remote_dumpfile_path" "$save_as" &> /dev/null && echo_task_failed && return 1
