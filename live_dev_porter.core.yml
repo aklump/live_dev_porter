@@ -1,7 +1,7 @@
 title: 'Live Dev Porter'
 name: 'Live Dev Porter'
 description: 'Simplifies the management and transfer of assets between website environments.'
-version: 0.0.62
+version: 0.0.63
 author: 'Aaron Klump <sourcecode@intheloftstudios.com>'
 config_path_base: ../../..
 path_to_app: .
@@ -82,7 +82,7 @@ commands:
         help: 'A workflow to use for export; this will be used instead of the configured default.'
       dir:
         type: string
-        help: Optional. An absolute path to an alternate, existing directory where the file will be saved.
+        help: 'Optional. An absolute path to an alternate, existing directory where the file will be saved.'
       format:
         type: string
         enum:
@@ -93,7 +93,7 @@ commands:
         help: 'Use force to overwrite an existing file, otherwise export will fail.'
       uncompressed:
         type: boolean
-        help: Do not compress the dumpfile.
+        help: 'Do not compress the dumpfile.'
   db:
     help: 'Enter the local database shell.'
     aliases:
