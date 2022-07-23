@@ -63,6 +63,9 @@ class LoftDeployMigrator {
         $databases = [];
         if ($conf('local.database')) {
           $database_id = $conf('local.database.name');
+          if (!$database_id) {
+            $database_id = $conf('local.database.lando');
+          }
           if (strstr($database_id, 'drupal')) {
             $database_id = 'drupal';
           }
@@ -237,8 +240,7 @@ class LoftDeployMigrator {
         }
 
         return $groups;
-      },
-      'bin' => $conf('bin'),
+      }
     ];
   }
 

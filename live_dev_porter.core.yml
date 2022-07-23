@@ -11,6 +11,7 @@ additional_config:
 additional_bootstrap: null
 default_command: help
 max_database_rollbacks_to_keep: 5
+delete_pull_dumpfiles: true
 plugins:
   mysql:
     mysqldump_base_options: [single-transaction, skip-lock-tables, no-tablespaces]

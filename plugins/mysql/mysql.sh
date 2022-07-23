@@ -334,10 +334,18 @@ function mysql_on_pull_db() {
   local remote_dumpfile_path
   local remote_ldp_options
 
-  # Create the export at the remote.
   echo_task "Export remote database: $DATABASE_ID"
   [[ "$WORKFLOW_ID" ]] && remote_ldp_options=" --workflow="$WORKFLOW_ID""
 
+  # Create the local destination for the dumpfile, doing this first allows the
+  # user output to be a valid link in some terminals so keep it first in the
+  # process.  That way the user can click the link and open the directory and
+  # watch the file download into it.
+  local dumpfiles_dir="$(database_get_dumpfiles_directory "$REMOTE_ENV_ID" "$DATABASE_ID")"
+  sandbox_directory "$dumpfiles_dir"
+  ! mkdir -p "$dumpfiles_dir" && fail_because "Could not create directory: $dumpfiles_dir" && return 1
+
+  # Create the export at the remote.
   remote_base_path="$(environment_path_resolve $REMOTE_ENV_ID)"
   write_log_debug "remote_ssh \"cd $remote_base_path || exit 1;[[ -e ./vendor/bin/ldp ]] || exit 2; ./vendor/bin/ldp export pull --json --id="$DATABASE_ID"$remote_ldp_options || exit 3\""
   remote_dumpfile_path=$(remote_ssh "cd $remote_base_path || exit 1;[[ -e ./vendor/bin/ldp ]] || exit 2; ./vendor/bin/ldp export pull --json --id="$DATABASE_ID"$remote_ldp_options || exit 3")
@@ -347,17 +355,14 @@ function mysql_on_pull_db() {
   [[ $remote_status -eq 2 ]] && echo_task_failed && fail_because "$remote_base_path/vendor/bin/ldp is missing or does not have execute permissions." && return 1
   [[ $remote_status -eq 3 ]] && echo_task_failed && fail_because "Remote export failed" && return 1
   echo_task_completed
-
-  # Create the local destination for the dumpfile...
-  local dumpfiles_dir="$(database_get_dumpfiles_directory "$REMOTE_ENV_ID" "$DATABASE_ID")"
-  sandbox_directory "$dumpfiles_dir"
-  ! mkdir -p "$dumpfiles_dir" && fail_because "Could not create directory: $dumpfiles_dir" && return 1
+  echo_time_heading
 
   # Download the dumpfile.
   local save_as="$dumpfiles_dir/$(basename "$remote_dumpfile_path")"
   echo_task "Download as $(basename "$save_as")"
   ! scp "${REMOTE_ENV_AUTH}$remote_dumpfile_path" "$save_as" &> /dev/null && echo_task_failed && return 1
   echo_task_completed
+  echo_time_heading
 
   # Delete the remote file
   echo_task "Delete remote file"
@@ -367,8 +372,17 @@ function mysql_on_pull_db() {
   # Do the rollback and import.
   mysql_create_local_rollback_file "$DATABASE_ID" || return 1
   mysql_on_import_db "$DATABASE_ID" "$save_as" || return 1
+  echo_time_heading
   eval $(get_config_as total_files_to_keep max_database_rollbacks_to_keep 5)
   mysql_prune_rollback_files "$DATABASE_ID" "$total_files_to_keep" || return 1
+
+  # Handle deleting the dumpfile if configured so.
+  eval $(get_config_as delete "delete_pull_dumpfiles" true)
+  if [[ "$delete" == true ]]; then
+    echo_task "Delete dumpfile"
+    sandbox_directory "$(dirname "$save_as")"
+    ! rm "$save_as" && echo_task_failed && return 1
+  fi
 
   if [[ "$WORKFLOW_ID" ]]; then
     execute_workflow_processors "$WORKFLOW_ID" || fail
