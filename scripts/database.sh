@@ -11,7 +11,7 @@
 # $2 - The database ID.
 #
 # Echos the directory WITHOUT trailing slash.
-function database_get_dumpfiles_directory() {
+function database_get_directory() {
   local environment_id="$1"
   local database_id="$2"
 
@@ -51,7 +51,21 @@ function database_get_export_tables() {
 
   defaults_file=$(database_get_defaults_file "$environment_id" "$database_id")
   write_log_debug "mysql --defaults-file="$defaults_file" -AN -e"$table_query""
-  mysql --defaults-file="$defaults_file" -AN -e"$table_query"
+  result=$(mysql --defaults-file="$defaults_file" -AN -e"$table_query")
+  [[ "$result" != NULL ]] && echo $result
+}
+
+# Determine if a given database is empty or has tables.
+#
+# $1 - The name of the database.
+#
+# Returns 0 if .
+function database_has_tables() {
+  local db_name="$1"
+
+  table_query="select table_name from information_schema.tables where table_schema=\"$db_name\""
+  result=$(mysql --defaults-file="$defaults_file" -AN -e"$table_query")
+  [[ "$result" ]] || return 1
 }
 
 # Build a tablename query accounting for workflow table exclusions.

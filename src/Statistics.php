@@ -51,7 +51,7 @@ final class Statistics {
     $this->load()
       ->set('start', date(DATE_ISO8601))
       ->set('stop', NULL)
-      ->set('duration', NULL)
+      // Do not empty duration here; long answer, but just don't.
       ->save();
   }
 

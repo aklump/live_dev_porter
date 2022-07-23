@@ -14,7 +14,7 @@
 #
 # Returns nothing.
 function sandbox_directory() {
-  local dir="$1"
+  local dir="$(cd $1 && pwd)"
 
   ! [[ "$APP_ROOT" ]] && fail_because '$APP_ROOT was empty'
   ! [[ -d "$APP_ROOT" ]] && fail_because "$APP_ROOT does not exist"

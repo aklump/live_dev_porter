@@ -12,6 +12,7 @@ additional_bootstrap: null
 default_command: help
 max_database_rollbacks_to_keep: 5
 delete_pull_dumpfiles: true
+compress_pull_dumpfiles: true
 plugins:
   mysql:
     mysqldump_base_options:
@@ -79,6 +80,9 @@ commands:
         aliases:
           - wf
         help: 'A workflow to use for export; this will be used instead of the configured default.'
+      dir:
+        type: string
+        help: Optional. An absolute path to an alternate, existing directory where the file will be saved.
       format:
         type: string
         enum:
@@ -87,6 +91,9 @@ commands:
       force:
         type: boolean
         help: 'Use force to overwrite an existing file, otherwise export will fail.'
+      uncompressed:
+        type: boolean
+        help: Do not compress the dumpfile.
   db:
     help: 'Enter the local database shell.'
     aliases:

@@ -37,7 +37,7 @@ for id in "${environment_ids[@]}"; do
   eval $(get_config_keys_as database_ids "environments.$id.databases")
   for database_id in "${database_ids[@]}"; do
     eval $(get_config_as plugin "environments.$id.databases.${database_id}.plugin")
-    dumpfiles_dir="$(database_get_dumpfiles_directory "$id" "$database_id")"
+    dumpfiles_dir="$(database_get_directory "$id" "$database_id")"
     table_add_row "$database_id" "$plugin" "$dumpfiles_dir"
   done
   if table_has_rows; then

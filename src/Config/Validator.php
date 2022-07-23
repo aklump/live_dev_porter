@@ -18,6 +18,7 @@ final class Validator {
       'author',
       'bin',
       'commands',
+      'compress_pull_dumpfiles',
       'config_path_base',
       'default_command',
       'delete_pull_dumpfiles',

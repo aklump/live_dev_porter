@@ -135,7 +135,7 @@ function mysql_prune_rollback_files() {
   local keep_files_count=$2
   [[ "$2" ]] || return 1
   filename="rollback_$(date8601 -c).sql"
-  dumpfiles_dir="$(database_get_dumpfiles_directory "$LOCAL_ENV_ID" "$database_id")"
+  dumpfiles_dir="$(database_get_directory "$LOCAL_ENV_ID" "$database_id")"
 
   local rollback_files
   local stop_at_index
@@ -170,7 +170,7 @@ function mysql_create_local_rollback_file() {
   local save_as
 
   filename="rollback_$(date8601 -c).sql"
-  dumpfiles_dir="$(database_get_dumpfiles_directory "$LOCAL_ENV_ID" "$database_id")"
+  dumpfiles_dir="$(database_get_directory "$LOCAL_ENV_ID" "$database_id")"
   sandbox_directory "$dumpfiles_dir"
   ! mkdir -p "$dumpfiles_dir" && fail_because "Could not create directory: $dumpfiles_dir" && return 1
 
@@ -197,16 +197,20 @@ function mysql_create_local_rollback_file() {
 # Handle a database export.
 #
 # $1 - The database ID
-# $2 - Optional, base name to use instead of default.
+# $2 - The directory to save to.
+# $3 - Optional, base name to use instead of default.
 #
 # Returns 0 if .
 function mysql_on_export_db() {
   local database_id="$1"
-  local filename="$2"
+  local directory="$2"
+  local filename="$3"
 
-  local dumpfiles_dir="$(database_get_dumpfiles_directory "$LOCAL_ENV_ID" "$database_id")"
+  local save_as
+  sandbox_directory "$directory"
+  ! mkdir -p "$directory" && fail_because "Could not create directory: $directory" && return 1
   [[ "$filename" ]] || filename="${LOCAL_ENV_ID}_${database_id}_$(date8601 -c)"
-  local save_as="$dumpfiles_dir/$filename.sql"
+  save_as="$directory/$filename.sql"
 
   # Ensure we don't clobber an existing.
   if ! has_option "force"; then
@@ -214,9 +218,6 @@ function mysql_on_export_db() {
     [[ -f "$save_as" ]] && fail_because "$shortpath exists; use --force to overwrite." && return 1
     [[ -f "$save_as.gz" ]] && fail_because "$shortpath.gz exists; use --force to overwrite." && return 1
   fi
-
-  sandbox_directory "$dumpfiles_dir"
-  ! mkdir -p "$dumpfiles_dir" && fail_because "Could not create directory: $dumpfiles_dir" && return 1
 
   # @link https://dev.mysql.com/doc/refman/5.7/en/mysqldump.html#mysqldump-option-summary
   eval $(get_config_as -a "mysqldump_base_options" "plugins.mysql.mysqldump_base_options")
@@ -241,7 +242,7 @@ function mysql_on_export_db() {
   if [[ "$structure_tables" ]]; then
     options="$shared_options --add-drop-table --no-data "
     write_log_debug "mysqldump --defaults-file="$defaults_file"$options "$db_name" $structure_tables"
-    ! mysqldump --defaults-file="$defaults_file"$options "$db_name" ${structure_tables[*]} >> "$save_as" && fail_because "mysqldump failed to write table structure." && return 1
+    ! mysqldump --defaults-file="$defaults_file"$options "$db_name" ${structure_tables[*]} >> "$save_as" && fail_because "mysqldump failed to write table structure." && rm "$save_as" && return 1
     succeed_because "Structure for ${#structure_tables[@]} table(s) exported."
   fi
   # This will write the data to the export file.
@@ -250,22 +251,29 @@ function mysql_on_export_db() {
   if [[ "$data_tables" ]]; then
     options="$shared_options --skip-add-drop-table --no-create-info"
     write_log_debug "mysqldump --defaults-file="$defaults_file"$options "$db_name" $data_tables"
-    ! mysqldump --defaults-file="$defaults_file"$options "$db_name" ${data_tables[*]} >> "$save_as" && fail_because "mysqldump failed to write table data." && return 1
+    ! mysqldump --defaults-file="$defaults_file"$options "$db_name" ${data_tables[*]} >> "$save_as" && fail_because "mysqldump failed to write table data." && rm "$save_as" && return 1
     succeed_because "Data for ${#data_tables[@]} table(s) exported."
   else
     succeed_because "No table data has been exported."
   fi
 
   if [[ ! "$structure_tables" ]] && [[ ! "$data_tables" ]]; then
-    fail_because "The configuration has excluded both database structure and data."
+    if ! database_has_tables "$db_name"; then
+      fail_because "The database \"$db_name\" is empty."
+    else
+      fail_because "The configuration has excluded both database structure and data for all tables."
+    fi
     fail_because "A database export file was not created."
   fi
 
-  if ! gzip -f "$save_as"; then
-    fail_because "Could not compress dumpfile"
-  else
-    # Get the new name with added extension
-    save_as="$save_as.gz"
+  has_failed && return 1
+  if ! has_option 'uncompressed'; then
+    if ! gzip -f "$save_as"; then
+      fail_because "Could not compress dumpfile"
+    else
+      # Get the new name with added extension
+      save_as="$save_as.gz"
+    fi
   fi
 
   has_failed && return 1
@@ -284,7 +292,6 @@ function mysql_on_import_db() {
   defaults_file=$(database_get_defaults_file "$LOCAL_ENV_ID" "$database_id")
   ! db_name=$(database_get_name "$LOCAL_ENV_ID" "$database_id") && fail_because "$db_name" && return 1
   mysql_drop_all_tables "$DATABASE_ID" || return 1
-
   if [[ "$(path_extension "$filepath")" == 'gz' ]]; then
     echo_task "Decompress file."
     ! gunzip -f "$filepath" && echo_task_failed && return 1
@@ -339,13 +346,16 @@ function mysql_on_pull_db() {
   local remote_ldp_options
 
   echo_task "Export remote database: $DATABASE_ID"
-  [[ "$WORKFLOW_ID" ]] && remote_ldp_options=" --workflow="$WORKFLOW_ID""
+  [[ "$WORKFLOW_ID" ]] && remote_ldp_options="$remote_ldp_options --workflow="$WORKFLOW_ID""
+
+  eval $(get_config_as compress_flag "compress_pull_dumpfiles")
+  [[ "$compress_flag" != true ]] && remote_ldp_options="$remote_ldp_options --uncompressed"
 
   # Create the local destination for the dumpfile, doing this first allows the
   # user output to be a valid link in some terminals so keep it first in the
   # process.  That way the user can click the link and open the directory and
   # watch the file download into it.
-  local dumpfiles_dir="$(database_get_dumpfiles_directory "$REMOTE_ENV_ID" "$DATABASE_ID")"
+  local dumpfiles_dir="$(database_get_directory "$REMOTE_ENV_ID" "$DATABASE_ID")"
   sandbox_directory "$dumpfiles_dir"
   ! mkdir -p "$dumpfiles_dir" && fail_because "Could not create directory: $dumpfiles_dir" && return 1
 
