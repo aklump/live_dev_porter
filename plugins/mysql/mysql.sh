@@ -209,8 +209,11 @@ function mysql_on_export_db() {
   local save_as="$dumpfiles_dir/$filename.sql"
 
   # Ensure we don't clobber an existing.
-  [[ -f "$save_as" ]] && fail_because "$save_as already exists." && return 1
-  [[ -f "$save_as.gz" ]] && fail_because "$save_as.gz already exists." && return 1
+  if ! has_option "force"; then
+    shortpath="$(path_unresolve "$PWD" "$save_as")"
+    [[ -f "$save_as" ]] && fail_because "$shortpath exists; use --force to overwrite." && return 1
+    [[ -f "$save_as.gz" ]] && fail_because "$shortpath.gz exists; use --force to overwrite." && return 1
+  fi
 
   sandbox_directory "$dumpfiles_dir"
   ! mkdir -p "$dumpfiles_dir" && fail_because "Could not create directory: $dumpfiles_dir" && return 1
@@ -347,8 +350,8 @@ function mysql_on_pull_db() {
 
   # Create the export at the remote.
   remote_base_path="$(environment_path_resolve $REMOTE_ENV_ID)"
-  write_log_debug "remote_ssh \"cd $remote_base_path || exit 1;[[ -e ./vendor/bin/ldp ]] || exit 2; ./vendor/bin/ldp export pull --json --id="$DATABASE_ID"$remote_ldp_options || exit 3\""
-  remote_dumpfile_path=$(remote_ssh "cd $remote_base_path || exit 1;[[ -e ./vendor/bin/ldp ]] || exit 2; ./vendor/bin/ldp export pull --json --id="$DATABASE_ID"$remote_ldp_options || exit 3")
+  write_log_debug "remote_ssh \"cd $remote_base_path || exit 1;[[ -e ./vendor/bin/ldp ]] || exit 2; ./vendor/bin/ldp export pull --force --json --id="$DATABASE_ID"$remote_ldp_options || exit 3\""
+  remote_dumpfile_path=$(remote_ssh "cd $remote_base_path || exit 1;[[ -e ./vendor/bin/ldp ]] || exit 2; ./vendor/bin/ldp export pull --force --json --id="$DATABASE_ID"$remote_ldp_options || exit 3")
   remote_status=$?
 
   [[ $remote_status -eq 1 ]] && echo_task_failed && fail_because "$remote_base_path does not exist." && return 1
