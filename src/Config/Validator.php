@@ -20,6 +20,7 @@ final class Validator {
       'commands',
       'config_path_base',
       'default_command',
+      'delete_pull_dumpfiles',
       'description',
       'max_database_rollbacks_to_keep',
       'name',

@@ -380,8 +380,10 @@ function mysql_on_pull_db() {
   eval $(get_config_as delete "delete_pull_dumpfiles" true)
   if [[ "$delete" == true ]]; then
     echo_task "Delete dumpfile"
+    save_as="$(dirname "$save_as")/$(basename "${save_as/.sql.gz/.sql}")"
     sandbox_directory "$(dirname "$save_as")"
     ! rm "$save_as" && echo_task_failed && return 1
+    echo_task_completed
   fi
 
   if [[ "$WORKFLOW_ID" ]]; then
