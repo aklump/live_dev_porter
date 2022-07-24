@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>Developing New Processors</title>
+  <link href="search/tipuesearch.css" rel="stylesheet">
+  <link href="style.css" rel="stylesheet">
+</head>
+
+<body class="page--processor_development">
+<header>
+  <div class="pager"><a href="databases.html" class="prev databases">&laquo;Databases</a><a href="index.html" class="index pager__book-title">Live Dev Porter: Documentation</a><a href="environment_roles.html" class="next environment_roles">Environment Roles&raquo;</a></div></header>
+<section class="sub-header">
+  <div class="breadcrumbs"><a href="index.html">Index</a>
+         &raquo
+      </div>      <div class="search__wrapper">
+  <form action="search--results.html">
+    <input type="text" class="search-input" name="q" id="tipue_search_input" autocomplete="off" required>
+  </form>
+</div>
+  </section>
+
+<section>
+  <h1>Developing New Processors</h1>
+  
+
+<p>You will probably want to test your processors in isolation when developing them, as this will be quicker in most all cases. Here's how:</p>
+
+<p><em>.devenv</em></p>
+
+<pre><code class="dotenv">LOCAL_ENV_ID=dev
+DATABASE_ID=drupal
+COMMAND=pull
+IS_WRITEABLE_ENVIRONMENT=true
+</code></pre>
+
+<pre><code class="shell">ldp process delete_users.sh --env=.devenv
+</code></pre>
+
+<ol>
+<li>Create a file of any name wherein you can place your test variable values, e.g. <em>.devenv</em></li>
+<li>Call the <code>process</code> command with the processor basename as the argument and the path to the dotenv file you created.</li>
+</ol>
+
+</section>
+
+<div class="search__results">
+  <div id="tipue_search_content"></div>
+</div>
+
+<footer>
+  <div class="pager"><a href="databases.html" class="prev databases">&laquo;Databases</a><a href="index.html" class="index pager__book-title">Live Dev Porter: Documentation</a><a href="environment_roles.html" class="next environment_roles">Environment Roles&raquo;</a></div>  
+  <div id="footer-legaleeze">
+    <p class="legaleeze center">Version: 0.0.64 &bull; Last Updated: Sat, 23 Jul 2022 20:49:30 -0700</p>
+  </div>
+</footer>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+  <script src="search/tipuesearch_content.js"></script>
+  <script src="search/tipuesearch_set.js"></script>
+  <script src="search/tipuesearch.min.js"></script>
+  <script>
+    $(document).ready(function() {
+      $('#tipue_search_input').tipuesearch()
+    })
+  </script>
+<script src="js/core.js"></script>
+</body>
+</html>
