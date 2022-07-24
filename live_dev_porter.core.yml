@@ -1,7 +1,7 @@
 title: 'Live Dev Porter'
 name: 'Live Dev Porter'
 description: 'Simplifies the management and transfer of assets between website environments.'
-version: 0.0.63
+version: 0.0.64
 author: 'Aaron Klump <sourcecode@intheloftstudios.com>'
 config_path_base: ../../..
 path_to_app: .
@@ -131,11 +131,11 @@ commands:
       - cc
     help: 'Clear all cached data.'
   process:
-    help: Execute a single workflow processor.
+    help: 'Execute a single workflow processor.'
     arguments:
       processor:
-        help: The value as you would add it to a workflow (basename or class::method).
+        help: 'The value as you would add it to a workflow (basename or class::method).'
     options:
       env:
         type: string
-        help: Path to an .env file which is used to seed the values you will be testing.
+        help: 'Path to an .env file which is used to seed the values you will be testing.'

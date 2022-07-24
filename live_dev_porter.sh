@@ -112,7 +112,6 @@ s="${BASH_SOURCE[0]}";while [ -h "$s" ];do dir="$(cd -P "$(dirname "$s")" && pwd
 validate_input || exit_with_failure "Input validation failed."
 
 COMMAND=$(get_command)
-
 case $COMMAND in
     "config-migrate")
       echo_title "Migrate from Loft Deploy"
@@ -226,11 +225,10 @@ implement_route_access
 [[ "$(get_option format)" == "json" ]] && JSON_RESPONSE=true
 
 # Uncomment this to add additional developer commands.
-#source "$SOURCE_DIR/developer_commands.sh"
+source "$SOURCE_DIR/developer_commands.sh"
 
 # Handle other commands.
 case $COMMAND in
-
     "config-test")
       echo_title "Test Configuration"
       implement_configtest
