@@ -24,8 +24,8 @@ lando drush cache-rebuild -y >/dev/null
 lando drush upwd uber --password=pass
 
 # Enable/disable modules.
-! lando drush pm-disable securelogin, antispam -y > /dev/null && echo "Failed to disable production modules." && exit 1
-! lando drush en reroute_email -y > /dev/null && echo "Failed to enable development modules." && exit 1
+! lando drush pm-disable -y securelogin, antispam > /dev/null && echo "Failed to disable production modules." && exit 1
+! lando drush pm-enable -y reroute_email > /dev/null && echo "Failed to enable development modules." && exit 1
 
 # Finally clear caches and make drupal happy
 lando drush cache-rebuild -y
