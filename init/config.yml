@@ -3,7 +3,7 @@ environments:
     label: Development
     write_access: true
     plugin: default
-    base_path: ./
+    base_path: .
     command_workflows:
       pull: develop
       export: archive
@@ -29,8 +29,8 @@ environments:
         path: .env
         var: DATABASE_URL
     files:
-      install: ./
-      secrets: ./
+      install: .
+      secrets: .
       public: web/sites/default/files
       private: private/default/files
 workflows:
@@ -40,7 +40,8 @@ workflows:
       exclude_table_data:
         - 'cache*'
   develop:
-    - database: drupal
+    -
+      database: drupal
       exclude_table_data:
         - 'cache*'
         - batch
@@ -49,6 +50,12 @@ workflows:
         - key_value_expire
         - sessions
         - watchdog
+#    -
+#      processor: FileGroupHandler::process
+#    -
+#      processor: prepare_db_for_dev.sh
+#    -
+#      processor: replace_dumpfile.sh
 file_groups:
   install:
     include:

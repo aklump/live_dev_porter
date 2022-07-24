@@ -4,6 +4,8 @@ namespace AKlump\LiveDevPorter\Processors;
 
 abstract class ProcessorBase {
 
+  const TOKENS__PASSWORD = "PASSWORD";
+
   /**
    * @var string
    */

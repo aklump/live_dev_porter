@@ -9,6 +9,7 @@
 [[ "$DATABASE_ID" ]] || exit 255
 [[ "$IS_WRITEABLE_ENVIRONMENT" == true ]] || exit 255
 [[ "$COMMAND" != "pull" ]] && [[ "$COMMAND" != "import" ]] && exit 255
+$(which lando > /dev/null) || exit 255
 
 # Change to a context where Drush can know the site.
 cd web || return 1
