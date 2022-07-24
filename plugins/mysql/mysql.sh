@@ -364,6 +364,12 @@ function mysql_on_pull_db() {
   write_log_debug "remote_ssh \"cd $remote_base_path || exit 1;[[ -e ./vendor/bin/ldp ]] || exit 2; ./vendor/bin/ldp export pull --force --format=json --id="$DATABASE_ID"$remote_ldp_options || exit 3\""
   remote_json=$(remote_ssh "cd $remote_base_path || exit 1;[[ -e ./vendor/bin/ldp ]] || exit 2; ./vendor/bin/ldp export pull --force --format=json --id="$DATABASE_ID"$remote_ldp_options || exit 3")
   remote_status=$?
+  if [[ $remote_status -ne 0 ]]; then
+    write_log_error "Remote exited with: $remote_status"
+    write_log_error "$remote_json"
+    fail_because "$remote_json"
+  fi
+
   [[ $remote_status -eq 1 ]] && echo_task_failed && fail_because "$remote_base_path does not exist." && return 1
   [[ $remote_status -eq 2 ]] && echo_task_failed && fail_because "$remote_base_path/vendor/bin/ldp is missing or does not have execute permissions." && return 1
   [[ $remote_status -eq 3 ]] && echo_task_failed && fail_because "Remote export failed" && return 1

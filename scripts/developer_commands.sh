@@ -3,7 +3,7 @@
 # This happens before we set any of our variables, why?  So that the developer
 # can set the variables on the CLI and they will be passed to the processor as
 # expected.  This path is for developing processors.
-if [[ "$(get_command)" == 'process' ]]; then
+if [[ "$(get_command)" == 'processor' ]]; then
 
   # Load the test vars.
   has_option 'env' && source $(get_option 'env')

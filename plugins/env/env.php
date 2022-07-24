@@ -18,7 +18,7 @@ if (empty($matches[1])) {
   exit(1);
 }
 
-$data = parse_url($matches[1]);
+$data = parse_url(trim($matches[1], '\'" '));
 
 if (array_diff(['host', 'path', 'user', 'pass'], array_keys($data))) {
   echo "Incomplete environment variable: $env_var";
