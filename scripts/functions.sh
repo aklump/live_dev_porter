@@ -97,8 +97,26 @@ function validate_workflow() {
   return 1
 }
 
-
 # Ensure a given environment ID is valid.
+#
+# $1 - A environment ID.
+#
+# @code
+# ! id=$(validate_environment "$id") && echo "$id" && return 1
+# echo "$id" && return 0
+# @endcode
+#
+# Returns 0 and echos the ID if valid; otherwise echo error and return 1
+function validate_environment() {
+  local environment_id="$1"
+
+  eval $(get_config_keys_as array_has_value__array "environments")
+  array_has_value "$environment_id" && echo "$environment_id" && return 0
+  echo "\"$environment_id\" is not a configured environment."
+  return 1
+}
+
+# Ensure a given database ID is valid.
 #
 # $1 - A environment ID.
 #

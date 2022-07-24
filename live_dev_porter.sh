@@ -225,6 +225,9 @@ implement_route_access
 
 [[ "$(get_option format)" == "json" ]] && JSON_RESPONSE=true
 
+# Uncomment this to add additional developer commands.
+#source "$SOURCE_DIR/developer_commands.sh"
+
 # Handle other commands.
 case $COMMAND in
 
@@ -493,6 +496,7 @@ case $COMMAND in
       has_failed && exit_with_failure
       exit_with_success "Use 'help' to see all commands."
     ;;
+
 esac
 
 throw "Unhandled command \"$COMMAND\"."

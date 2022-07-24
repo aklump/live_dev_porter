@@ -130,3 +130,12 @@ commands:
       - clearcache
       - cc
     help: 'Clear all cached data.'
+  process:
+    help: Execute a single workflow processor.
+    arguments:
+      processor:
+        help: The value as you would add it to a workflow (basename or class::method).
+    options:
+      env:
+        type: string
+        help: Path to an .env file which is used to seed the values you will be testing.
