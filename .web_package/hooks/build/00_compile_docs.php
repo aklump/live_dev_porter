@@ -18,4 +18,5 @@ $build
     'images/live-dev-porter' => 'docs/images/live-dev-porter',
   ])
   ->saveReplacingSourceFile()
+  ->addFilesToScm(['docs'])
   ->displayMessages();
