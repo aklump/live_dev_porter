@@ -1,7 +1,7 @@
 title: 'Live Dev Porter'
 name: 'Live Dev Porter'
 description: 'Simplifies the management and transfer of assets between website environments.'
-version: 0.0.67
+version: 0.0.68
 author: 'Aaron Klump <sourcecode@intheloftstudios.com>'
 config_path_base: ../../..
 path_to_app: .

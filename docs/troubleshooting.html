@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>On Dreamhost, Export Failed Due to PHP Version</title>
+  <link href="search/tipuesearch.css" rel="stylesheet">
+  <link href="style.css" rel="stylesheet">
+</head>
+
+<body class="page--troubleshooting">
+<header>
+  <div class="pager"><a href="loft-deploy-migrations.html" class="prev loft-deploy-migrations">&laquo;Migrating From Loft Deploy</a><a href="index.html" class="index pager__book-title">Live Dev Porter: Documentation</a><a href="plugins.html" class="next plugins">Plugins&raquo;</a></div></header>
+<section class="sub-header">
+  <div class="breadcrumbs"><a href="index.html">Index</a>
+         &raquo
+      </div>      <div class="search__wrapper">
+  <form action="search--results.html">
+    <input type="text" class="search-input" name="q" id="tipue_search_input" autocomplete="off" required>
+  </form>
+</div>
+  </section>
+
+<section>
+  <h1>On Dreamhost, Export Failed Due to PHP Version</h1>
+  
+
+<ol>
+<li>On the remote server.</li>
+<li>Open <em>~/.bashrd</em></li>
+<li>Add this line, adjusting as appropriate: <code>PATH="/usr/local/php74/bin:$PATH"</code></li>
+</ol>
+
+<p>The problem was that PHP 7.4 was being added in <em>~/.bash_profile</em> which is only for login shells. The export connects with a non-login shell and so the default php was getting loaded. By placing it in <em>~/.bashrc</em> it gets loaded.</p>
+
+
+<p>*Check to see if you are using a command that is prompting for user input, e.g. <code>drush pm-enable ...</code> will hang unless you have the <code>-y</code> flag. So the correct command within a processor is <code>drush pm-enable -y ...</code></p>
+
+<ul>
+<li>You can see the output of processor if you use the developer command <code>processor</code>; that is a good way to see if there are any user prompts.</li>
+</ul>
+
+</section>
+
+<div class="search__results">
+  <div id="tipue_search_content"></div>
+</div>
+
+<footer>
+  <div class="pager"><a href="loft-deploy-migrations.html" class="prev loft-deploy-migrations">&laquo;Migrating From Loft Deploy</a><a href="index.html" class="index pager__book-title">Live Dev Porter: Documentation</a><a href="plugins.html" class="next plugins">Plugins&raquo;</a></div>  
+  <div id="footer-legaleeze">
+    <p class="legaleeze center">Version: 0.0.68 &bull; Last Updated: Mon, 25 Jul 2022 12:45:19 -0700</p>
+  </div>
+</footer>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+  <script src="search/tipuesearch_content.js"></script>
+  <script src="search/tipuesearch_set.js"></script>
+  <script src="search/tipuesearch.min.js"></script>
+  <script>
+    $(document).ready(function() {
+      $('#tipue_search_input').tipuesearch()
+    })
+  </script>
+<script src="js/core.js"></script>
+</body>
+</html>
