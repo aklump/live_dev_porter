@@ -130,7 +130,7 @@ function default_on_remote_shell() {
   # The -l command runs bash as if it was a login shell, which is more likely
   # going to contain the customizations the user is expecting.  Another
   # possibility for $SHELL is mysecureshell which does not have that option.
-  remote_ssh "(cd $remote_base_path; [[ $(basename $SHELL) == bash ]] && exec \$SHELL -l || exec \$SHELL)"
+  remote_ssh "(cd $remote_base_path; [[ \$(basename \$SHELL) == bash ]] && exec \$SHELL -l || exec \$SHELL)"
 }
 
 function default_on_pull_files() {
