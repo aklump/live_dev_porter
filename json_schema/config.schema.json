@@ -145,6 +145,24 @@
               "type": "string",
               "pattern": ".+@.+"
             },
+            "command_workflows": {
+              "type": "object",
+              "patternProperties": {
+                "^pull|export|import$": {
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "type": "string",
+                      "enum": [
+                        "WORKFLOW_IDS"
+                      ]
+                    }
+                  ]
+                }
+              }
+            },
             "files": {
               "type": "object",
               "propertyNames": {

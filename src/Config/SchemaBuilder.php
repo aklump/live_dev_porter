@@ -53,6 +53,7 @@ final class SchemaBuilder {
       'FILE_GROUP_IDS' => $this->getFileGroups(),
       'ENVIRONMENT_IDS' => $this->getEnvironmentIds(),
       'PLUGIN_IDS' => $this->getPluginIds(),
+      'WORKFLOW_IDS' => $this->getWorkflowIds(),
     ]);
 
     file_put_contents($this->jsonSchemaDist, json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
@@ -96,6 +97,10 @@ final class SchemaBuilder {
       $ids = array_merge($ids, array_keys($environment['databases'] ?? []));
     }
     return array_unique($ids);
+  }
+
+  private function getWorkflowIds(): array {
+    return array_keys($this->config['workflows'] ?? []);
   }
 
 }
