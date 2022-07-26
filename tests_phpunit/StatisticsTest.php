@@ -11,11 +11,13 @@ use PHPUnit\Framework\TestCase;
 final class StatisticsTest extends TestCase {
 
   public function testFormatSeconds() {
-    $this->assertSame('1 sec', Statistics::formatSeconds(1));
-    $this->assertSame('7 sec', Statistics::formatSeconds(7));
-    $this->assertSame('1 min 3 sec', Statistics::formatSeconds(63));
-    $this->assertSame('3 min', Statistics::formatSeconds(180));
-    $this->assertSame('3 min 5 sec', Statistics::formatSeconds(185));
+    $this->assertSame('2 hours 1 second', Statistics::formatSeconds(7201));
+    $this->assertSame('1 hour 3 minutes 5 seconds', Statistics::formatSeconds(3785));
+    $this->assertSame('1 second', Statistics::formatSeconds(1));
+    $this->assertSame('7 seconds', Statistics::formatSeconds(7));
+    $this->assertSame('1 minute 3 seconds', Statistics::formatSeconds(63));
+    $this->assertSame('3 minutes', Statistics::formatSeconds(180));
+    $this->assertSame('3 minutes 5 seconds', Statistics::formatSeconds(185));
   }
 
   public function testFiles() {
@@ -86,7 +88,7 @@ final class StatisticsTest extends TestCase {
     $this->assertInstanceOf(\DateTime::class, date_create_from_format(DATE_ISO8601, $subject['stop']));
 
     $this->assertIsString($stats->getDuration());
-    $this->assertSame('1 sec', $stats->getDuration());
+    $this->assertSame('1 second', $stats->getDuration());
 
     unlink($stats->getFilepath());
   }

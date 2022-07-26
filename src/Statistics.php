@@ -64,8 +64,8 @@ final class Statistics {
     $start = $this->load()->get('start');
     $stop = date(DATE_ISO8601);
     $start = date_create_from_format(DATE_ISO8601, $start);
-    $diff = date_diff(date_create_from_format(DATE_ISO8601, $stop), $start);
-    $duration = $this->formatSeconds($diff->format('%i') * 60 + $diff->format('%s'));
+    $diff = date_create_from_format(DATE_ISO8601, $stop)->format('U') - $start->format('U');
+    $duration = $this->formatSeconds($diff);
     $this
       ->set('stop', $stop)
       ->set('duration', $duration)
@@ -111,17 +111,25 @@ final class Statistics {
    * // TODO Move this to Cloudy?
    */
   public static function formatSeconds(int $seconds): string {
-    $min = floor($seconds / 60);
-    $seconds -= $min * 60;
-    if ($min) {
-      if ($seconds) {
-        return sprintf('%d min %d sec', $min, $seconds);
-      }
+    $hours = floor($seconds / 3600);
+    if ($hours > 0) {
+      $seconds -= $hours * 3600;
+    }
+    $minutes = floor($seconds / 60);
+    $seconds -= $minutes * 60;
 
-      return sprintf('%d min', $min);
+    $formatted = [];
+    if ($hours) {
+      $formatted[] = "$hours " . ($hours != 1 ? 'hours' : 'hour');
+    }
+    if ($hours && $minutes || $minutes) {
+      $formatted[] = "$minutes " . ($minutes != 1 ? 'minutes' : 'minute');
+    }
+    if ($minutes && $seconds || $seconds) {
+      $formatted[] = "$seconds " . ($seconds != 1 ? 'seconds' : 'second');
     }
 
-    return sprintf('%d sec', $seconds);
+    return implode(' ', $formatted);
   }
 
   /**
