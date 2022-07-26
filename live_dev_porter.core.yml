@@ -1,7 +1,7 @@
 title: 'Live Dev Porter'
 name: 'Live Dev Porter'
 description: 'Simplifies the management and transfer of assets between website environments.'
-version: 0.0.68
+version: 0.0.69
 author: 'Aaron Klump <sourcecode@intheloftstudios.com>'
 config_path_base: ../../..
 path_to_app: .
@@ -25,7 +25,7 @@ commands:
     help: 'Enter the remote server shell.'
     arguments:
       remote_environment:
-        help: Optional.  The ID of a remote environment.  Defaults to the configured "remote".
+        help: 'Optional.  The ID of a remote environment.  Defaults to the configured "remote".'
   help:
     help: 'Show this help screen.'
   info:
