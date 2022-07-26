@@ -33,7 +33,32 @@ Simplifies the management and transfer of assets between website environments.
 
 ### Optional Shorthand `ldp` instead of `./vendor/bin/ldp`
 
-1. Add _./vendor/bin_ to your `$PATH` variable (probably in _~/.bash_profile_).
+#### Option A: `$PATH`
+
+_This option has the advantage that any other composer binary in your project will be executable as well._
+
+1. Add _/path/to/project/root/vendor/bin_ to your `$PATH`.
+
+_~/.bash_profile_
+
+```shell
+PATH="/path/to/project/root/vendor/bin/ldp:$PATH"
+```
+
+#### Option B: alias
+
+_This option is singularly focused in terms of what it affects._
+
+_~/.bash_profile_
+
+1. Add an alias called ldp that points to _/path/to/project/root/vendor/bin/ldp_.
+
+```shell
+alias ldp="/path/to/project/root/vendor/bin/ldp"
+```
+
+#### Both Options Continued
+
 2. Type `ldp` to test if it worked... you should see available commands
 3. Now use `ldp` from anywhere within your project, instead of `./vendor/bin/ldp` from the root.
 4. Don't worry if you have more than one project using _Live Dev Porter_ because this alias will work for multiple projects as long as they use the same version, and usually even if the versions differ.
@@ -42,6 +67,7 @@ Simplifies the management and transfer of assets between website environments.
 
 1. Deploy your code to your remote server.
 2. On the remote server type `./vendor/bin/ldp config -l`
+
 ## Installation
 
 The installation script above will generate the following structure where `.` is your repository root.
