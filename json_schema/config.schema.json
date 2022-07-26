@@ -1,254 +1,263 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "User configuration schema",
-  "type": "object",
-  "$defs": {
-    "id": {
-      "type": "string",
-      "minLength": 3
-    },
-    "label": {
-      "type": "string",
-      "minLength": 1
-    },
-    "rsync_ruleset": {
-      "type": "array",
-      "items": {
-        "type": "string",
-        "minLength": 1
-      }
-    },
-    "databaseTableList": {
-      "type": "array",
-      "minItems": 1,
-      "items": {
-        "type": "string",
-        "minLength": 1
-      }
-    }
-  },
-  "additionalProperties": false,
-  "properties": {
-    "local": {
-      "type": "string",
-      "enum": [
-        "ENVIRONMENT_IDS"
-      ]
-    },
-    "remote": {
-      "oneOf": [
-        {
-          "type": "null"
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "User configuration schema",
+    "type": "object",
+    "$defs": {
+        "id": {
+            "type": "string",
+            "minLength": 3
         },
-        {
-          "type": "string",
-          "enum": [
-            "ENVIRONMENT_IDS"
-          ]
+        "label": {
+            "type": "string",
+            "minLength": 1
+        },
+        "rsync_ruleset": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "minLength": 1
+            }
+        },
+        "databaseTableList": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+                "type": "string",
+                "minLength": 1
+            }
         }
-      ]
     },
-    "workflows": {
-      "type": "object",
-      "patternProperties": {
-        "^\\D\\S{3,}$": {
-          "type": "array",
-          "items": {
+    "additionalProperties": false,
+    "properties": {
+        "local": {
+            "type": "string",
+            "enum": [
+                "ENVIRONMENT_IDS"
+            ]
+        },
+        "remote": {
             "oneOf": [
-              {
-                "type": "object",
-                "required": [
-                  "processor"
-                ],
-                "properties": {
-                  "processor": {
-                    "type": "string",
-                    "pattern": "^[^ ]+\\.(sh|php)|[^ ]+::[^ ]+$"
-                  }
-                }
-              },
-              {
-                "type": "object",
-                "required": [
-                  "database"
-                ],
-                "properties": {
-                  "database": {
+                {
+                    "type": "null"
+                },
+                {
                     "type": "string",
                     "enum": [
-                      "DATABASE_IDS"
+                        "ENVIRONMENT_IDS"
                     ]
-                  },
-                  "exclude_tables": {
-                    "$ref": "#/$defs/databaseTableList"
-                  },
-                  "exclude_table_data": {
-                    "$ref": "#/$defs/databaseTableList"
-                  }
                 }
-              }
             ]
-          }
-        }
-      }
-    },
-    "environments": {
-      "type": "object",
-      "patternProperties": {
-        "^\\D\\S{3,}$": {
-          "type": "object",
-          "required": [
-            "plugin",
-            "label",
-            "write_access",
-            "base_path"
-          ],
-          "additionalProperties": false,
-          "properties": {
-            "label": {
-              "$ref": "#/$defs/label"
-            },
-            "write_access": {
-              "type": "boolean"
-            },
-            "plugin": {
-              "type": "string",
-              "enum": [
-                "PLUGIN_IDS"
-              ]
-            },
-            "base_path": {
-              "type": "string",
-              "minLength": 1
-            },
-            "ssh": {
-              "type": "string",
-              "pattern": ".+@.+"
-            },
-            "files": {
-              "type": "object",
-              "propertyNames": {
+        },
+        "other": {
+            "type": "array",
+            "items": {
                 "type": "string",
                 "enum": [
-                  "FILE_GROUP_IDS"
+                    "ENVIRONMENT_IDS"
                 ]
-              },
-              "patternProperties": {
-                ".+": {
-                  "type": "string"
-                }
-              }
-            },
-            "databases": {
-              "type": "object",
-              "propertyNames": {
-                "type": "string",
-                "enum": [
-                  "DATABASE_IDS"
-                ]
-              },
-              "patternProperties": {
-                ".+": {
-                  "oneOf": [
-                    {
-                      "type": "object",
-                      "required": [
-                        "plugin",
-                        "service"
-                      ],
-                      "properties": {
-                        "plugin": {
-                          "const": "lando"
-                        },
-                        "service": {
-                          "type": "string",
-                          "minLength": 1
-                        }
-                      }
-                    },
-                    {
-                      "type": "object",
-                      "required": [
-                        "plugin",
-                        "path",
-                        "var"
-                      ],
-                      "properties": {
-                        "plugin": {
-                          "const": "env"
-                        },
-                        "path": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "var": {
-                          "type": "string",
-                          "minLength": 1
-                        }
-                      }
-                    },
-                    {
-                      "type": "object",
-                      "required": [
-                        "plugin",
-                        "settings"
-                      ],
-                      "properties": {
-                        "plugin": {
-                          "const": "drupal"
-                        },
-                        "settings": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "database": {
-                          "type": "string",
-                          "minLength": 1
-                        }
-                      }
+            }
+        },
+        "workflows": {
+            "type": "object",
+            "patternProperties": {
+                "^\\D\\S{3,}$": {
+                    "type": "array",
+                    "items": {
+                        "oneOf": [
+                            {
+                                "type": "object",
+                                "required": [
+                                    "processor"
+                                ],
+                                "properties": {
+                                    "processor": {
+                                        "type": "string",
+                                        "pattern": "^[^ ]+\\.(sh|php)|[^ ]+::[^ ]+$"
+                                    }
+                                }
+                            },
+                            {
+                                "type": "object",
+                                "required": [
+                                    "database"
+                                ],
+                                "properties": {
+                                    "database": {
+                                        "type": "string",
+                                        "enum": [
+                                            "DATABASE_IDS"
+                                        ]
+                                    },
+                                    "exclude_tables": {
+                                        "$ref": "#/$defs/databaseTableList"
+                                    },
+                                    "exclude_table_data": {
+                                        "$ref": "#/$defs/databaseTableList"
+                                    }
+                                }
+                            }
+                        ]
                     }
-                  ]
                 }
-              }
             }
-          }
-        }
-      }
-    },
-    "file_groups": {
-      "type": "object",
-      "patternProperties": {
-        "^\\D\\S{3,}$": {
-          "type": "object",
-          "oneOf": [
-            {
-              "additionalProperties": false
-            },
-            {
-              "additionalProperties": false,
-              "required": [
-                "include"
-              ],
-              "properties": {
-                "include": {
-                  "$ref": "#/$defs/rsync_ruleset"
+        },
+        "environments": {
+            "type": "object",
+            "patternProperties": {
+                "^\\D\\S{3,}$": {
+                    "type": "object",
+                    "required": [
+                        "plugin",
+                        "label",
+                        "write_access",
+                        "base_path"
+                    ],
+                    "additionalProperties": false,
+                    "properties": {
+                        "label": {
+                            "$ref": "#/$defs/label"
+                        },
+                        "write_access": {
+                            "type": "boolean"
+                        },
+                        "plugin": {
+                            "type": "string",
+                            "enum": [
+                                "PLUGIN_IDS"
+                            ]
+                        },
+                        "base_path": {
+                            "type": "string",
+                            "minLength": 1
+                        },
+                        "ssh": {
+                            "type": "string",
+                            "pattern": ".+@.+"
+                        },
+                        "files": {
+                            "type": "object",
+                            "propertyNames": {
+                                "type": "string",
+                                "enum": [
+                                    "FILE_GROUP_IDS"
+                                ]
+                            },
+                            "patternProperties": {
+                                ".+": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "databases": {
+                            "type": "object",
+                            "propertyNames": {
+                                "type": "string",
+                                "enum": [
+                                    "DATABASE_IDS"
+                                ]
+                            },
+                            "patternProperties": {
+                                ".+": {
+                                    "oneOf": [
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "plugin",
+                                                "service"
+                                            ],
+                                            "properties": {
+                                                "plugin": {
+                                                    "const": "lando"
+                                                },
+                                                "service": {
+                                                    "type": "string",
+                                                    "minLength": 1
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "plugin",
+                                                "path",
+                                                "var"
+                                            ],
+                                            "properties": {
+                                                "plugin": {
+                                                    "const": "env"
+                                                },
+                                                "path": {
+                                                    "type": "string",
+                                                    "minLength": 1
+                                                },
+                                                "var": {
+                                                    "type": "string",
+                                                    "minLength": 1
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "plugin",
+                                                "settings"
+                                            ],
+                                            "properties": {
+                                                "plugin": {
+                                                    "const": "drupal"
+                                                },
+                                                "settings": {
+                                                    "type": "string",
+                                                    "minLength": 1
+                                                },
+                                                "database": {
+                                                    "type": "string",
+                                                    "minLength": 1
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
                 }
-              }
-            },
-            {
-              "additionalProperties": false,
-              "required": [
-                "exclude"
-              ],
-              "properties": {
-                "exclude": {
-                  "$ref": "#/$defs/rsync_ruleset"
-                }
-              }
             }
-          ]
+        },
+        "file_groups": {
+            "type": "object",
+            "patternProperties": {
+                "^\\D\\S{3,}$": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "additionalProperties": false
+                        },
+                        {
+                            "additionalProperties": false,
+                            "required": [
+                                "include"
+                            ],
+                            "properties": {
+                                "include": {
+                                    "$ref": "#/$defs/rsync_ruleset"
+                                }
+                            }
+                        },
+                        {
+                            "additionalProperties": false,
+                            "required": [
+                                "exclude"
+                            ],
+                            "properties": {
+                                "exclude": {
+                                    "$ref": "#/$defs/rsync_ruleset"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
         }
-      }
     }
-  }
 }
