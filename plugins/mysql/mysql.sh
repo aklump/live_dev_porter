@@ -95,6 +95,10 @@ function mysql_on_configtest() {
   for environment_id in "${ACTIVE_ENVIRONMENTS[@]}"; do
     ! is_remote_environment "$environment_id" && continue
 
+    # If the test is being run from a remote environment, it should not check
+    # against itself, as this seems to fail.
+    [[ "$environment_id" == "$LOCAL_ENV_ID" ]] && continue
+
     eval $(get_config_as env_label "environments.$environment_id.label")
     remote_base_path="$(environment_path_resolve $environment_id)"
     ldp_pull_command="ldp pull $environment_id"
