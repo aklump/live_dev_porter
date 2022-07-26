@@ -8,7 +8,7 @@
 CONFIG="live_dev_porter.core.yml";
 
 # Uncomment this line to enable file logging.
-#LOGFILE="live_dev_porter.core.log"
+LOGFILE="live_dev_porter.core.log"
 
 # Call a php class method as set success/failure status and messaging.
 #
