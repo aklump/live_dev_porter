@@ -104,7 +104,7 @@ function mysql_on_configtest() {
     ldp_pull_command="ldp pull $environment_id"
     [[ "$environment_id" == "$REMOTE_ENV_ID" ]] && ldp_pull_command="ldp pull"
     echo_task "Check \"$ldp_pull_command\" availability."
-    if remote_ssh_by_environment "$environment_id" "[[ -e \"$remote_base_path/vendor/bin/ldp\" ]]" &> /dev/null; then
+    if remote_ssh "$environment_id" "[[ -e \"$remote_base_path/vendor/bin/ldp\" ]]" &> /dev/null; then
       echo_task_completed
     else
       echo_task_failed
@@ -365,7 +365,7 @@ function mysql_on_pull_db() {
 
   # Create the export at the remote.
   remote_base_path="$(environment_path_resolve $REMOTE_ENV_ID)"
-  remote_json=$(remote_ssh "cd \"$remote_base_path\" || exit 1;[[ -e ./vendor/bin/ldp ]] || exit 2; ./vendor/bin/ldp export \"pull_by_$(whoami)\" --force --format=json --id=\"$DATABASE_ID\"$remote_ldp_options || exit 3")
+  remote_json=$(remote_ssh "$REMOTE_ENV_ID" "cd \"$remote_base_path\" || exit 1;[[ -e ./vendor/bin/ldp ]] || exit 2; ./vendor/bin/ldp export \"pull_by_$(whoami)\" --force --format=json --id=\"$DATABASE_ID\"$remote_ldp_options || exit 3")
   remote_status=$?
   if [[ $remote_status -ne 0 ]]; then
     write_log_error "Remote exited with: $remote_status"
@@ -390,7 +390,7 @@ function mysql_on_pull_db() {
 
   # Delete the remote file
   echo_task "Delete remote file"
-  ! remote_ssh "[[ -f \"$remote_dumpfile_path\" ]] && rm \"$remote_dumpfile_path\"" &> /dev/null && echo_task_failed && return 1
+  ! remote_ssh  "$REMOTE_ENV_ID" "[[ -f \"$remote_dumpfile_path\" ]] && rm \"$remote_dumpfile_path\"" &> /dev/null && echo_task_failed && return 1
   echo_task_completed
 
   # Do the rollback and import.

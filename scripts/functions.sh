@@ -321,23 +321,12 @@ function implement_configtest() {
   has_failed && fail_because "Use 'init' to create configuration files"
 }
 
-# Connect to the default remote environment.
-#
-# If you use ssh -o “BatchMode yes”, then it will do ssh only if the
-# password-less login is enabled, else it will return error and continues.
-#
-# Returns 0 if .
-function remote_ssh() {
-  write_log_debug "ssh -t -o BatchMode=yes "${REMOTE_ENV_AUTH%:}" "$@""
-  ssh -t -o BatchMode=yes "${REMOTE_ENV_AUTH%:}" "$@"
-}
-
 # Connect to a remote environment by ID.
 #
 # $1 - The (remote) environment ID.
 #
 # Returns 0 if .
-function remote_ssh_by_environment() {
+function remote_ssh() {
   local environment_id="$1"
 
   eval $(get_config_as env_auth "environments.$environment_id.ssh")

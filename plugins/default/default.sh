@@ -16,7 +16,7 @@ function _test_remote_path() {
   local remote_path="$2"
 
   remote_path=$(environment_path_resolve "$environment_id" "$remote_path") || return 1
-  remote_ssh_by_environment "$environment_id" [ -e "$remote_path" ] &> /dev/null && return 0
+  remote_ssh "$environment_id" [ -e "$remote_path" ] &> /dev/null && return 0
   return 1
 }
 
@@ -45,7 +45,7 @@ function default_on_configtest() {
     for tool in "${tools[@]}"; do
       echo_task "$(string_ucfirst "$environment_id") has \"$tool\" installed."
       if [[ "$is_remote" ]]; then
-        remote_ssh_by_environment "$environment_id" which $tool > /dev/null
+        remote_ssh "$environment_id" which $tool > /dev/null
       else
         which $tool > /dev/null
       fi
@@ -61,7 +61,7 @@ function default_on_configtest() {
       echo_task "Able to connect to $environment_id server."
       did_connect=false
       # @link https://unix.stackexchange.com/a/264477
-      remote_ssh_by_environment "$environment_id" pwd &> /dev/null && did_connect=true
+      remote_ssh "$environment_id" pwd &> /dev/null && did_connect=true
       if [[ false == "$did_connect" ]]; then
         echo_task_failed
         fail_because "Check $environment_id host and user config."
@@ -81,7 +81,7 @@ function default_on_configtest() {
 
       # Test for ionice on remote server
       echo_task "Assert \"ionice\" is installed on $environment_id."
-      if remote_ssh_by_environment "$environment_id" "which ionice >/dev/null" &> /dev/null; then
+      if remote_ssh "$environment_id" "which ionice >/dev/null" &> /dev/null; then
         echo_task_completed
       else
         echo_task_failed
@@ -130,7 +130,7 @@ function default_on_remote_shell() {
   # The -l command runs bash as if it was a login shell, which is more likely
   # going to contain the customizations the user is expecting.  Another
   # possibility for $SHELL is mysecureshell which does not have that option.
-  remote_ssh "(cd $remote_base_path; [[ \$(basename \$SHELL) == bash ]] && exec \$SHELL -l || exec \$SHELL)"
+  remote_ssh "$REMOTE_ENV_ID" "(cd $remote_base_path; [[ \$(basename \$SHELL) == bash ]] && exec \$SHELL -l || exec \$SHELL)"
 }
 
 function default_on_pull_files() {
