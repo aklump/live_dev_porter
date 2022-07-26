@@ -65,19 +65,6 @@ for id in "${ACTIVE_ENVIRONMENTS[@]}"; do
   fi
 done
 
-
-#eval $(get_config_keys_as -a 'ids' "file_groups")
-#if [[ ${#ids[@]} -gt 0 ]]; then
-#  echo
-#  echo_title "File Groups"
-#  list_clear
-#  for id in "${ids[@]}"; do
-#    list_add_item "$id"
-#  done
-#  echo_list
-#  echo
-#fi
-
 #echo_title "Plugins"
 #array_csv__array=("${ACTIVE_PLUGINS[@]}")
 #table_add_row "All active plugins" "$(array_csv --prose)"
@@ -92,7 +79,7 @@ echo_slim_table
 echo_title "Workflows"
 eval $(get_config_keys_as workflows "workflows")
 for workflow_id in "${workflows[@]}"; do
-  table_set_header "ID" "Databases" "File Groups" "Processors"
+  table_set_header "ID" "DATABASES" "FILE GROUPS" "PROCESSORS"
   eval $(get_config_keys_as databases "workflows.$workflow_id.databases")
   eval $(get_config_as -a file_groups "workflows.$workflow_id.file_groups")
   eval $(get_config_as -a processors "workflows.$workflow_id.processors")
