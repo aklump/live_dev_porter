@@ -17,6 +17,6 @@ if [[ "$LIVE_DEV_PORTER" ]]; then
   . "$LIVE_DEV_PORTER" "$@"
 fi
 echo
-echo "** Oops! .live_dev_porter not found. **"
+echo "🔶 .LIVE_DEV_PORTER NOT FOUND"
 echo
 echo "It appears you are outside of an initialized project."
