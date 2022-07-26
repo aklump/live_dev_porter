@@ -795,6 +795,23 @@ function echo_red_highlight() {
     _cloudy_echo_color 37 "$1" 1 41
 }
 
+# Echo a string with really, really loudly.
+#
+# $1 - The string to echo.
+#
+# Returns nothing.
+function echo_scream() {
+  local message="$1"
+
+  local length
+  local header_length
+  length=${#message}
+  header_length=$(( $length + 6 ))
+  echo_red_highlight "$(string_repeat " " $header_length)"
+  echo_red_highlight "$(string_repeat " " 3)$(string_upper "$message")$(string_repeat " " 3)"
+  echo_red_highlight "$(string_repeat " " $header_length)"
+}
+
 # Echo an error message
 #
 # $1 - The error message.

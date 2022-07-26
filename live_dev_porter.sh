@@ -146,6 +146,19 @@ esac
 
 eval $(get_config_as LOCAL_ENV_ID 'local')
 exit_with_failure_if_empty_config 'LOCAL_ENV_ID' 'local'
+
+# We will scream if the local base path does not exist, this is because it's
+# possible the config is incorrect and we should not allow commands below here
+# to be executed in such state.
+eval $(get_config_as local_base_path "environments.$LOCAL_ENV_ID.base_path")
+if [[ ! -e "$local_base_path" ]]; then
+  echo_scream "Configuration \"local: test\" doesn't look right"
+  fail_because "Are you sure that \"$LOCAL_ENV_ID\" is the correct environment ID for local?"
+  fail_because "If it is, do you need to simply create it's base_path: $local_base_path?"
+  fail_because "Otherwise, you will need to configure local to other than \"$LOCAL_ENV_ID\" or correct \"$LOCAL_ENV_ID.base_path\"."
+  exit_with_failure_if_config_is_not_path local_base_path "environments.$LOCAL_ENV_ID.base_path"
+fi
+
 ACTIVE_ENVIRONMENTS=("$LOCAL_ENV_ID")
 
 eval $(get_config_as REMOTE_ENV_ID 'remote')

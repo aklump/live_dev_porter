@@ -8,25 +8,23 @@
 eval $(get_config_as 'local_label' "environments.$LOCAL_ENV_ID.label")
 eval $(get_config_as 'remote_label' "environments.$REMOTE_ENV_ID.label")
 
-environment_ids=("$LOCAL_ENV_ID")
-[[ "$REMOTE_ENV_ID" != null ]] && environment_ids=("${environment_ids[@]}" "$REMOTE_ENV_ID")
-
-for id in "${environment_ids[@]}"; do
+for id in "${ACTIVE_ENVIRONMENTS[@]}"; do
   eval $(get_config_as -a 'label' "environments.$id.label")
   eval $(get_config_as -a 'write_access' "environments.$id.write_access")
 #  eval $(get_config_as -a 'plugin' "environments.$id.plugin")
   eval $(get_config_as -a 'ssh' "environments.$id.ssh")
   base_path=$(environment_path_resolve "$id")
 
-  perspective="Local"
-  [[ "$id" == "$REMOTE_ENV_ID" ]] && perspective="Remote"
-
-  echo_title "$perspective Environment ($id) : $label"
-  [[ "$ssh" ]] && table_add_row "SSH" "$ssh"
-  if [[ "$id" == "$LOCAL_ENV_ID" ]]; then
-    table_add_row "Root" "$(echo_red_path_if_nonexistent "$base_path")"
-  else
+  if is_remote_environment "$id"; then
+    echo_title "Remote Environment ($id) : $label"
     table_add_row "Root" "$base_path"
+    if [[ "$ssh" ]]; then
+      table_add_row "SSH" "$ssh"
+      table_add_row "scp" "$ssh:$base_path"
+    fi
+  else
+    echo_title "Local Environment ($id) : $label"
+    table_add_row "Root" "$(echo_red_path_if_nonexistent "$base_path")"
   fi
   table_add_row "Writeable" "$write_access"
 #  table_add_row "Plugin" "$plugin"
