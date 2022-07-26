@@ -1972,7 +1972,8 @@ function write_log_debug() {
 # Returns nothing.
 function table_set_header() {
     _cloudy_table_header=()
-    i=0
+    local i=0
+    local cell
     for cell in "$@"; do
         if [[ ${#cell} -gt "${_cloudy_table_col_widths[$i]}" ]]; then
             _cloudy_table_col_widths[$i]=${#cell}
@@ -2001,7 +2002,8 @@ function table_has_rows() {
  #
 function table_add_row() {
     array_join__array=()
-    i=0
+    local i=0
+    local cell
     for cell in "$@"; do
         if [[ ${#cell} -gt "${_cloudy_table_col_widths[$i]}" ]]; then
             _cloudy_table_col_widths[$i]=${#cell}
