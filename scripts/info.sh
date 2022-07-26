@@ -15,15 +15,17 @@ for id in "${ACTIVE_ENVIRONMENTS[@]}"; do
   eval $(get_config_as -a 'ssh' "environments.$id.ssh")
   base_path=$(environment_path_resolve "$id")
 
+  adjective="Other"
+  [[ "$id" == "$LOCAL_ENV_ID" ]] && adjective="Local"
+  [[ "$id" == "$REMOTE_ENV_ID" ]] && adjective="Remote"
+  echo_title "$adjective Environment ($id) : $label"
   if is_remote_environment "$id"; then
-    echo_title "Remote Environment ($id) : $label"
     table_add_row "Root" "$base_path"
     if [[ "$ssh" ]]; then
       table_add_row "SSH" "$ssh"
       table_add_row "scp" "$ssh:$base_path"
     fi
   else
-    echo_title "Local Environment ($id) : $label"
     table_add_row "Root" "$(echo_red_path_if_nonexistent "$base_path")"
   fi
   table_add_row "Writeable" "$write_access"
