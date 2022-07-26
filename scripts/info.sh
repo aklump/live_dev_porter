@@ -92,7 +92,19 @@ echo_slim_table
 echo_title "Workflows"
 eval $(get_config_keys_as workflows "workflows")
 for workflow_id in "${workflows[@]}"; do
-   table_add_row "$workflow_id"
+  table_set_header "ID" "Databases" "File Groups" "Processors"
+  eval $(get_config_keys_as databases "workflows.$workflow_id.databases")
+  eval $(get_config_as -a file_groups "workflows.$workflow_id.file_groups")
+  eval $(get_config_as -a processors "workflows.$workflow_id.processors")
+
+  max=$(( ${#databases[@]} > ${#file_groups[@]} ? ${#databases[@]} : ${#file_groups[@]}))
+  max=$(( $max > ${#processors[@]} ? $max : ${#processors[@]}))
+  label=$workflow_id
+  for (( i = 0; i < $max; i++ )); do
+    table_add_row "$label" "${databases[$i]}" "${file_groups[$i]}" "${processors[$i]}"
+    label=''
+  done
+  echo_slim_table
+  echo
 done
-echo_slim_table
 
