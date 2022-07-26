@@ -84,18 +84,7 @@ function database_get_table_list_where() {
 
   local array_csv__array
   local where
-  eval $(get_config_keys_as workflow_keys "workflows.$workflow")
-  [[ ${#workflow_keys[@]} -eq 0 ]] && return 0
-
-  tables=()
-  for i in "${workflow_keys[@]}"; do
-     eval $(get_config_as workflow_database "workflows.$workflow.$i.database")
-     if [[ "$workflow_database" == "$database_id" ]]; then
-       eval $(get_config_as -a workflow_tables "workflows.$workflow.$i.$workflow_key")
-       tables=("${tables[@]}" "${workflow_tables[@]}")
-     fi
-  done
-
+  eval $(get_config_as -a tables "workflows.$workflow.databases.$database_id.$workflow_key")
   [[ ${#tables[@]} -eq 0 ]] && return 0
 
   array_csv__array=()

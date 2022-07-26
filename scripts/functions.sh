@@ -78,6 +78,7 @@ function get_workflow_by_command() {
   local id
   eval $(get_config_as "id" "environments.$LOCAL_ENV_ID.command_workflows.$command")
   [[ ! "$id" ]] && return 0
+  [[ "$id" == null ]] && return 0
   ! id=$(validate_workflow "$id") && echo "$id" && return 1
   echo "$id" && return 0
 }
@@ -135,12 +136,8 @@ function execute_workflow_processors() {
   local processor_result
   local key
   local php_query
-
-  eval $(get_config_keys_as workflow_keys "workflows.$workflow")
-  for workflow_key in "${workflow_keys[@]}"; do
-    eval $(get_config_as basename "workflows.$workflow.$workflow_key.processor")
-    [[ ! "$basename" ]] && continue
-
+  eval $(get_config_as -a processors "workflows.$workflow.processors")
+  for basename in "${processors[@]}"; do
     processor_path="$CONFIG_DIR/processors/$basename"
     processor="$(path_unresolve "$APP_ROOT" "$processor_path")"
 

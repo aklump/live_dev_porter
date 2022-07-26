@@ -43,27 +43,30 @@ environments:
       private: private/default/files
 workflows:
   archive:
-    -
-      database: drupal
-      exclude_table_data:
-        - 'cache*'
+    databases:
+      drupal:
+        exclude_table_data:
+          - 'cache*'
   develop:
-    -
-      database: drupal
-      exclude_table_data:
-        - 'cache*'
-        - batch
-        - config_import
-        - config_snapshot
-        - key_value_expire
-        - sessions
-        - watchdog
-#    -
-#      processor: FileGroupHandler::process
-#    -
-#      processor: prepare_db_for_dev.sh
-#    -
-#      processor: replace_dumpfile.sh
+    databases:
+      drupal:
+        exclude_table_data:
+          - 'cache*'
+          - batch
+          - config_import
+          - config_snapshot
+          - key_value_expire
+          - sessions
+          - watchdog
+      file_groups:
+        - install
+        - secrets
+        - public
+        - private
+      processors:
+        - FileGroupHandler::process
+        - prepare_db_for_dev.sh
+        - replace_dumpfile.sh
 file_groups:
   install:
     include:

@@ -142,6 +142,8 @@ function default_on_pull_files() {
   local source_base
   local stat_arguments
 
+  [[ ! "$WORKFLOW_ID" ]] && write_log_debug "Files will only be pulled when there is a workflow." && return 0
+
   # @link https://linux.die.net/man/1/rsync
   # @link https://stackoverflow.com/a/4114979/3177610 (chmod) File permissions
   # if not properly set on the receiving end will wreak havoc during processing,
@@ -157,8 +159,10 @@ function default_on_pull_files() {
   source_base=$(environment_path_resolve "$REMOTE_ENV_ID")
   destination_base=$(environment_path_resolve "$LOCAL_ENV_ID")
 
+  eval $(get_config_as -a group_ids "workflows.$WORKFLOW_ID.file_groups")
+  [[ ${#group_ids[@]} -eq 0 ]] && write_log_debug "The workflow \"$WORKFLOW_ID\" has not defined any file_groups; no files pulled." && return 0
+
   local group_filter=$(get_option group)
-  eval $(get_config_keys_as group_ids "environments.$LOCAL_ENV_ID.files")
   if [[ "$group_filter" ]]; then
     array_has_value__array=("${group_ids[@]}")
     array_has_value "$group_filter" || fail_because "The environment \"$LOCAL_ENV_ID\" has not assigned a path to the file group \"$group_filter\"."

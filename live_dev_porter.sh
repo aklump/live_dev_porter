@@ -201,8 +201,6 @@ for id in "${ACTIVE_ENVIRONMENTS[@]}"; do
   fi
 done
 
-eval $(get_config_keys_as -a 'FILE_GROUP_IDS' "file_groups")
-
 # Bootstrap the plugin configuration.
 source "$SOURCE_DIR/plugins.sh"
 for plugin in "${ACTIVE_PLUGINS[@]}"; do
@@ -409,7 +407,9 @@ case $COMMAND in
       ! WORKFLOW_ID=$(get_workflow_by_command 'pull') && fail_because "$WORKFLOW_ID" && exit_with_failure
 
       [[ ${#REMOTE_DATABASE_IDS[@]} -eq 0 ]] && has_db=false || has_db=true
-      [[ ${#FILE_GROUP_IDS[@]} -eq 0 ]] && has_files=false || has_files=true
+
+      eval $(get_config_as -a file_groups "workflows.$WORKFLOW_ID.file_groups")
+      [[ ${#file_groups[@]} -eq 0 ]] && has_files=false || has_files=true
 
       array_csv__array=()
       [[ "$has_db" == true ]] && [[ "$do_database" == true ]] && array_csv__array=("${array_csv__array[@]}" "databases")
@@ -493,7 +493,7 @@ case $COMMAND in
       if ! has_failed && [[ "$do_files" == true ]]; then
         if [[ "$has_files" == false ]]; then
           if has_option f; then
-            fail_because "Use of -f is out of context; \"file_groups\" has not been configured."
+            fail_because "Use of -f is out of context; \"workflows.$WORKFLOW_ID.file_groups\" is empty."
           elif has_option v; then
             succeed_because "No file_groups defined; skipping files component."
           fi

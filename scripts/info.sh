@@ -44,7 +44,8 @@ for id in "${ACTIVE_ENVIRONMENTS[@]}"; do
   fi
 
   # List out the file groups and paths.
-  for group_id in "${FILE_GROUP_IDS[@]}"; do
+  eval $(get_config_keys_as -a 'file_groups' "file_groups")
+  for group_id in "${file_groups[@]}"; do
     eval $(get_config_as group_path "environments.$id.files.${group_id}")
     if [[ "$group_path" ]]; then
       group_path="$(path_resolve "$base_path" "$group_path")"
