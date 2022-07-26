@@ -56,8 +56,35 @@
 
 <h3>Optional Shorthand <code>ldp</code> instead of <code>./vendor/bin/ldp</code></h3>
 
+<h4>Option A: <code>$PATH</code></h4>
+
+<p><em>This option has the advantage that any other composer binary in your project will be executable as well.</em></p>
+
 <ol>
-<li>Add <em>./vendor/bin</em> to your <code>$PATH</code> variable (probably in <em>~/.bash_profile</em>).</li>
+<li>Add <em>/path/to/project/root/vendor/bin</em> to your <code>$PATH</code>.</li>
+</ol>
+
+<p><em>~/.bash_profile</em></p>
+
+<pre><code class="shell">PATH="/path/to/project/root/vendor/bin/ldp:$PATH"
+</code></pre>
+
+<h4>Option B: alias</h4>
+
+<p><em>This option is singularly focused in terms of what it affects.</em></p>
+
+<p><em>~/.bash_profile</em></p>
+
+<ol>
+<li>Add an alias called ldp that points to <em>/path/to/project/root/vendor/bin/ldp</em>.</li>
+</ol>
+
+<pre><code class="shell">alias ldp="/path/to/project/root/vendor/bin/ldp"
+</code></pre>
+
+<h4>Both Options Continued</h4>
+
+<ol start="2">
 <li>Type <code>ldp</code> to test if it worked... you should see available commands</li>
 <li>Now use <code>ldp</code> from anywhere within your project, instead of <code>./vendor/bin/ldp</code> from the root.</li>
 <li>Don't worry if you have more than one project using <em>Live Dev Porter</em> because this alias will work for multiple projects as long as they use the same version, and usually even if the versions differ.</li>
@@ -126,7 +153,7 @@
 <footer>
   <div class="pager"><a href="index.html" class="prev index">&laquo;Live Dev Porter: Documentation</a><a href="index.html" class="index pager__book-title">Live Dev Porter: Documentation</a><a href="CHANGELOG.html" class="next changelog">Changelog&raquo;</a></div>  
   <div id="footer-legaleeze">
-    <p class="legaleeze center">Version: 0.0.72 &bull; Last Updated: Tue, 26 Jul 2022 11:35:48 -0700</p>
+    <p class="legaleeze center">Version: 0.0.73 &bull; Last Updated: Tue, 26 Jul 2022 11:53:30 -0700</p>
   </div>
 </footer>
 
