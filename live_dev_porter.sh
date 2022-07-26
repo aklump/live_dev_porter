@@ -146,7 +146,18 @@ esac
 
 eval $(get_config_as LOCAL_ENV_ID 'local')
 exit_with_failure_if_empty_config 'LOCAL_ENV_ID' 'local'
+ACTIVE_ENVIRONMENTS=("$LOCAL_ENV_ID")
+
 eval $(get_config_as REMOTE_ENV_ID 'remote')
+if [[ "$REMOTE_ENV_ID" ]] && [[ "$REMOTE_ENV_ID" != null ]]; then
+  ACTIVE_ENVIRONMENTS=("${ACTIVE_ENVIRONMENTS[@]}" "$REMOTE_ENV_ID")
+fi
+
+eval $(get_config_as -a array_sort__array "other")
+if [[ ${#array_sort__array} -gt 0 ]]; then
+  array_sort
+  ACTIVE_ENVIRONMENTS=("${ACTIVE_ENVIRONMENTS[@]}" "${array_sort__array[@]}")
+fi
 
 # Alter the remote environment via CLI when appropriate.
 if [[ 'pull' == $COMMAND ]] || [[ 'remote' == $COMMAND ]]; then
@@ -154,8 +165,7 @@ if [[ 'pull' == $COMMAND ]] || [[ 'remote' == $COMMAND ]]; then
   ! REMOTE_ENV_ID=$(validate_environment "$REMOTE_ENV_ID") && fail_because "$REMOTE_ENV_ID" && exit_with_failure
 fi
 
-eval $(get_config_keys_as 'ENVIRONMENT_IDS' "environments")
-for id in "${ENVIRONMENT_IDS[@]}"; do
+for id in "${ACTIVE_ENVIRONMENTS[@]}"; do
   if [[ "$id" == "$LOCAL_ENV_ID" ]]; then
 
     eval $(get_config_as "write_access" "environments.$LOCAL_ENV_ID.write_access" false)

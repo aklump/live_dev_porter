@@ -101,28 +101,9 @@ function validate_workflow() {
   return 1
 }
 
-# Ensure a given environment ID is valid.
+# Ensure a given environment ID is valid AND ACTIVE
 #
-# $1 - A environment ID.
-#
-# @code
-# ! id=$(validate_environment "$id") && echo "$id" && return 1
-# echo "$id" && return 0
-# @endcode
-#
-# Returns 0 and echos the ID if valid; otherwise echo error and return 1
-function validate_environment() {
-  local environment_id="$1"
-
-  eval $(get_config_keys_as array_has_value__array "environments")
-  array_has_value "$environment_id" && echo "$environment_id" && return 0
-  echo "\"$environment_id\" is not a configured environment."
-  return 1
-}
-
-# Ensure a given database ID is valid.
-#
-# $1 - A environment ID.
+# $1 - A environment ID, which is active, that is local, remote or other.
 #
 # @code
 # ! id=$(validate_environment "$id") && echo "$id" && return 1
@@ -133,9 +114,10 @@ function validate_environment() {
 function validate_environment() {
   local environment_id="$1"
 
-  eval $(get_config_keys_as array_has_value__array "environments")
-  array_has_value "$environment_id" && echo "$environment_id" && return 0
-  echo "\"$environment_id\" is not a configured environment."
+  for id in "${ACTIVE_ENVIRONMENTS[@]}"; do
+     [[ "$id" == "$environment_id" ]] && echo "$environment_id" && return 0
+  done
+  echo "\"$environment_id\" is not active.  If it has been added to config.yml, then set as \"local\", \"remote\" or add to \"other\" in config.local.yml."
   return 1
 }
 

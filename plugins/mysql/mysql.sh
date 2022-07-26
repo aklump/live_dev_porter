@@ -92,7 +92,7 @@ function mysql_on_configtest() {
   done
 
   # Check if remote has an export tool installed.
-  for environment_id in "${ENVIRONMENT_IDS[@]}"; do
+  for environment_id in "${ACTIVE_ENVIRONMENTS[@]}"; do
     ! is_remote_environment "$environment_id" && continue
 
     eval $(get_config_as env_label "environments.$environment_id.label")

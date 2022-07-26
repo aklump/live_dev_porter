@@ -17,6 +17,14 @@ environments:
       secrets: private/default/secrets
       public: web/sites/default/files
       private: private/default/files
+  local:
+    label: Local Scaffold Source
+    write_access: false
+    plugin: default
+    base_path: ./
+    files:
+      install: .
+      secrets: .
   live:
     label: Dreamhost
     write_access: false

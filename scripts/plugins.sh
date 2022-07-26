@@ -9,7 +9,7 @@
 declare -a ACTIVE_PLUGINS=('default')
 
 # This will load the database plugins for all environments.
-for environment_id in "${ENVIRONMENT_IDS[@]}"; do
+for environment_id in "${ACTIVE_ENVIRONMENTS[@]}"; do
   eval $(get_config_keys_as database_ids "environments.$environment_id.databases")
   for database_id in "${database_ids[@]}"; do
     eval $(get_config_as plugin "environments.$environment_id.databases.$database_id.plugin")

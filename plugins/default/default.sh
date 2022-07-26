@@ -30,7 +30,7 @@ function default_on_configtest() {
   local is_remote
 
   # Test for file sync groups.
-  for environment_id in "${ENVIRONMENT_IDS[@]}"; do
+  for environment_id in "${ACTIVE_ENVIRONMENTS[@]}"; do
     is_remote=''
     if [[ "$LOCAL_ENV_ID" != "$environment_id" ]] && is_remote_environment "$environment_id"; then
       is_remote=true
