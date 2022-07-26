@@ -361,8 +361,7 @@ function mysql_on_pull_db() {
 
   # Create the export at the remote.
   remote_base_path="$(environment_path_resolve $REMOTE_ENV_ID)"
-  write_log_debug "remote_ssh \"cd $remote_base_path || exit 1;[[ -e ./vendor/bin/ldp ]] || exit 2; ./vendor/bin/ldp export pull --force --format=json --id="$DATABASE_ID"$remote_ldp_options || exit 3\""
-  remote_json=$(remote_ssh "cd $remote_base_path || exit 1;[[ -e ./vendor/bin/ldp ]] || exit 2; ./vendor/bin/ldp export pull --force --format=json --id="$DATABASE_ID"$remote_ldp_options || exit 3")
+  remote_json=$(remote_ssh "cd \"$remote_base_path\" || exit 1;[[ -e ./vendor/bin/ldp ]] || exit 2; ./vendor/bin/ldp export \"pull_by_$(whoami)\" --force --format=json --id=\"$DATABASE_ID\"$remote_ldp_options || exit 3")
   remote_status=$?
   if [[ $remote_status -ne 0 ]]; then
     write_log_error "Remote exited with: $remote_status"

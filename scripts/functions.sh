@@ -331,6 +331,7 @@ function implement_configtest() {
 #
 # Returns 0 if .
 function remote_ssh() {
+  write_log_debug "ssh -t -o BatchMode=yes "${REMOTE_ENV_AUTH%:}" "$@""
   ssh -t -o BatchMode=yes "${REMOTE_ENV_AUTH%:}" "$@"
 }
 
