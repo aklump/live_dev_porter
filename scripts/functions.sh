@@ -342,6 +342,7 @@ function remote_ssh_by_environment() {
 
   eval $(get_config_as env_auth "environments.$environment_id.ssh")
   [[ "$env_auth" ]] || return 1
+  write_log_debug "ssh -t -o BatchMode=yes "$env_auth" "${@:2}""
   ssh -t -o BatchMode=yes "$env_auth" "${@:2}"
 }
 

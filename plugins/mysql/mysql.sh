@@ -104,7 +104,7 @@ function mysql_on_configtest() {
     ldp_pull_command="ldp pull $environment_id"
     [[ "$environment_id" == "$REMOTE_ENV_ID" ]] && ldp_pull_command="ldp pull"
     echo_task "Check \"$ldp_pull_command\" availability."
-    if remote_ssh "[[ -e "$remote_base_path"/vendor/bin/ldp ]]" &> /dev/null; then
+    if remote_ssh_by_environment "$environment_id" "[[ -e \"$remote_base_path/vendor/bin/ldp\" ]]" &> /dev/null; then
       echo_task_completed
     else
       echo_task_failed

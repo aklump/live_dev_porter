@@ -81,7 +81,7 @@ function default_on_configtest() {
 
       # Test for ionice on remote server
       echo_task "Assert \"ionice\" is installed on $environment_id."
-      if remote_ssh "which ionice >/dev/null" &> /dev/null; then
+      if remote_ssh_by_environment "$environment_id" "which ionice >/dev/null" &> /dev/null; then
         echo_task_completed
       else
         echo_task_failed
