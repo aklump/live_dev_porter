@@ -149,7 +149,7 @@ exit_with_failure_if_empty_config 'LOCAL_ENV_ID' 'local'
 eval $(get_config_as REMOTE_ENV_ID 'remote')
 
 # Alter the remote environment via CLI when appropriate.
-if [[ 'pull' == $COMMAND ]]; then
+if [[ 'pull' == $COMMAND ]] || [[ 'remote' == $COMMAND ]]; then
   REMOTE_ENV_ID=$(get_command_arg 0 "$REMOTE_ENV_ID")
   ! REMOTE_ENV_ID=$(validate_environment "$REMOTE_ENV_ID") && fail_because "$REMOTE_ENV_ID" && exit_with_failure
 fi

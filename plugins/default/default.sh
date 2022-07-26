@@ -127,7 +127,10 @@ function default_on_remote_shell() {
   # @link https://www.man7.org/linux/man-pages/man1/ssh.1.html
   # @link https://github.com/fraction/sshcd/blob/master/sshcd
   local remote_base_path="$(environment_path_resolve $REMOTE_ENV_ID)"
-  remote_ssh "(cd $remote_base_path; exec \$SHELL -l)"
+  # The -l command runs bash as if it was a login shell, which is more likely
+  # going to contain the customizations the user is expecting.  Another
+  # possibility for $SHELL is mysecureshell which does not have that option.
+  remote_ssh "(cd $remote_base_path; [[ $(basename $SHELL) == bash ]] && exec \$SHELL -l || exec \$SHELL)"
 }
 
 function default_on_pull_files() {

@@ -23,6 +23,9 @@ commands:
   remote:
     require_remote_env: true
     help: 'Enter the remote server shell.'
+    arguments:
+      remote_environment:
+        help: Optional.  The ID of a remote environment.  Defaults to the configured "remote".
   help:
     help: 'Show this help screen.'
   info:
