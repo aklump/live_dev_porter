@@ -10,6 +10,27 @@ use PHPUnit\Framework\TestCase;
  */
 final class StatisticsTest extends TestCase {
 
+  /**
+   * Provides data for testSumDurations.
+   */
+  public function dataForTestSumDurationsProvider() {
+    $tests = [];
+    $tests[] = ['1 hour', '1 hour'];
+    $tests[] = ['1 hour 17 minutes 3 seconds', '1 hour,17 minutes,3 seconds'];
+    $tests[] = ['47 minutes', '30 minutes,16 minutes,60 seconds'];
+    $tests[] = ['47 minutes', '30 MINUTES,16 MINUTES,60 SECONDS'];
+    $tests[] = ['3 hours 47 minutes 2 seconds', '1h,2h,30min,16min,60sec,2s'];
+
+    return $tests;
+  }
+
+  /**
+   * @dataProvider dataForTestSumDurationsProvider
+   */
+  public function testSumDurations($control, $csv) {
+    $this->assertSame($control, Statistics::sumDurations($csv));
+  }
+
   public function testFormatSeconds() {
     $this->assertSame('2 hours 1 second', Statistics::formatSeconds(7201));
     $this->assertSame('1 hour 3 minutes 5 seconds', Statistics::formatSeconds(3785));

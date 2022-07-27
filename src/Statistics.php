@@ -91,10 +91,11 @@ final class Statistics {
    */
   public static function sumDurations(string $csv): string {
     $sum = array_sum(array_map(function ($item) {
+      preg_match('/(\d+)\s*h/i', $item, $hour);
       preg_match('/(\d+)\s*m/i', $item, $min);
       preg_match('/(\d+)\s*s/i', $item, $sec);
 
-      return ($min[1] ?? 0) * 60 + ($sec[1] ?? 0);
+      return ($hour[1] ?? 0) * 3600 + ($min[1] ?? 0) * 60 + ($sec[1] ?? 0);
     }, explode(',', $csv)));
 
     return self::formatSeconds($sum);
