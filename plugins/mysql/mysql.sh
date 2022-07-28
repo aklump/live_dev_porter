@@ -124,7 +124,7 @@ function mysql_on_db_shell() {
   local defaults_file
   local db_name
   ! db_name=$(database_get_name "$LOCAL_ENV_ID" "$database_id") && fail_because "$db_name" && return 1
-  defaults_file=$(database_get_defaults_file "$LOCAL_ENV_ID" "$LOCAL_DATABASE_ID")
+  defaults_file=$(database_get_defaults_file "$LOCAL_ENV_ID" "$database_id")
   mysql --defaults-file="$defaults_file" "$db_name"
 }
 

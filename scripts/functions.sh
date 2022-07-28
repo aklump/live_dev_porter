@@ -102,6 +102,25 @@ function validate_workflow() {
   return 1
 }
 
+# Ensure a given database ID is valid for the local environment.
+#
+# $1 - A database ID.
+#
+# @code
+# ! id=$(validate_workflow "$id") && echo "$id" && return 1
+# echo "$id" && return 0
+# @endcode
+#
+# Returns 0 and echos the ID if valid; otherwise echo error and return 1
+function validate_local_database_id() {
+  local database_id="$1"
+
+  eval $(get_config_keys_as array_has_value__array "environments.$LOCAL_ENV_ID.databases")
+  array_has_value "$database_id" && echo "$database_id" && return 0
+  echo "\"$database_id\" is not a configured database."
+  return 1
+}
+
 # Ensure a given environment ID is valid AND ACTIVE
 #
 # $1 - A environment ID, which is active, that is local, remote or other.
