@@ -223,6 +223,10 @@ function mysql_on_export_db() {
     [[ -f "$save_as.gz" ]] && fail_because "$shortpath.gz exists; use --force to overwrite." && return 1
   fi
 
+  # At this point we should wipe the slate clean.
+  [[ -f "$save_as" ]] && rm $save_as
+  [[ -f "$save_as.gz" ]] && rm $save_as.gz
+
   # @link https://dev.mysql.com/doc/refman/5.7/en/mysqldump.html#mysqldump-option-summary
   eval $(get_config_as -a "mysqldump_base_options" "plugins.mysql.mysqldump_base_options")
 
