@@ -18,7 +18,7 @@ environments:
     label: ITLS
     write_access: true
     plugin: default
-    base_path: ./
+    base_path: /alpha/bravo/app
     command_workflows:
       pull: develop
     databases:
@@ -33,7 +33,7 @@ environments:
     label: ITLS
     write_access: false
     plugin: default
-    base_path: ./
+    base_path: /alpha/bravo/app
     files:
       install: ./
 ```

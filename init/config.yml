@@ -3,7 +3,7 @@ environments:
     label: Development
     write_access: true
     plugin: default
-    base_path: .
+    base_path: /alpha/bravo/app
     command_workflows:
       pull: develop
       export: archive
@@ -21,7 +21,7 @@ environments:
     label: Local Scaffold Source
     write_access: false
     plugin: default
-    base_path: ./
+    base_path: /alpha/bravo/app
     files:
       install: .
       secrets: .

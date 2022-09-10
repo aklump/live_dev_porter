@@ -40,6 +40,14 @@ function default_on_configtest() {
     echo
     echo_heading "$heading Environment: $env_label"
 
+    eval $(get_config_as base "environments.$environment_id.base_path")
+    echo_task "environments.$environment_id.base_path is absolute"
+    if ! path_is_absolute "$base"; then
+      echo_task_failed
+    else
+      echo_task_completed
+    fi
+
     # Test for all CLI tool dependencies.
     tools=('gzip' 'mysqldump' 'mysql')
     for tool in "${tools[@]}"; do
