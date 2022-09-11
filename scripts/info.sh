@@ -19,7 +19,7 @@ for id in "${ACTIVE_ENVIRONMENTS[@]}"; do
   [[ "$id" == "$LOCAL_ENV_ID" ]] && adjective="Local"
   [[ "$id" == "$REMOTE_ENV_ID" ]] && adjective="Remote"
   echo_title "$adjective Environment ($id) : $label"
-  if is_remote_environment "$id"; then
+  if is_ssh_connection "$id"; then
     table_add_row "Root" "$base_path"
     if [[ "$ssh" ]]; then
       table_add_row "SSH" "$ssh"

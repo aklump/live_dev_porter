@@ -258,16 +258,37 @@ function implement_route_access() {
   return 0
 }
 
-# Test if an environment has SSH credentials indicating it's a remote.
+# Checks if you will need to connect using SSH to an environment
 #
-# $1 - The environment ID.
+# $1 - An environment ID with which you wish to communicate.
 #
-# Returns 0 if remote. 1 if local.
-function is_remote_environment() {
+# Returns 0 if you need ssh; 1 if not.
+#
+# @see get_ssh_auth()
+function is_ssh_connection() {
   local environment_id="$1"
 
-  eval $(get_config_as env_auth "environments.$environment_id.ssh")
-  [[ "$env_auth" ]] && return 0 || return 1
+  auth=$(get_ssh_auth "$environment_id")
+  [[ "$auth" != "" ]] && return 0
+  return 1
+}
+
+# If an environment is on another server this will echo the ssh auth.
+#
+# @code
+# auth=$(get_ssh_auth "$REMOTE_ENV_ID")
+# @endcode
+#
+# $1 - An environment ID with which you wish to communicate.
+#
+function get_ssh_auth() {
+  local environment_id="$1"
+
+  eval $(get_config_as a "environments.$LOCAL_ENV_ID.ssh")
+  eval $(get_config_as b "environments.$environment_id.ssh")
+  if [[ "$b" ]] && [[ "$a" != "$b" ]]; then
+    echo "${b}:"
+  fi
 }
 
 # Resolve an environment relative path to absolute

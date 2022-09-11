@@ -93,7 +93,7 @@ function mysql_on_configtest() {
 
   # Check if remote has an export tool installed.
   for environment_id in "${ACTIVE_ENVIRONMENTS[@]}"; do
-    ! is_remote_environment "$environment_id" && continue
+    ! is_ssh_connection "$environment_id" && continue
 
     # If the test is being run from a remote environment, it should not check
     # against itself, as this seems to fail.
