@@ -107,13 +107,13 @@ function mysql_on_configtest() {
     [[ "$environment_id" == "$REMOTE_ENV_ID" ]] && ldp_pull_command="ldp pull"
 
     echo_task "Check \"$ldp_pull_command\" availability."
-    test_command="[[ -e \"$remote_base_path/vendor/bin/ldp\" ]]"
+    test_path="$remote_base_path/vendor/bin/ldp"
     test_command_result=1
     if is_ssh_connection "$environment_id"; then
-      remote_ssh "$environment_id" "$test_command"  &> /dev/null
+      remote_ssh "$environment_id" "[[ -e \"$test_path\" ]]"  &> /dev/null
       test_command_result=$?
     else
-      $test_command &> /dev/null
+      [[ -e "$test_path" ]] &> /dev/null
       test_command_result=$?
     fi
     if [[ $test_command_result -eq 0 ]]; then
@@ -359,7 +359,6 @@ function mysql_drop_all_tables() {
 function mysql_on_pull_db() {
   local DATABASE_ID="$1"
 
-  local command
   local remote_base_path
   local result_json
   local remote_dumpfile_path
@@ -382,11 +381,10 @@ function mysql_on_pull_db() {
 
   # Create the export at the remote.
   remote_base_path="$(environment_path_resolve $REMOTE_ENV_ID)"
-  command="cd \"$remote_base_path\" || exit 1;[[ -e ./vendor/bin/ldp ]] || exit 2; ./vendor/bin/ldp export \"pull_by_$(whoami)\" --force --format=json --id=\"$DATABASE_ID\"$remote_ldp_options || exit 3"
   if is_ssh_connection "$REMOTE_ENV_ID"; then
-    result_json=$(remote_ssh "$REMOTE_ENV_ID" "$command")
+    result_json=$(remote_ssh "$REMOTE_ENV_ID" "cd \"$remote_base_path\" || exit 1;[[ -e ./vendor/bin/ldp ]] || exit 2; ./vendor/bin/ldp export \"pull_by_$(whoami)\" --force --format=json --id=\"$DATABASE_ID\"$remote_ldp_options || exit 3")
   else
-    result_json=$($command)
+    result_json=$(cd "$remote_base_path" || exit 1;[[ -e ./vendor/bin/ldp ]] || exit 2; ./vendor/bin/ldp export "pull_by_$(whoami)" --force --format=json --id="$DATABASE_ID"$remote_ldp_options || exit 3)
   fi
   result_status=$?
   if [[ $result_status -ne 0 ]]; then
@@ -412,11 +410,10 @@ function mysql_on_pull_db() {
 
   # Delete the remote file
   echo_task "Delete remote file"
-  command="[[ -f \"$remote_dumpfile_path\" ]] && rm \"$remote_dumpfile_path\""
   if is_ssh_connection "$REMOTE_ENV_ID"; then
-    ! remote_ssh  "$REMOTE_ENV_ID" "$command" &> /dev/null && echo_task_failed && return 1
+    ! remote_ssh  "$REMOTE_ENV_ID" "[[ -f \"$remote_dumpfile_path\" ]] && rm \"$remote_dumpfile_path\"" &> /dev/null && echo_task_failed && return 1
   else
-    ! $command &> /dev/null && echo_task_failed && return 1
+    ! [[ -f "$remote_dumpfile_path" ]] && rm "$remote_dumpfile_path" &> /dev/null && echo_task_failed && return 1
   fi
   echo_task_completed
 
