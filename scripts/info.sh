@@ -62,10 +62,10 @@ for id in "${ACTIVE_ENVIRONMENTS[@]}"; do
       group_path=${group_path%/}
       group_path=${group_path%.}
       group_path=${group_path%/}
-      if [[ "$id" == "$LOCAL_ENV_ID" ]]; then
-        table_add_row "$group_id" "$(echo_red_path_if_nonexistent "$group_path")"
-      else
+      if is_ssh_connection "$id"; then
         table_add_row "$group_id" "$group_path"
+      else
+        table_add_row "$group_id" "$(echo_red_path_if_nonexistent "$group_path")"
       fi
     fi
   done

@@ -78,6 +78,8 @@ function mysql_on_configtest() {
   local defaults_file
   local ldp_pull_command
   local message
+  local test_command
+  local test_command_result
 
   for database_id in "${LOCAL_DATABASE_IDS[@]}"; do
     defaults_file=$(database_get_defaults_file "$LOCAL_ENV_ID" "$database_id")
@@ -93,22 +95,32 @@ function mysql_on_configtest() {
 
   # Check if remote has an export tool installed.
   for environment_id in "${ACTIVE_ENVIRONMENTS[@]}"; do
-    ! is_ssh_connection "$environment_id" && continue
-
-    # If the test is being run from a remote environment, it should not check
-    # against itself, as this seems to fail.
+    # This test is checking that remotes have something, so the local
+    # environment should never be checked by this test.
     [[ "$environment_id" == "$LOCAL_ENV_ID" ]] && continue
 
     eval $(get_config_as env_label "environments.$environment_id.label")
     remote_base_path="$(environment_path_resolve $environment_id)"
+
+    # Decide if we can assume the environment argument or not.
     ldp_pull_command="ldp pull $environment_id"
     [[ "$environment_id" == "$REMOTE_ENV_ID" ]] && ldp_pull_command="ldp pull"
+
     echo_task "Check \"$ldp_pull_command\" availability."
-    if remote_ssh "$environment_id" "[[ -e \"$remote_base_path/vendor/bin/ldp\" ]]" &> /dev/null; then
-      echo_task_completed
+    test_command="[[ -e \"$remote_base_path/vendor/bin/ldp\" ]]"
+    test_command_result=1
+    if is_ssh_connection; then
+      remote_ssh "$environment_id" "test_command"  &> /dev/null
+      test_command_result=$?
     else
-      echo_task_failed
-      fail_because "${remote_base_path%/}/vendor/bin/ldp is missing from $environment_id."
+      "[[ -e \"$remote_base_path/vendor/bin/ldp\" ]]" &> /dev/null
+      test_command_result=$?
+    fi
+    if [[ $test_command_result -eq 0 ]]; then
+        echo_task_completed
+    else
+        fail_because "${remote_base_path%/}/vendor/bin/ldp is missing from $environment_id."
+        echo_task_failed
     fi
   done
 }
@@ -347,11 +359,12 @@ function mysql_drop_all_tables() {
 function mysql_on_pull_db() {
   local DATABASE_ID="$1"
 
+  local command
   local remote_base_path
-  local remote_cmd
-  local remote_json
+  local result_json
   local remote_dumpfile_path
   local remote_ldp_options
+  local result_status
 
   echo_task "Export remote database: $DATABASE_ID"
   [[ "$WORKFLOW_ID" ]] && remote_ldp_options="$remote_ldp_options --workflow="$WORKFLOW_ID""
@@ -369,22 +382,27 @@ function mysql_on_pull_db() {
 
   # Create the export at the remote.
   remote_base_path="$(environment_path_resolve $REMOTE_ENV_ID)"
-  remote_json=$(remote_ssh "$REMOTE_ENV_ID" "cd \"$remote_base_path\" || exit 1;[[ -e ./vendor/bin/ldp ]] || exit 2; ./vendor/bin/ldp export \"pull_by_$(whoami)\" --force --format=json --id=\"$DATABASE_ID\"$remote_ldp_options || exit 3")
-  remote_status=$?
-  if [[ $remote_status -ne 0 ]]; then
-    write_log_error "Remote exited with: $remote_status"
-    write_log_error "$remote_json"
-    fail_because "$remote_json"
+  command="cd \"$remote_base_path\" || exit 1;[[ -e ./vendor/bin/ldp ]] || exit 2; ./vendor/bin/ldp export \"pull_by_$(whoami)\" --force --format=json --id=\"$DATABASE_ID\"$remote_ldp_options || exit 3"
+  if is_ssh_connection "$REMOTE_ENV_ID"; then
+    result_json=$(remote_ssh "$REMOTE_ENV_ID" "$command")
+  else
+    result_json=$("$command")
+  fi
+  result_status=$?
+  if [[ $result_status -ne 0 ]]; then
+    write_log_error "Remote exited with: $result_status"
+    write_log_error "$result_json"
+    fail_because "$result_json"
   fi
 
-  [[ $remote_status -eq 1 ]] && echo_task_failed && fail_because "$remote_base_path does not exist." && return 1
-  [[ $remote_status -eq 2 ]] && echo_task_failed && fail_because "$remote_base_path/vendor/bin/ldp is missing or does not have execute permissions." && return 1
-  [[ $remote_status -eq 3 ]] && echo_task_failed && fail_because "Remote export failed" && return 1
+  [[ $result_status -eq 1 ]] && echo_task_failed && fail_because "$remote_base_path does not exist." && return 1
+  [[ $result_status -eq 2 ]] && echo_task_failed && fail_because "$remote_base_path/vendor/bin/ldp is missing or does not have execute permissions." && return 1
+  [[ $result_status -eq 3 ]] && echo_task_failed && fail_because "Remote export failed" && return 1
   echo_task_completed
   echo_time_heading
 
   # Download the dumpfile.
-  json_set "$remote_json"
+  json_set "$result_json"
   remote_dumpfile_path="$(json_get_value "filepath")"
   local save_as="$dumpfiles_dir/$(basename "$remote_dumpfile_path")"
   echo_task "Download as $(basename "$save_as")"
@@ -394,7 +412,12 @@ function mysql_on_pull_db() {
 
   # Delete the remote file
   echo_task "Delete remote file"
-  ! remote_ssh  "$REMOTE_ENV_ID" "[[ -f \"$remote_dumpfile_path\" ]] && rm \"$remote_dumpfile_path\"" &> /dev/null && echo_task_failed && return 1
+  command="[[ -f \"$remote_dumpfile_path\" ]] && rm \"$remote_dumpfile_path\""
+  if is_ssh_connection "$REMOTE_ENV_ID"; then
+    ! remote_ssh  "$REMOTE_ENV_ID" "$command" &> /dev/null && echo_task_failed && return 1
+  else
+    ! "$command" &> /dev/null && echo_task_failed && return 1
+  fi
   echo_task_completed
 
   # Do the rollback and import.

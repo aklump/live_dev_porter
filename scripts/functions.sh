@@ -287,7 +287,7 @@ function get_ssh_auth() {
   eval $(get_config_as a "environments.$LOCAL_ENV_ID.ssh")
   eval $(get_config_as b "environments.$environment_id.ssh")
   if [[ "$b" ]] && [[ "$a" != "$b" ]]; then
-    echo "${b}:"
+    echo "${b}"
   fi
 }
 
@@ -369,7 +369,7 @@ function implement_configtest() {
 function remote_ssh() {
   local environment_id="$1"
 
-  eval $(get_config_as env_auth "environments.$environment_id.ssh")
+  env_auth=$(get_ssh_auth "$environment_id")
   [[ "$env_auth" ]] || return 1
   write_log_debug "ssh -t -o BatchMode=yes "$env_auth" "${@:2}""
   ssh -t -o BatchMode=yes "$env_auth" "${@:2}"

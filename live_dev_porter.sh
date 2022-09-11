@@ -192,6 +192,7 @@ for id in "${ACTIVE_ENVIRONMENTS[@]}"; do
   # Configure remote variables if we have that environment.
   elif [[ "$REMOTE_ENV_ID" != null ]] && [[ "$id" == "$REMOTE_ENV_ID" ]]; then
     REMOTE_ENV_AUTH=$(get_ssh_auth "$id")
+    [[ "$REMOTE_ENV_AUTH" ]] && REMOTE_ENV_AUTH="$REMOTE_ENV_AUTH:"
 
     eval $(get_config_keys_as "REMOTE_DATABASE_IDS" "environments.$REMOTE_ENV_ID.databases")
     REMOTE_DATABASE_ID=${REMOTE_DATABASE_IDS[0]}
