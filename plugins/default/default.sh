@@ -28,6 +28,7 @@ function default_on_configtest() {
   local file_group_shortpath
   local heading
   local is_remote
+  local command
 
   # Test for file sync groups.
   for environment_id in "${ACTIVE_ENVIRONMENTS[@]}"; do
@@ -52,10 +53,11 @@ function default_on_configtest() {
     tools=('gzip' 'mysqldump' 'mysql')
     for tool in "${tools[@]}"; do
       echo_task "$(string_ucfirst "$environment_id") has \"$tool\" installed."
+      command="which $tool"
       if [[ "$is_remote" ]]; then
-        remote_ssh "$environment_id" which $tool > /dev/null
+        remote_ssh "$environment_id" "$command" &> /dev/null
       else
-        which $tool > /dev/null
+        "$command" &> /dev/null
       fi
       if [[ $? -gt 0 ]]; then
         echo_task_failed && fail_because "Is the directory containing $tool found in your \$PATH variable on $environment_id?"

@@ -109,11 +109,11 @@ function mysql_on_configtest() {
     echo_task "Check \"$ldp_pull_command\" availability."
     test_command="[[ -e \"$remote_base_path/vendor/bin/ldp\" ]]"
     test_command_result=1
-    if is_ssh_connection; then
-      remote_ssh "$environment_id" "test_command"  &> /dev/null
+    if is_ssh_connection "$environment_id"; then
+      remote_ssh "$environment_id" "$test_command"  &> /dev/null
       test_command_result=$?
     else
-      "[[ -e \"$remote_base_path/vendor/bin/ldp\" ]]" &> /dev/null
+      "$test_command" &> /dev/null
       test_command_result=$?
     fi
     if [[ $test_command_result -eq 0 ]]; then
