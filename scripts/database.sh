@@ -11,7 +11,7 @@
 # $2 - The database ID.
 #
 # Echos the directory WITHOUT trailing slash.
-function database_get_directory() {
+function database_get_local_directory() {
   local environment_id="$1"
   local database_id="$2"
 

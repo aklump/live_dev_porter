@@ -139,7 +139,7 @@ function mysql_prune_rollback_files() {
   local keep_files_count=$2
   [[ "$2" ]] || return 1
   filename="rollback_$(date8601 -c).sql"
-  dumpfiles_dir="$(database_get_directory "$LOCAL_ENV_ID" "$database_id")"
+  dumpfiles_dir="$(database_get_local_directory "$LOCAL_ENV_ID" "$database_id")"
 
   local rollback_files
   local stop_at_index
@@ -174,7 +174,7 @@ function mysql_create_local_rollback_file() {
   local save_as
 
   filename="rollback_$(date8601 -c).sql"
-  dumpfiles_dir="$(database_get_directory "$LOCAL_ENV_ID" "$database_id")"
+  dumpfiles_dir="$(database_get_local_directory "$LOCAL_ENV_ID" "$database_id")"
   sandbox_directory "$dumpfiles_dir"
   ! mkdir -p "$dumpfiles_dir" && fail_because "Could not create directory: $dumpfiles_dir" && return 1
 
@@ -363,7 +363,7 @@ function mysql_on_pull_db() {
   # user output to be a valid link in some terminals so keep it first in the
   # process.  That way the user can click the link and open the directory and
   # watch the file download into it.
-  local dumpfiles_dir="$(database_get_directory "$REMOTE_ENV_ID" "$DATABASE_ID")"
+  local dumpfiles_dir="$(database_get_local_directory "$REMOTE_ENV_ID" "$DATABASE_ID")"
   sandbox_directory "$dumpfiles_dir"
   ! mkdir -p "$dumpfiles_dir" && fail_because "Could not create directory: $dumpfiles_dir" && return 1
 

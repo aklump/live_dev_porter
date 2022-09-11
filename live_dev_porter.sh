@@ -309,7 +309,7 @@ case $COMMAND in
         export_directory="$(get_option 'dir')"
         [[ ! -d "$export_directory" ]] && exit_with_failure "Using --dir requires the directory already exist."
       else
-        export_directory="$(database_get_directory "$LOCAL_ENV_ID" "$DATABASE_ID")"
+        export_directory="$(database_get_local_directory "$LOCAL_ENV_ID" "$DATABASE_ID")"
       fi
       export_directory_shortpath="$(path_unresolve "$PWD" "$export_directory")"
 
@@ -354,8 +354,8 @@ case $COMMAND in
       if [[ -f "$filepath" ]]; then
         shortpath=$(path_unresolve "$PWD" "$filepath")
       else
-        pull_dir=$(database_get_directory "$REMOTE_ENV_ID" "$DATABASE_ID")
-        backups_dir=$(database_get_directory "$LOCAL_ENV_ID" "$DATABASE_ID")
+        pull_dir=$(database_get_local_directory "$REMOTE_ENV_ID" "$DATABASE_ID")
+        backups_dir=$(database_get_local_directory "$LOCAL_ENV_ID" "$DATABASE_ID")
         table_clear
         table_add_row "$REMOTE_ENV_ID" "$(path_unresolve "$PWD" "$pull_dir")"
         table_add_row "$LOCAL_ENV_ID" "$(path_unresolve "$PWD" "$backups_dir")"
@@ -470,8 +470,8 @@ case $COMMAND in
             call_php_class_method "\AKlump\LiveDevPorter\Statistics::start" "$stat_arguments"
 
             # This will create a quick link for the user to "open in Finder"
-            save_dir=$(database_get_directory "$REMOTE_ENV_ID" "$DATABASE_ID")
-            backups_dir=$(database_get_directory "$LOCAL_ENV_ID" "$DATABASE_ID")
+            save_dir=$(database_get_local_directory "$REMOTE_ENV_ID" "$DATABASE_ID")
+            backups_dir=$(database_get_local_directory "$LOCAL_ENV_ID" "$DATABASE_ID")
             table_clear
             table_add_row "downloads" "$(path_unresolve "$PWD" "$save_dir")"
             table_add_row "backups" "$(path_unresolve "$PWD" "$backups_dir")"

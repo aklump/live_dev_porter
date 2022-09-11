@@ -37,11 +37,19 @@ for id in "${ACTIVE_ENVIRONMENTS[@]}"; do
   eval $(get_config_keys_as database_ids "environments.$id.databases")
   for database_id in "${database_ids[@]}"; do
     eval $(get_config_as plugin "environments.$id.databases.${database_id}.plugin")
-    dumpfiles_dir="$(database_get_directory "$id" "$database_id")"
-    table_add_row "$database_id" "$plugin" "$dumpfiles_dir"
+    if [[ "$id" == "$LOCAL_ENV_ID" ]]; then
+      dumpfiles_dir="$(database_get_local_directory "$id" "$database_id")"
+      table_add_row "$database_id" "$plugin" "$dumpfiles_dir"
+    else
+      table_add_row "$database_id" "$plugin"
+    fi
   done
   if table_has_rows; then
-    table_set_header "DATABASE" "PLUGIN" "EXPORTS"
+    if [[ "$id" == "$LOCAL_ENV_ID" ]]; then
+      table_set_header "DATABASE" "PLUGIN" "EXPORTS"
+    else
+      table_set_header "DATABASE" "PLUGIN"
+    fi
     echo_slim_table
   fi
 

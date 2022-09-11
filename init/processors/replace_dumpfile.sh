@@ -11,4 +11,4 @@
 [[ "$DATABASE_ID" ]] || exit 255
 [[ "$COMMAND" != "pull" ]] && exit 255
 
-./vendor/bin/ldp export pull.sanitized --workflow=$WORKFLOW_ID --force --dir=$(database_get_directory "$REMOTE_ENV_ID" "$DATABASE_ID") > /dev/null || exit 1
+./vendor/bin/ldp export pull.sanitized --workflow=$WORKFLOW_ID --force --dir=$(database_get_local_directory "$REMOTE_ENV_ID" "$DATABASE_ID") > /dev/null || exit 1
