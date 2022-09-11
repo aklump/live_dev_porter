@@ -57,7 +57,7 @@ function default_on_configtest() {
       if [[ "$is_remote" ]]; then
         remote_ssh "$environment_id" "$command" &> /dev/null
       else
-        "$command" &> /dev/null
+        $command &> /dev/null
       fi
       if [[ $? -gt 0 ]]; then
         echo_task_failed && fail_because "Is the directory containing $tool found in your \$PATH variable on $environment_id?"

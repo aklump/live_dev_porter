@@ -113,7 +113,7 @@ function mysql_on_configtest() {
       remote_ssh "$environment_id" "$test_command"  &> /dev/null
       test_command_result=$?
     else
-      "$test_command" &> /dev/null
+      $test_command &> /dev/null
       test_command_result=$?
     fi
     if [[ $test_command_result -eq 0 ]]; then
@@ -386,7 +386,7 @@ function mysql_on_pull_db() {
   if is_ssh_connection "$REMOTE_ENV_ID"; then
     result_json=$(remote_ssh "$REMOTE_ENV_ID" "$command")
   else
-    result_json=$("$command")
+    result_json=$($command)
   fi
   result_status=$?
   if [[ $result_status -ne 0 ]]; then
@@ -416,7 +416,7 @@ function mysql_on_pull_db() {
   if is_ssh_connection "$REMOTE_ENV_ID"; then
     ! remote_ssh  "$REMOTE_ENV_ID" "$command" &> /dev/null && echo_task_failed && return 1
   else
-    ! "$command" &> /dev/null && echo_task_failed && return 1
+    ! $command &> /dev/null && echo_task_failed && return 1
   fi
   echo_task_completed
 
