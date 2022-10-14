@@ -133,7 +133,7 @@ commands:
       - clearcache
       - cc
     help: 'Clear all cached data.'
-  processor:
+  process:
     help: 'Execute a single workflow processor.'
     arguments:
       processor:

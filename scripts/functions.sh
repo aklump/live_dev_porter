@@ -163,12 +163,12 @@ function execute_workflow_processors() {
     if [[ "$(path_extension "$processor_path")" == "sh" ]]; then
       [[ ! -f "$processor_path" ]] && fail_because "Missing file processor: $processor" && return 1
       [[ "$JSON_RESPONSE" != true ]] && echo_task "$(path_unresolve "$CONFIG_DIR" "$processor_path")"
-      processor_output=$(cd $APP_ROOT; source "$SOURCE_DIR/processor_support.sh"; . "$processor_path")
+      processor_output=$(cd "$APP_ROOT"; source "$SOURCE_DIR/processor_support.sh"; . "$processor_path")
       processor_result=$?
     else
       php_query="autoload=$CONFIG_DIR/processors/&COMMAND=$COMMAND&LOCAL_ENV_ID=$LOCAL_ENV_ID&REMOTE_ENV_ID=$REMOTE_ENV_ID&DATABASE_ID=$DATABASE_ID&DATABASE_NAME=$DATABASE_NAME&FILES_GROUP_ID=$FILES_GROUP_ID&FILEPATH=$FILEPATH&SHORTPATH=$SHORTPATH&IS_WRITEABLE_ENVIRONMENT=$IS_WRITEABLE_ENVIRONMENT"
       [[ "$JSON_RESPONSE" != true ]] && echo_task "$(path_unresolve "$CONFIG_DIR" "$processor_path")"
-      processor_output=$(cd $APP_ROOT; export CLOUDY_CONFIG_JSON; $CLOUDY_PHP "$ROOT/php/class_method_caller.php" "$basename" "$php_query")
+      processor_output=$(cd "$APP_ROOT"; export CLOUDY_CONFIG_JSON; $CLOUDY_PHP "$ROOT/php/class_method_caller.php" "$basename" "$php_query")
       processor_result=$?
     fi
 
