@@ -282,12 +282,12 @@ case $COMMAND in
       if [[ "$(path_extension "$processor_path")" == "sh" ]]; then
         echo_title "$(path_unresolve "$CONFIG_DIR" "$processor_path")"
         processor_output=$(cd "$APP_ROOT"; source "$SOURCE_DIR/processor_support.sh"; . "$processor_path")
-        if [[ $? -ne 0 ]]; fail_because "Processor failed";
+        [[ $? -ne 0 ]] && fail_because "Processor failed.";
       else
         php_query="autoload=$CONFIG_DIR/processors/&COMMAND=$COMMAND&LOCAL_ENV_ID=$LOCAL_ENV_ID&REMOTE_ENV_ID=$REMOTE_ENV_ID&DATABASE_ID=$DATABASE_ID&DATABASE_NAME=$DATABASE_NAME&FILES_GROUP_ID=$FILES_GROUP_ID&FILEPATH=$FILEPATH&SHORTPATH=$SHORTPATH&IS_WRITEABLE_ENVIRONMENT=$IS_WRITEABLE_ENVIRONMENT"
         echo_title "$(path_unresolve "$CONFIG_DIR" "$processor_path")"
         processor_output=$(cd "$APP_ROOT"; export CLOUDY_CONFIG_JSON; $CLOUDY_PHP "$ROOT/php/class_method_caller.php" "$basename" "$php_query")
-        if [[ $? -ne 0 ]]; fail_because "Processor failed";
+        [[ $? -ne 0 ]] && fail_because "Processor failed.";
       fi
       echo $processor_output
       has_failed && exit_with_failure
