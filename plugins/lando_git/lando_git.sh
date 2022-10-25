@@ -131,12 +131,14 @@ function lando_git_on_database_name() {
   local db_name
   local filepath
 
-  active_git_branch=$(lando_git_get_active_git_branch)
-
+  # Check to make sure the config was not created whilst on a different branch.
   filepath="$(lando_git_get_cached_branch_filepath "$environment_id" "$database_id")"
-  cached_git_branch=$(cat "$filepath")
-  if [[ "$active_git_branch" != "$cached_git_branch" ]]; then
-    echo "The git branch has changed; clear caches to reload the database connection." && return 1
+  if [[ -f "$filepath" ]]; then
+    active_git_branch=$(lando_git_get_active_git_branch)
+    cached_git_branch=$(cat "$filepath")
+    if [[ "$active_git_branch" != "$cached_git_branch" ]]; then
+      echo "The git branch has changed; clear caches to reload the database connection." && return 1
+    fi
   fi
 
   filepath="$(database_get_cached_name_filepath "$environment_id" "$database_id")"
