@@ -32,6 +32,7 @@ for id in "${ACTIVE_ENVIRONMENTS[@]}"; do
   table_add_row "Writeable" "$write_access"
 #  table_add_row "Plugin" "$plugin"
 
+  table_set_column_widths 18
   echo_slim_table
 
   # List out the environment's databases
@@ -48,6 +49,7 @@ for id in "${ACTIVE_ENVIRONMENTS[@]}"; do
   done
   if table_has_rows; then
     table_set_header "DATABASE"
+    table_set_column_widths 18
     echo_slim_table
   fi
 
@@ -74,6 +76,7 @@ for id in "${ACTIVE_ENVIRONMENTS[@]}"; do
   done
   if table_has_rows; then
     table_set_header "FILE GROUP" "PATH"
+    table_set_column_widths 18
     echo_slim_table
   fi
 done
@@ -87,6 +90,7 @@ echo_title "Active Environments"
 for environment_id in "${ACTIVE_ENVIRONMENTS[@]}"; do
    table_add_row "$environment_id"
 done
+table_set_column_widths 18
 echo_slim_table
 
 echo_title "Workflows"
@@ -104,6 +108,7 @@ for workflow_id in "${workflows[@]}"; do
     table_add_row "$label" "${databases[$i]}" "${file_groups[$i]}" "${processors[$i]}"
     label=''
   done
+  table_set_column_widths 18
   echo_slim_table
   echo
 done
