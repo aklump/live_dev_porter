@@ -32,3 +32,11 @@ environments:
 ## Troubleshooting
 
 `ldp remote` will connect you to the remote environment and `cd` to the base path. It you do not land in the base path, check _~/.bashrc_ and _~/.bash_profile_ for the presence of a `cd` command in there. You will need to comment that out or remove that line if you wish for LDP to land you in the basepath. 
+
+
+## _.profile_ not loading on login
+
+The app tries to connect as a login shell, but in some cases this may not be possible.  If not then you may find that files such as _.profile_ are not loaded and you're missing some configuration.
+
+See the function `default_on_remote_shell` for more details.
+
