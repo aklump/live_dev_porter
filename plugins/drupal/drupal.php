@@ -8,12 +8,22 @@
  * The format is the same as for Lando.
  */
 
-$path_to_env = $argv[1];
+$settings_path = $argv[1];
 $database = $argv[2];
 
+// All sorts of things can go wrong when trying to include the settings.php
+// file, so we are going to trap everything.
+set_error_handler(function ($code, $message, $file) use (&$errors) {
+  $errors[] = [$message, $file];
+});
+set_exception_handler(function ($exception) use (&$errors) {
+  $errors[] = [$exception->getMessage(), $exception->getFile()];
+});
 ob_start();
-require_once $argv[1];
+require_once $settings_path;
 ob_end_clean();
+restore_error_handler();
+restore_exception_handler();
 
 $data = [
   [
