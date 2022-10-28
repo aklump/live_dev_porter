@@ -57,6 +57,12 @@ remote:
 
 <p><code>ldp remote</code> will connect you to the remote environment and <code>cd</code> to the base path. It you do not land in the base path, check <em>~/.bashrc</em> and <em>~/.bash_profile</em> for the presence of a <code>cd</code> command in there. You will need to comment that out or remove that line if you wish for LDP to land you in the basepath.</p>
 
+<h2><em>.profile</em> not loading on login</h2>
+
+<p>The app tries to connect as a login shell, but in some cases this may not be possible.  If not then you may find that files such as <em>.profile</em> are not loaded and you're missing some configuration.</p>
+
+<p>See the function <code>default_on_remote_shell</code> for more details.</p>
+
 </section>
 
 <div class="search__results">
@@ -66,7 +72,7 @@ remote:
 <footer>
   <div class="pager"><a href="pull.html" class="prev pull">&laquo;Pulling Remote to Local</a><a href="index.html" class="index pager__book-title">Live Dev Porter: Documentation</a><a href="sanitation.html" class="next sanitation">Sanitation of Vulnerable Data&raquo;</a></div>  
   <div id="footer-legaleeze">
-    <p class="legaleeze center">Version: 0.0.94 &bull; Last Updated: Tue, 25 Oct 2022 14:42:08 -0700</p>
+    <p class="legaleeze center">Version: 0.0.95 &bull; Last Updated: Thu, 27 Oct 2022 17:04:00 -0700</p>
   </div>
 </footer>
 
