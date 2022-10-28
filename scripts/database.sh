@@ -125,6 +125,21 @@ function database_get_defaults_file() {
   echo "$CACHE_DIR/$environment_id/databases/$database_id/db.cnf"
 }
 
+# Echo a connection string for a database.
+#
+# e.g. mysql://<username>:<password>@<host>:<port>/<db_name>
+#
+# $1 - The environment ID.
+# $2 - The database ID (not the name, the ID!)
+#
+# Returns nothing.
+function database_get_connection_url() {
+  local environment_id="$1"
+  local database_id="$2"
+
+  echo $($CLOUDY_PHP "$ROOT/php/connection_url.php" "$(database_get_defaults_file "$environment_id" "$database_id")")"$(database_get_name "$environment_id" "$database_id")"
+}
+
 # Delete all .cnf files for all environments and database.
 #
 # @see HOOK_on_clear_cache()
@@ -159,7 +174,6 @@ function database_delete_all_name_files() {
   has_failed && return 1
   return 0
 }
-
 
 # Echo the database name by environment ID && database ID.
 #

@@ -14,6 +14,7 @@ for id in "${ACTIVE_ENVIRONMENTS[@]}"; do
 #  eval $(get_config_as -a 'plugin' "environments.$id.plugin")
   eval $(get_config_as -a 'ssh' "environments.$id.ssh")
   base_path=$(environment_path_resolve "$id")
+  base_path_short=$(path_relative_to_pwd "$base_path")
 
   adjective="Other"
   [[ "$id" == "$LOCAL_ENV_ID" ]] && adjective="Local"
@@ -26,7 +27,7 @@ for id in "${ACTIVE_ENVIRONMENTS[@]}"; do
       table_add_row "scp" "$ssh:$base_path"
     fi
   else
-    table_add_row "Root" "$(echo_red_path_if_nonexistent "$base_path")"
+    table_add_row "Root" "$(echo_red_path_if_nonexistent "$base_path" "$base_path_short")"
   fi
   table_add_row "Writeable" "$write_access"
 #  table_add_row "Plugin" "$plugin"
@@ -37,19 +38,16 @@ for id in "${ACTIVE_ENVIRONMENTS[@]}"; do
   eval $(get_config_keys_as database_ids "environments.$id.databases")
   for database_id in "${database_ids[@]}"; do
     eval $(get_config_as plugin "environments.$id.databases.${database_id}.plugin")
+    table_add_row "ID" "$database_id"
+    table_add_row "plugin" "$plugin"
     if [[ "$id" == "$LOCAL_ENV_ID" ]]; then
+      table_add_row "connection" "$(database_get_connection_url "$id" "$database_id")"
       dumpfiles_dir="$(database_get_local_directory "$id" "$database_id")"
-      table_add_row "$database_id" "$plugin" "$dumpfiles_dir"
-    else
-      table_add_row "$database_id" "$plugin"
+      table_add_row "exports" "$(path_relative_to_pwd "$dumpfiles_dir")"
     fi
   done
   if table_has_rows; then
-    if [[ "$id" == "$LOCAL_ENV_ID" ]]; then
-      table_set_header "DATABASE" "PLUGIN" "EXPORTS"
-    else
-      table_set_header "DATABASE" "PLUGIN"
-    fi
+    table_set_header "DATABASE"
     echo_slim_table
   fi
 
@@ -62,10 +60,15 @@ for id in "${ACTIVE_ENVIRONMENTS[@]}"; do
       group_path=${group_path%/}
       group_path=${group_path%.}
       group_path=${group_path%/}
-      if is_ssh_connection "$id"; then
-        table_add_row "$group_id" "$group_path"
+      if [[ "$id" == "$LOCAL_ENV_ID" ]]; then
+        group_path_short=$(path_relative_to_pwd "$group_path")
       else
-        table_add_row "$group_id" "$(echo_red_path_if_nonexistent "$group_path")"
+        group_path_short="$group_path"
+      fi
+      if is_ssh_connection "$id"; then
+        table_add_row "$group_id" "$group_path_short"
+      else
+        table_add_row "$group_id" "$(echo_red_path_if_nonexistent "$group_path" "$group_path_short")"
       fi
     fi
   done

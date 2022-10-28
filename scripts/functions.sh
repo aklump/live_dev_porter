@@ -381,11 +381,15 @@ function echo_time_heading() {
 
 function echo_red_path_if_nonexistent() {
   local path="$1"
+  local display_path="$2"
 
+  if [[ ! "$display_path" ]]; then
+    display_path="$path"
+  fi
   if [[ ! -e "$path" ]]; then
-    echo_red "$path"
+    echo_red "$display_path"
   else
-    echo "$path"
+    echo "$display_path"
   fi
 }
 
