@@ -664,7 +664,7 @@ function _cloudy_echo_aligned_columns() {
   local column_width
   local line
 
-  i=1
+  i=0
   for column_width in "${_cloudy_table_col_widths[@]}"; do
     width=$(($width + $lpad + $column_width + $rpad))
     if [[ $i -lt ${#_cloudy_table_col_widths} ]]; then
