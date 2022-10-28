@@ -37,7 +37,11 @@ for id in "${ACTIVE_ENVIRONMENTS[@]}"; do
 
   # List out the environment's databases
   eval $(get_config_keys_as database_ids "environments.$id.databases")
+  first_db=true
   for database_id in "${database_ids[@]}"; do
+    if [[ $first_db != true ]]; then
+      table_add_row
+    fi
     eval $(get_config_as plugin "environments.$id.databases.${database_id}.plugin")
     table_add_row "ID" "$database_id"
     table_add_row "plugin" "$plugin"
@@ -46,9 +50,10 @@ for id in "${ACTIVE_ENVIRONMENTS[@]}"; do
       dumpfiles_dir="$(database_get_local_directory "$id" "$database_id")"
       table_add_row "exports" "$(path_relative_to_pwd "$dumpfiles_dir")"
     fi
+    first_db=false
   done
   if table_has_rows; then
-    table_set_header "DATABASE"
+    table_set_header "DATABASES"
     table_set_column_widths 18
     echo_slim_table
   fi
