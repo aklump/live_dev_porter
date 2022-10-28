@@ -31,9 +31,9 @@ function drupal_on_rebuild_config() {
     eval $(get_config_path_as "settings" "$db_pointer.settings")
     exit_with_failure_if_config_is_not_path "settings" "$db_pointer.settings"
 
-    eval $(get_config_path_as "database" "$db_pointer.database" "default")
+    eval $(get_config_as "drupal_db_key" "$db_pointer.database" "default")
 
-    ! result=$($CLOUDY_PHP "$PLUGINS_DIR/drupal/drupal.php" "$settings" "$database") && exit_with_failure "$result"
+    ! result=$($CLOUDY_PHP "$PLUGINS_DIR/drupal/drupal.php" "$settings" "$drupal_db_key") && exit_with_failure "$result"
     json_set "$result"
 
     filepath=$(database_get_defaults_file "$LOCAL_ENV_ID" "$database_id")

@@ -9,7 +9,7 @@
  */
 
 $settings_path = $argv[1];
-$database = $argv[2];
+$drupal_db_key = $argv[2];
 
 // All sorts of things can go wrong when trying to include the settings.php
 // file, so we are going to trap everything.
@@ -28,13 +28,13 @@ restore_exception_handler();
 $data = [
   [
     'external_connection' => [
-      'host' => $databases['default']['default']['host'] ?? NULL,
-      'port' => $databases['default']['default']['port'] ?? NULL,
+      'host' => $databases[$drupal_db_key]['default']['host'] ?? NULL,
+      'port' => $databases[$drupal_db_key]['default']['port'] ?? NULL,
     ],
     'creds' => [
-      'database' => $databases['default']['default']['database'] ?? NULL,
-      'user' => $databases['default']['default']['username'] ?? NULL,
-      'password' => $databases['default']['default']['password'] ?? NULL,
+      'database' => $databases[$drupal_db_key]['default']['database'] ?? NULL,
+      'user' => $databases[$drupal_db_key]['default']['username'] ?? NULL,
+      'password' => $databases[$drupal_db_key]['default']['password'] ?? NULL,
     ],
   ],
 ];
