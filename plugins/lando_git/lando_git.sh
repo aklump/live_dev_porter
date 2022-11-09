@@ -16,8 +16,8 @@ function lando_git_get_cached_branch_filepath() {
 
 # Echo the active git branch based on the app root.
 #
-function lando_git_get_active_git_branch() {
-  (cd "$APP_ROOT" && git rev-parse --abbrev-ref HEAD)
+function lando_git_get_local_active_git_branch() {
+  (cd "$local_base_path" && git rev-parse --abbrev-ref HEAD)
 }
 
 function lando_git_on_clear_cache() {
@@ -72,7 +72,7 @@ function lando_git_on_rebuild_config() {
 
     eval $(get_config_keys_as -a branches "$db_pointer.service_by_branch")
 
-    local active_git_branch="$(lando_git_get_active_git_branch)"
+    local active_git_branch="$(lando_git_get_local_active_git_branch)"
     eval $(get_config_as service "$db_pointer.service_by_branch.$active_git_branch")
 
     if [[ ! "$service" ]]; then
@@ -85,7 +85,7 @@ function lando_git_on_rebuild_config() {
     filepath=$(lando_git_get_cached_branch_filepath "$LOCAL_ENV_ID" "$database_id")
     echo "$active_git_branch" > "$filepath"
 
-    ! json_set "$(cd $APP_ROOT && lando info -s $service --format=json 2>/dev/null | tail -1)" && fail_because "Could not read Lando configuration" && return 1
+    ! json_set "$(cd $local_base_path && lando info -s $service --format=json 2>/dev/null | tail -1)" && fail_because "Could not read Lando configuration" && return 1
 
     filepath=$(database_get_defaults_file "$LOCAL_ENV_ID" "$database_id")
     path_label="$(path_unresolve "$APP_ROOT" "$filepath")"
@@ -134,7 +134,7 @@ function lando_git_on_database_name() {
   # Check to make sure the config was not created whilst on a different branch.
   filepath="$(lando_git_get_cached_branch_filepath "$environment_id" "$database_id")"
   if [[ -f "$filepath" ]]; then
-    active_git_branch=$(lando_git_get_active_git_branch)
+    active_git_branch=$(lando_git_get_local_active_git_branch)
     cached_git_branch=$(cat "$filepath")
     if [[ "$active_git_branch" != "$cached_git_branch" ]]; then
       echo "The git branch has changed; clear caches to reload the database connection." && return 1
@@ -160,7 +160,7 @@ function lando_git_on_configtest() {
   done
   [[ "$run_lando_tests" == false ]] && return 255
 
-  lando_file="$APP_ROOT/.lando.yml"
+  lando_file="$local_base_path/.lando.yml"
   echo_task "Can read Lando file: $lando_file"
   ! [[ -f "$lando_file" ]] && echo_task_failed && fail && return 1
 

@@ -7,6 +7,8 @@
 # Define the configuration file relative to this script.
 CONFIG="live_dev_porter.core.yml";
 
+COMPOSER_VENDOR="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/vendor"
+
 # Uncomment this line to enable file logging.
 #LOGFILE="live_dev_porter.core.log"
 
@@ -442,8 +444,109 @@ case $COMMAND in
       [[ "$has_db" == true ]] && [[ "$do_database" == true ]] && array_csv__array=("${array_csv__array[@]}" "databases")
       [[ "$has_files" == true ]] && [[ "$do_files" == true ]] && array_csv__array=("${array_csv__array[@]}" "files")
 
-#      eval $(get_config_as label "environments.$LOCAL_ENV_ID.label")
-#      echo_title "$label ($LOCAL_ENV_ID)"
+      eval $(get_config_as label "environments.$REMOTE_ENV_ID.label")
+      echo_title "Pull $(array_csv --prose) from $label ($REMOTE_ENV_ID)"
+      [[ "$WORKFLOW_ID" ]] && echo_heading "Using workflow: $WORKFLOW_ID"
+
+      if [[ "$has_db" == false ]] && [[ "$has_files" == false ]]; then
+        fail_because "Nothing to pull; neither \"databases\" nor \"files_group\" have been configured."
+      fi
+
+      # Determine the estimated time for all pending tasks.  Note that if we
+      # don't have data for only one of the pending tasks, then we will not
+      # provide a total estimate, as the estimate would be missing data, hence
+      # the provide_estimate variable.
+      estimates=''
+      provide_estimate=true
+      if ! has_failed; then
+        if [[ "$do_database" == true ]] && "$has_db" != false ]]; then
+          for DATABASE_ID in "${LOCAL_DATABASE_IDS[@]}"; do
+            stat_arguments="CACHE_DIR=$CACHE_DIR&COMMAND=$COMMAND&TYPE=1&ID=$DATABASE_ID&SOURCE=$REMOTE_ENV_ID"
+            previous="$(echo_php_class_method "\AKlump\LiveDevPorter\Statistics::getDuration" "$stat_arguments")"
+            [[ ! "$previous" ]] && provide_estimate=false && break
+            estimates="$estimates,$previous" || estimates="$previous"
+          done
+        fi
+        if [[ "$provide_estimate" == true ]] && [[ "$do_files" == true ]] && "$has_files" != false ]]; then
+          eval $(get_config_keys_as group_ids "environments.$LOCAL_ENV_ID.files")
+          for FILES_GROUP_ID in ${group_ids[@]} ; do
+            has_option group && [[ "$(get_option group)" != "$FILES_GROUP_ID" ]] && continue
+            stat_arguments="CACHE_DIR=$CACHE_DIR&COMMAND=$COMMAND&TYPE=2&ID=$FILES_GROUP_ID&SOURCE=$REMOTE_ENV_ID"
+            previous="$(echo_php_class_method "\AKlump\LiveDevPorter\Statistics::getDuration" "$stat_arguments")"
+            [[ ! "$previous" ]] && provide_estimate=false && break;
+            estimates="$estimates,$previous" || estimates="$previous"
+          done
+        fi
+      fi
+      if [[ "$provide_estimate" == true ]]; then
+        time_estimate="$(echo_php_class_method "\AKlump\LiveDevPorter\Statistics::sumDurations" "$stat_arguments" "$estimates")"
+        [[ "$time_estimate" ]] && echo_heading "Time estimate: $time_estimate"
+      fi
+
+      process_in_the_background
+      if ! has_failed && [[ "$do_database" == true ]]; then
+        if [[ "$has_db" == false ]]; then
+          if has_option d; then
+            fail_because "Use of -d is out of context; \"databases\" has not been configured."
+          elif has_option v; then
+            succeed_because "No databases defined; skipping database component."
+          fi
+        else
+          for DATABASE_ID in "${LOCAL_DATABASE_IDS[@]}"; do
+            echo_heading "Database: $DATABASE_ID"
+            stat_arguments="CACHE_DIR=$CACHE_DIR&COMMAND=$COMMAND&TYPE=1&ID=$DATABASE_ID&SOURCE=$REMOTE_ENV_ID"
+            call_php_class_method "\AKlump\LiveDevPorter\Statistics::start" "$stat_arguments"
+
+            # This will create a quick link for the user to "open in Finder"
+            save_dir=$(database_get_local_directory "$REMOTE_ENV_ID" "$DATABASE_ID")
+            backups_dir=$(database_get_local_directory "$LOCAL_ENV_ID" "$DATABASE_ID")
+            table_clear
+            table_add_row "downloads" "$(path_unresolve "$PWD" "$save_dir")"
+            table_add_row "backups" "$(path_unresolve "$PWD" "$backups_dir")"
+            echo; echo_slim_table
+
+            echo_red "Press CTRL-C at any time to abort."
+
+            echo_time_heading
+            echo
+            eval $(get_config_as plugin "environments.$LOCAL_ENV_ID.databases.$DATABASE_ID.plugin")
+            ! has_failed && call_plugin $plugin pull_db "$DATABASE_ID" || fail
+            ! has_failed && call_php_class_method "\AKlump\LiveDevPorter\Statistics::stop" "$stat_arguments"
+          done
+        fi
+      fi
+
+      if ! has_failed && [[ "$do_files" == true ]]; then
+        if [[ "$has_files" == false ]]; then
+          if has_option f; then
+            fail_because "Use of -f is out of context; \"workflows.$WORKFLOW_ID.file_groups\" is empty."
+          elif has_option v; then
+            succeed_because "No file_groups defined; skipping files component."
+          fi
+        else
+          echo_time_heading
+          echo
+          eval $(get_config_as plugin "environments.$LOCAL_ENV_ID.plugin")
+          call_plugin $plugin pull_files || fail
+        fi
+      fi
+      echo_time_heading
+      has_failed && exit_with_failure
+      exit_with_success_elapsed
+    ;;
+
+    "push")
+      throw "push;$0;in function ${FUNCNAME}();$LINENO"
+      ! WORKFLOW_ID=$(get_workflow_by_command 'pull') && fail_because "$WORKFLOW_ID" && exit_with_failure
+
+      [[ ${#REMOTE_DATABASE_IDS[@]} -eq 0 ]] && has_db=false || has_db=true
+
+      eval $(get_config_as -a file_groups "workflows.$WORKFLOW_ID.file_groups")
+      [[ ${#file_groups[@]} -eq 0 ]] && has_files=false || has_files=true
+
+      array_csv__array=()
+      [[ "$has_db" == true ]] && [[ "$do_database" == true ]] && array_csv__array=("${array_csv__array[@]}" "databases")
+      [[ "$has_files" == true ]] && [[ "$do_files" == true ]] && array_csv__array=("${array_csv__array[@]}" "files")
 
       eval $(get_config_as label "environments.$REMOTE_ENV_ID.label")
       echo_title "Pull $(array_csv --prose) from $label ($REMOTE_ENV_ID)"
