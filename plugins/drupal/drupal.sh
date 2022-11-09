@@ -119,3 +119,6 @@ function drupal_on_import_db() {
 function drupal_on_pull_db() {
   call_plugin mysql pull_db "$@"
 }
+function drupal_on_push_db() {
+  call_plugin mysql push_db "$@"
+}

@@ -119,3 +119,6 @@ function lando_on_import_db() {
 function lando_on_pull_db() {
   call_plugin mysql pull_db "$@"
 }
+function lando_on_push_db() {
+  call_plugin mysql push_db "$@"
+}

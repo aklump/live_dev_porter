@@ -214,13 +214,17 @@ function mysql_create_local_rollback_file() {
 #
 # $1 - The database ID
 # $2 - The directory to save to.
-# $3 - Optional, base name to use instead of default.
+# $3 - bool.  Should the file be gzipped or not.
+# $4 - bool Should exiting files be overwritten
+# $5 - Optional, filename to override the default.
 #
 # Returns 0 if .
 function mysql_on_export_db() {
   local database_id="$1"
   local directory="$2"
-  local filename="$3"
+  local compress="$3"
+  local force="$4"
+  local filename="$5"
 
   local save_as
   sandbox_directory "$directory"
@@ -229,7 +233,7 @@ function mysql_on_export_db() {
   save_as="$directory/$filename.sql"
 
   # Ensure we don't clobber an existing.
-  if ! has_option "force"; then
+  if [[ "$force" != true ]]; then
     shortpath="$(path_unresolve "$PWD" "$save_as")"
     [[ -f "$save_as" ]] && fail_because "$shortpath exists; use --force to overwrite." && return 1
     [[ -f "$save_as.gz" ]] && fail_because "$shortpath.gz exists; use --force to overwrite." && return 1
@@ -287,7 +291,7 @@ function mysql_on_export_db() {
   fi
 
   has_failed && return 1
-  if ! has_option 'uncompressed'; then
+  if [[ "$compress" == true ]]; then
     if ! gzip -f "$save_as"; then
       fail_because "Could not compress dumpfile"
     else
@@ -355,6 +359,117 @@ function mysql_drop_all_tables() {
   return 0
 }
 
+function mysql_on_push_db() {
+  local DATABASE_ID="$1"
+
+  local remote_base_path
+  local result_json
+  local remote_dumpfile_path
+  local remote_ldp_options
+  local result_status
+  [[ "$WORKFLOW_ID" ]] && remote_ldp_options="$remote_ldp_options --workflow=\"$WORKFLOW_ID\""
+  remote_base_path="$(environment_path_resolve $REMOTE_ENV_ID)"
+
+  #
+  # Backup remote database.
+  #
+  eval $(get_config_as do_remote_backup backup_remote_db_on_push true)
+  if [[ "$do_remote_backup" == true ]]; then
+    echo_task "Backup remote database"
+    if is_ssh_connection "$REMOTE_ENV_ID"; then
+      result_json=$(remote_ssh "$REMOTE_ENV_ID" "cd \"$remote_base_path\" || exit 1;[[ -e ./vendor/bin/ldp ]] || exit 2; ./vendor/bin/ldp export --force --format=json --id=\"$DATABASE_ID\"$remote_ldp_options || exit 3")
+    else
+      result_json=$(cd "$remote_base_path" || exit 1;[[ -e ./vendor/bin/ldp ]] || exit 2; ./vendor/bin/ldp export --force --format=json --id="$DATABASE_ID"$remote_ldp_options || exit 3)
+    fi
+    result_status=$?
+    if [[ $result_status -ne 0 ]]; then
+      write_log_error "Remote exited with: $result_status"
+      write_log_error "$result_json"
+      fail_because "$result_json"
+    fi
+    [[ $result_status -eq 1 ]] && echo_task_failed && fail_because "$remote_base_path does not exist." && return 1
+    [[ $result_status -eq 2 ]] && echo_task_failed && fail_because "$remote_base_path/vendor/bin/ldp is missing or does not have execute permissions." && return 1
+    [[ $result_status -eq 3 ]] && echo_task_failed && fail_because "Remote backup failed" && return 1
+
+    json_set "$result_json"
+    echo_task_completed
+    has_option v && echo "$LIL $(json_get_value "filepath")"
+    echo_time_heading
+  fi
+
+  #
+  # Export local database to send up.
+  #
+  echo_task "Export local database: $DATABASE_ID"
+
+  # Create a directory for export from which we then scp to remote.
+  local dumpfiles_dir="$(database_get_local_directory "$LOCAL_ENV_ID" "$DATABASE_ID")"
+  sandbox_directory "$dumpfiles_dir"
+  ! mkdir -p "$dumpfiles_dir" && fail_because "Could not create directory: $dumpfiles_dir" && return 1
+
+  # Note: the workflow will be taken into account since it's a global variable.
+  eval $(get_config_as compress_flag "compress_dumpfiles")
+  mysql_on_export_db "$DATABASE_ID" "$dumpfiles_dir" "$compress_flag" true "push_by_$(whoami)"
+  local local_dumpfile_path="$(json_get_value "filepath")"
+  echo_task_completed
+  has_option v && echo "$LIL $local_dumpfile_path"
+  echo_time_heading
+
+  #
+  # Upload the dumpfile.
+  #
+  local remote_dir="$(database_get_directory "$REMOTE_ENV_ID" "$LOCAL_ENV_ID" "$DATABASE_ID")"
+  local remote_dumpfile_path="$remote_dir/$(basename "$local_dumpfile_path")"
+  echo_task "Upload data file to remote server"
+
+  # Create the remote directory if not already there to receive the dumpfile.
+  ! default_mkdir "$REMOTE_ENV_ID" "$remote_dir"  && echo_task_failed && return 1
+
+  ! scp "$local_dumpfile_path" "${REMOTE_ENV_AUTH}$remote_dumpfile_path"  &> /dev/null && echo_task_failed && return 1
+  ! rm "$local_dumpfile_path" && echo_task_failed && return 1
+  echo_task_completed
+  has_option v && echo "$LIL $remote_dumpfile_path"
+  echo_time_heading
+
+  #
+  # Import the dumpfile
+  #
+  echo_task "Import data into remote database"
+  if is_ssh_connection "$REMOTE_ENV_ID"; then
+    result_json=$(remote_ssh "$REMOTE_ENV_ID" "cd \"$remote_base_path\" || exit 1;[[ -e ./vendor/bin/ldp ]] || exit 2; ./vendor/bin/ldp import \"$remote_dumpfile_path\" --id=\"$DATABASE_ID\" || exit 3")
+  else
+    result_json=$(cd "$remote_base_path" || exit 1;[[ -e ./vendor/bin/ldp ]] || exit 2; ./vendor/bin/ldp import \"$remote_dumpfile_path\" --id=\"$DATABASE_ID\" || exit 3)
+  fi
+  result_status=$?
+  if [[ $result_status -ne 0 ]]; then
+    write_log_error "Remote exited with: $result_status"
+  fi
+  [[ $result_status -eq 3 ]] && echo_task_failed && fail_because "Remote import failed" && return 1
+  echo_task_completed
+  has_option v && echo "./vendor/bin/ldp import \"$remote_dumpfile_path\" --id=\"$DATABASE_ID\""
+  echo_time_heading
+
+  #
+  # Delete the dumpfile that was uploaded.
+  #
+  echo_task "Delete data file from remote server"
+
+  # The file will have been unzipped during import.
+  if [[ $(path_extension "$remote_dumpfile_path") == 'gz' ]]; then
+    remote_dumpfile_path=$(dirname "$remote_dumpfile_path")/$(path_filename "$remote_dumpfile_path")
+  fi
+  if is_ssh_connection "$REMOTE_ENV_ID"; then
+    ! remote_ssh  "$REMOTE_ENV_ID" "[[ -f \"$remote_dumpfile_path\" ]] && rm \"$remote_dumpfile_path\"" &> /dev/null && echo_task_failed && return 1
+  else
+    ! [[ -f "$remote_dumpfile_path" ]] && rm "$remote_dumpfile_path" &> /dev/null && echo_task_failed && return 1
+  fi
+  echo_task_completed
+
+  if [[ "$WORKFLOW_ID" ]]; then
+    execute_workflow_processors "$WORKFLOW_ID" || fail
+  fi
+}
+
 function mysql_on_pull_db() {
   local DATABASE_ID="$1"
 
@@ -365,9 +480,9 @@ function mysql_on_pull_db() {
   local result_status
 
   echo_task "Export remote database: $DATABASE_ID"
-  [[ "$WORKFLOW_ID" ]] && remote_ldp_options="$remote_ldp_options --workflow="$WORKFLOW_ID""
+  [[ "$WORKFLOW_ID" ]] && remote_ldp_options="$remote_ldp_options --workflow=\"$WORKFLOW_ID\""
 
-  eval $(get_config_as compress_flag "compress_pull_dumpfiles")
+  eval $(get_config_as compress_flag "compress_dumpfiles")
   [[ "$compress_flag" != true ]] && remote_ldp_options="$remote_ldp_options --uncompressed"
 
   # Create the local destination for the dumpfile, doing this first allows the

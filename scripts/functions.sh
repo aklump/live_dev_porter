@@ -241,16 +241,24 @@ function implement_route_access() {
 
   eval $(get_config_as require_remote "commands.${command}.require_remote_env")
   eval $(get_config_as require_write "commands.${command}.require_write_access")
+  eval $(get_config_as require_remote_write "commands.${command}.require_remote_write_access")
+
   # No special perms required.
-  [[ "$require_write" != true ]] && [[ "$require_remote" != true ]] && return 0
+  [[ "$require_write" != true ]] && [[ "$require_remote_write" != true ]] && [[ "$require_remote" != true ]] && return 0
 
   eval $(get_config_as write_access "environments.$LOCAL_ENV_ID.write_access")
-  eval $(get_config_as remote "remote")
-
   if [[ "$require_write" == true ]] && [[ "$write_access" != true ]]; then
-    fail_because "write_access is false for this environment ($LOCAL_ENV_ID)."
+    fail_because "write_access is false for the \"$LOCAL_ENV_ID\" environment."
     fail_because "set to true in the configuration, to allow this command."
   fi
+
+  eval $(get_config_as remote_write_access "environments.$REMOTE_ENV_ID.write_access")
+  if [[ "$require_remote_write" == true ]] && [[ "$remote_write_access" != true ]]; then
+    fail_because "write_access is false for the \"$REMOTE_ENV_ID\" environment."
+    fail_because "set to true in the configuration, to allow this command."
+  fi
+
+  eval $(get_config_as remote "remote")
   if [[ "$require_remote" == true ]] && [[ "$remote" == null ]]; then
     fail_because "This command requires a remote environment be configured."
   fi

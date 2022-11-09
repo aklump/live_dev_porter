@@ -20,6 +20,25 @@ function _test_remote_path() {
   return 1
 }
 
+# Execute mkdir on an environment.
+#
+# $1 - string Environment ID
+# $2 - string The path to pass to mkdir
+#
+# Returns 0 if .
+function default_mkdir() {
+  local environment_id="$1"
+  local path="$2"
+
+  # Create the remote directory if not already there to receive the dumpfile.
+  if is_ssh_connection "$environment_id"; then
+    remote_ssh "$environment_id" "mkdir -p \"$path\""  &> /dev/null && return 0
+  else
+    mkdir -p "$path"  &> /dev/null && return 0
+  fi
+  return 1
+}
+
 function default_on_configtest() {
   local did_connect
   local directory_path
@@ -143,11 +162,106 @@ function default_on_remote_shell() {
   remote_ssh "$REMOTE_ENV_ID" "(cd $remote_base_path; [[ \$(basename \$SHELL) == bash ]] && exec \$SHELL -l || exec \$SHELL)"
 }
 
+function default_on_push_files() {
+  local destination
+  local destination_base
+  local source
+  local source_base
+  local stat_arguments
+
+  [[ ! "$WORKFLOW_ID" ]] && write_log_debug "Files will only be pushed when there is a workflow." && return 0
+
+  # @link https://linux.die.net/man/1/rsync
+  # @link https://stackoverflow.com/a/4114979/3177610 (chmod) File permissions
+  # if not properly set on the receiving end will wreak havoc during processing,
+  # renaming, etc.  Therefor we ensure the user caen read and write at this
+  # point.  It sets up for success.
+  local base_rsync_options="-az --copy-unsafe-links --size-only --delete --chmod=u+rw"
+  has_option v && base_rsync_options="$base_rsync_options --progress"
+  if has_option "dry-run"; then
+    echo_yellow_highlight "This is only a preview.  Remove --dry-run to copy files."
+    base_rsync_options="$base_rsync_options --dry-run -v"
+  fi
+
+  source_base=$(environment_path_resolve "$LOCAL_ENV_ID")
+  destination_base=$(environment_path_resolve "$REMOTE_ENV_ID")
+
+  eval $(get_config_as -a group_ids "workflows.$WORKFLOW_ID.file_groups")
+  [[ ${#group_ids[@]} -eq 0 ]] && write_log_debug "The workflow \"$WORKFLOW_ID\" has not defined any file_groups; no files pushed." && return 0
+
+  local group_filter=$(get_option group)
+  if [[ "$group_filter" ]]; then
+    array_has_value__array=("${group_ids[@]}")
+    array_has_value "$group_filter" || fail_because "The group filter \"$group_filter\" cannot be used with the workflow \"$WORKFLOW_ID\" because that workflow does not list that group in it's configuration."
+  fi
+
+  has_failed && return 1
+
+  for FILES_GROUP_ID in ${group_ids[@]} ; do
+    has_option group && [[ "$group_filter" != "$FILES_GROUP_ID" ]] && continue
+
+    eval $(get_config_as source "environments.$LOCAL_ENV_ID.files.$FILES_GROUP_ID")
+    if [[ "$group_filter" ]] && [[ ! "$source" ]]; then
+
+      # If there is no source path, it's only considered an error if the user is
+      # asking for it via --group; otherwise we will silently skip it.
+      fail_because "The environment \"$LOCAL_ENV_ID\" has not assigned a path to the file group \"$group_filter\"." && return 1
+    fi
+
+    eval $(get_config_as destination "environments.$REMOTE_ENV_ID.files.$FILES_GROUP_ID")
+
+    if [[ "$source" ]] && [[ "$destination" ]]; then
+
+      stat_arguments="CACHE_DIR=$CACHE_DIR&COMMAND=push&TYPE=2&ID=$FILES_GROUP_ID&SOURCE=$LOCAL_ENV_ID"
+      call_php_class_method "\AKlump\LiveDevPorter\Statistics::start" "$stat_arguments"
+
+      rsync_options="$base_rsync_options"
+      source_path=$(path_resolve "$source_base" "$source")
+      destination_path=$(path_resolve "$destination_base" "$destination")
+
+      ruleset="$CACHE_DIR/rsync_ruleset.$FILES_GROUP_ID.txt"
+      if [[ -f "$ruleset" ]]; then
+        # I picked --include-from and not --exclude-from, but that is arbitrary.
+        # Given my choice, there is no need for us to use --exclude-from because
+        # our rulesets are compiled using the +/- prefixes which controls take
+        # over such control. It's confusing, see this link:
+        # https://stackoverflow.com/q/60584163/3177610
+        rsync_options="$rsync_options --include-from="$ruleset""
+      fi
+
+      ! default_mkdir "$REMOTE_ENV_ID" "$destination_path" && fail_because "Could not create directory: $destination_path"
+      has_failed && return 1
+
+      has_option v && echo "$rsync_options"
+      write_log "rsync $rsync_options "$source_path/" "${REMOTE_ENV_AUTH}$destination_path/""
+      echo_task "Push files group \"$FILES_GROUP_ID\" to: $destination"
+      rsync $rsync_options "$source_path/" "${REMOTE_ENV_AUTH}$destination_path/" || fail
+
+      if has_failed; then
+        echo_task_failed
+      else
+        ! has_option "dry-run" && echo_task_completed
+
+        if [[ "$WORKFLOW_ID" ]]; then
+          eval $(get_config_as -a processors "workflows.$WORKFLOW_ID.processors")
+          if [[ ${#processors[@]} -gt 0 ]]; then
+            echo_task "Apply workflow processors"
+            echo_task_failed
+            fail_because "Workflow processors are not yet supported for the push operation.  You should remove any processors from the \"$WORKFLOW_ID\" workflow configuration and retry."
+          fi
+        fi
+
+        call_php_class_method "\AKlump\LiveDevPorter\Statistics::stop" "$stat_arguments"
+      fi
+    fi
+  done
+  has_failed && return 1
+  return 0
+}
+
 function default_on_pull_files() {
   local destination
   local destination_base
-  local exclude_from
-  local include_from
   local source
   local source_base
   local stat_arguments
@@ -175,7 +289,7 @@ function default_on_pull_files() {
   local group_filter=$(get_option group)
   if [[ "$group_filter" ]]; then
     array_has_value__array=("${group_ids[@]}")
-    array_has_value "$group_filter" || fail_because "The environment \"$LOCAL_ENV_ID\" has not assigned a path to the file group \"$group_filter\"."
+    array_has_value "$group_filter" || fail_because "The group filter \"$group_filter\" cannot be used with the workflow \"$WORKFLOW_ID\" because that workflow does not list that group in it's configuration."
   fi
 
   has_failed && return 1

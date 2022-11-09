@@ -5,17 +5,35 @@
 # Provide shared database-related functions.
 #
 
-# Get the export directory
+# Get the local export directory for
 #
 # $1 - The environment ID.
 # $2 - The database ID.
 #
 # Echos the directory WITHOUT trailing slash.
 function database_get_local_directory() {
-  local environment_id="$1"
-  local database_id="$2"
+  echo $(database_get_directory "$LOCAL_ENV_ID" "$@")
+}
 
-  echo "$CONFIG_DIR/data/$environment_id/databases/$database_id"
+# Get filepath to save a dumpfile from one environment to another.
+#
+# $1 - The environment ID where the file is being saved.
+# $3 - The environment ID where the database was exported from.
+# $2 - The database ID that was the source of the export.
+#
+# Echos the directory WITHOUT trailing slash.
+function database_get_directory() {
+  local environment_id="$1"
+  local database_environment_id="$2"
+  local database_id="$3"
+
+  local base="$CONFIG_DIR"
+  if [[ "$environment_id" != $LOCAL_ENV_ID ]]; then
+      eval $(get_config_as base "environments.$environment_id.base_path")
+      base="$base/"$(basename $CONFIG_DIR)
+  fi
+
+  echo "$base/data/$database_environment_id/databases/$database_id"
 }
 
 # Get the table section of the mysqldump command based on config.

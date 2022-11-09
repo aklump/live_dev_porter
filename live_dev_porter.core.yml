@@ -11,8 +11,9 @@ additional_config:
 additional_bootstrap: null
 default_command: help
 max_database_rollbacks_to_keep: 5
+backup_remote_db_on_push: true
 delete_pull_dumpfiles: true
-compress_pull_dumpfiles: true
+compress_dumpfiles: true
 plugins:
   mysql:
     mysqldump_base_options:
@@ -51,6 +52,35 @@ commands:
       files:
         type: boolean
         help: 'Only pull the files.'
+        aliases:
+          - f
+      group:
+        type: string
+        help: 'Limit the operation by group'
+      dry-run:
+        type: boolean
+        help: 'Preview which files will be copied.'
+  push:
+    require_remote_env: true
+    require_remote_write_access: true
+    help: 'Push local database and files to remote.'
+    arguments:
+      remote_id:
+        help: 'Optional. The remote environment to push to; defaults to the configured remote.'
+    options:
+      verbose:
+        type: boolean
+        help: 'Output additional information.'
+        aliases:
+          - v
+      database:
+        type: boolean
+        help: 'Only push the database.'
+        aliases:
+          - d
+      files:
+        type: boolean
+        help: 'Only push the files.'
         aliases:
           - f
       group:

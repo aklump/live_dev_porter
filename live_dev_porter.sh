@@ -7,8 +7,6 @@
 # Define the configuration file relative to this script.
 CONFIG="live_dev_porter.core.yml";
 
-COMPOSER_VENDOR="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/vendor"
-
 # Uncomment this line to enable file logging.
 #LOGFILE="live_dev_porter.core.log"
 
@@ -175,7 +173,7 @@ if [[ ${#array_sort__array} -gt 0 ]]; then
 fi
 
 # Alter the remote environment via CLI when appropriate.
-if [[ 'pull' == $COMMAND ]] || [[ 'remote' == $COMMAND ]]; then
+if [[ 'pull' == $COMMAND ]] || [[ 'push' == $COMMAND ]] || [[ 'remote' == $COMMAND ]] ; then
   REMOTE_ENV_ID=$(get_command_arg 0 "$REMOTE_ENV_ID")
   ! REMOTE_ENV_ID=$(validate_environment "$REMOTE_ENV_ID") && fail_because "$REMOTE_ENV_ID" && exit_with_failure
 fi
@@ -348,7 +346,16 @@ case $COMMAND in
       # This will create a quick link for the user to "open in Finder"
       table_add_row "export directory" "$export_directory_shortpath"
       [[ "$JSON_RESPONSE" != true ]] && echo && echo_slim_table
-      call_plugin $plugin export_db "$DATABASE_ID" "$export_directory" "$filename" || fail
+      local compress=true
+      if has_option "uncompressed"; then
+        compress=false
+      fi
+
+      local force=false
+      if has_option "force"; then
+        force=true
+      fi
+      call_plugin $plugin export_db "$DATABASE_ID" "$export_directory" "$compress" "$force" "$filename" || fail
       if has_failed; then
         [[ "$JSON_RESPONSE" == true ]] && exit_with_failure_code_only
         fail_because "$json_output" && exit_with_failure "Failed to export database."
@@ -441,7 +448,7 @@ case $COMMAND in
       [[ ${#file_groups[@]} -eq 0 ]] && has_files=false || has_files=true
 
       array_csv__array=()
-      [[ "$has_db" == true ]] && [[ "$do_database" == true ]] && array_csv__array=("${array_csv__array[@]}" "databases")
+      [[ "$has_db" == true ]] && [[ "$do_database" == true ]] && array_csv__array=("${array_csv__array[@]}" "database(s)")
       [[ "$has_files" == true ]] && [[ "$do_files" == true ]] && array_csv__array=("${array_csv__array[@]}" "files")
 
       eval $(get_config_as label "environments.$REMOTE_ENV_ID.label")
@@ -536,8 +543,7 @@ case $COMMAND in
     ;;
 
     "push")
-      throw "push;$0;in function ${FUNCNAME}();$LINENO"
-      ! WORKFLOW_ID=$(get_workflow_by_command 'pull') && fail_because "$WORKFLOW_ID" && exit_with_failure
+      ! WORKFLOW_ID=$(get_workflow_by_command 'push') && fail_because "$WORKFLOW_ID" && exit_with_failure
 
       [[ ${#REMOTE_DATABASE_IDS[@]} -eq 0 ]] && has_db=false || has_db=true
 
@@ -545,15 +551,15 @@ case $COMMAND in
       [[ ${#file_groups[@]} -eq 0 ]] && has_files=false || has_files=true
 
       array_csv__array=()
-      [[ "$has_db" == true ]] && [[ "$do_database" == true ]] && array_csv__array=("${array_csv__array[@]}" "databases")
+      [[ "$has_db" == true ]] && [[ "$do_database" == true ]] && array_csv__array=("${array_csv__array[@]}" "database(s)")
       [[ "$has_files" == true ]] && [[ "$do_files" == true ]] && array_csv__array=("${array_csv__array[@]}" "files")
 
       eval $(get_config_as label "environments.$REMOTE_ENV_ID.label")
-      echo_title "Pull $(array_csv --prose) from $label ($REMOTE_ENV_ID)"
+      echo_title "Push local $(array_csv --prose) to $label ($REMOTE_ENV_ID)"
       [[ "$WORKFLOW_ID" ]] && echo_heading "Using workflow: $WORKFLOW_ID"
 
       if [[ "$has_db" == false ]] && [[ "$has_files" == false ]]; then
-        fail_because "Nothing to pull; neither \"databases\" nor \"files_group\" have been configured."
+        fail_because "Nothing to push; neither \"databases\" nor \"files_group\" have been configured."
       fi
 
       # Determine the estimated time for all pending tasks.  Note that if we
@@ -601,20 +607,12 @@ case $COMMAND in
             stat_arguments="CACHE_DIR=$CACHE_DIR&COMMAND=$COMMAND&TYPE=1&ID=$DATABASE_ID&SOURCE=$REMOTE_ENV_ID"
             call_php_class_method "\AKlump\LiveDevPorter\Statistics::start" "$stat_arguments"
 
-            # This will create a quick link for the user to "open in Finder"
-            save_dir=$(database_get_local_directory "$REMOTE_ENV_ID" "$DATABASE_ID")
-            backups_dir=$(database_get_local_directory "$LOCAL_ENV_ID" "$DATABASE_ID")
-            table_clear
-            table_add_row "downloads" "$(path_unresolve "$PWD" "$save_dir")"
-            table_add_row "backups" "$(path_unresolve "$PWD" "$backups_dir")"
-            echo; echo_slim_table
-
             echo_red "Press CTRL-C at any time to abort."
 
             echo_time_heading
             echo
             eval $(get_config_as plugin "environments.$LOCAL_ENV_ID.databases.$DATABASE_ID.plugin")
-            ! has_failed && call_plugin $plugin pull_db "$DATABASE_ID" || fail
+            ! has_failed && call_plugin $plugin push_db "$DATABASE_ID" || fail
             ! has_failed && call_php_class_method "\AKlump\LiveDevPorter\Statistics::stop" "$stat_arguments"
           done
         fi
@@ -631,7 +629,7 @@ case $COMMAND in
           echo_time_heading
           echo
           eval $(get_config_as plugin "environments.$LOCAL_ENV_ID.plugin")
-          call_plugin $plugin pull_files || fail
+          call_plugin $plugin push_files || fail
         fi
       fi
       echo_time_heading
