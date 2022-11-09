@@ -245,9 +245,7 @@ function default_on_push_files() {
         if [[ "$WORKFLOW_ID" ]]; then
           eval $(get_config_as -a processors "workflows.$WORKFLOW_ID.processors")
           if [[ ${#processors[@]} -gt 0 ]]; then
-            echo_task "Apply workflow processors"
-            echo_task_failed
-            fail_because "Workflow processors are not yet supported for the push operation.  You should remove any processors from the \"$WORKFLOW_ID\" workflow configuration and retry."
+            write_log_notice "Workflow processors are not yet supported for files during the push operation."
           fi
         fi
 
