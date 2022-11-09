@@ -299,8 +299,7 @@ function mysql_on_export_db() {
   has_failed && return 1
 
   json_set "{\"filepath\":\"$save_as\"}"
-  succeed_because "Saved in: $(dirname "$save_as")"
-  succeed_because "Filename is: $(basename "$save_as")"
+  succeed_because "Saved as: $save_as"
 }
 
 function mysql_on_import_db() {
