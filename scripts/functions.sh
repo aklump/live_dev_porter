@@ -148,6 +148,7 @@ function validate_environment() {
 # Returns 0 if .
 function execute_workflow_processors() {
   local workflow="$1"
+  local type="${2:-processors}"
 
   local processor
   local processor_path
@@ -155,7 +156,7 @@ function execute_workflow_processors() {
   local processor_result
   local key
   local php_query
-  eval $(get_config_as -a processors "workflows.$workflow.processors")
+  eval $(get_config_as -a processors "workflows.$workflow.$type")
   for basename in "${processors[@]}"; do
     processor_path="$CONFIG_DIR/processors/$basename"
     processor="$(path_unresolve "$APP_ROOT" "$processor_path")"

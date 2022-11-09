@@ -8,12 +8,13 @@
 * The file must exit with non-zero if it fails.
 * If you wish to indicated the processor was skipped or not applied exit with 255; see examples below.
 * When existing with code 1-254 a default failure message will always be displayed. If the processor echos a message, this default will appear after the response.
-* If the file exists with a zero, there is no default message.
+* If the file exits with a zero, there is no default message.
 
 ## Database Processing
 
 * Notice the use of `query` below; this operates on the database being processed and has all authentication embedded in it. Use this to affect the database.
 * The result of the queries is stored in a file, whose path is written to `$query_result`; see example using `$(cat $query_result)`.
+* Database preprocessing is available for `push` and `pull` operations only at this time.
 
 _An example bash processor for a database command:_
 
@@ -21,9 +22,12 @@ _An example bash processor for a database command:_
 #!/usr/bin/env bash
 
 #debug "$COMMAND;\$COMMAND"
-#debug "$ENVIRONMENT_ID;\$ENVIRONMENT_ID"
+#debug "$LOCAL_ENV_ID;\$LOCAL_ENV_ID"
+#debug "$REMOTE_ENV_ID;\$REMOTE_ENV_ID"
 #debug "$DATABASE_ID;\$DATABASE_ID"
-#debug "$DATABASE_NAME;\$DATABASE_NAME"
+#debug "$FILES_GROUP_ID;\$FILES_GROUP_ID"
+#debug "$FILEPATH;\$FILEPATH"
+#debug "$SHORTPATH;\$SHORTPATH"
 
 # Only do processing when we have a database event.
 [[ "$DATABASE_ID" ]] || exit 255
@@ -50,7 +54,9 @@ _An example bash processor for a file:_
 #!/usr/bin/env bash
 
 #debug "$COMMAND;\$COMMAND"
-#debug "$ENVIRONMENT_ID;\$ENVIRONMENT_ID"
+#debug "$LOCAL_ENV_ID;\$LOCAL_ENV_ID"
+#debug "$REMOTE_ENV_ID;\$REMOTE_ENV_ID"
+#debug "$DATABASE_ID;\$DATABASE_ID"
 #debug "$FILES_GROUP_ID;\$FILES_GROUP_ID"
 #debug "$FILEPATH;\$FILEPATH"
 #debug "$SHORTPATH;\$SHORTPATH"

@@ -101,6 +101,13 @@
                 ]
               }
             },
+            "preprocessors": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[^ ]+\\.(sh|php)|[^ ]+::[^ ]+$"
+              }
+            },
             "processors": {
               "type": "array",
               "items": {

@@ -370,6 +370,11 @@ function mysql_on_push_db() {
   [[ "$WORKFLOW_ID" ]] && remote_ldp_options="$remote_ldp_options --workflow=\"$WORKFLOW_ID\""
   remote_base_path="$(environment_path_resolve $REMOTE_ENV_ID)"
 
+
+  if [[ "$WORKFLOW_ID" ]]; then
+    execute_workflow_processors "$WORKFLOW_ID" "preprocessors" || fail
+  fi
+
   #
   # Backup remote database.
   #
@@ -481,6 +486,10 @@ function mysql_on_pull_db() {
 
   echo_task "Export remote database: $DATABASE_ID"
   [[ "$WORKFLOW_ID" ]] && remote_ldp_options="$remote_ldp_options --workflow=\"$WORKFLOW_ID\""
+
+  if [[ "$WORKFLOW_ID" ]]; then
+    execute_workflow_processors "$WORKFLOW_ID" "preprocessors" || fail
+  fi
 
   eval $(get_config_as compress_flag "compress_dumpfiles")
   [[ "$compress_flag" != true ]] && remote_ldp_options="$remote_ldp_options --uncompressed"
