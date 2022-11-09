@@ -1,8 +1,10 @@
 # Databases
 
-If a project uses at least one database, it must be defined in configuration for it to be included in the copy. You must give it an `id` at minimum. Once defined, it can be referenced later in the configuration. You may define multiple databases if necessary.
+If a project uses at least one database, it must be defined in configuration. You must give it an ID. Using that ID, it can be referenced in other parts of the configuration. You may define multiple databases if that applies to your situation.
 
-In cases where a database can be assumed, such as `export` without the use of `--database=NAME`, the first database ID listed in the environment list will be used. In the following configuration example, `primary` will be assumed the default database.
+You must also define which plugin is used to access your database, along with the plugin-specifiy configuation. Example plugins are: _mysql_, _lando_, _lando_git_.
+
+If you have more than one database defined, the first listed in the configuration will be assumed unless you specify otherwise with `--database=ID`. In the following configuration example, `primary` will be assumed the default database.
 
 ```yaml
 environments:
@@ -15,19 +17,15 @@ environments:
       secondary:
         plugin: lando
         service: alt_database
-        mysqldump_options:
-          - add-drop-database
-          - bind-address
-          - dump-date
 ```
 
-Sometimes you might define the same database with multiple ids, if you want to have different levels of export. For example you might have one that excludes many tables, and another that excludes none, that latter serving as a backup solution when you want more content than you would during normal development.
+## Excluding Tables or Data for Different Commands
 
-The `mysqldump_options` allow you to customize the behavior of the CLI tool.
+You can omit entire tables using `exclude_tables`.
 
-## Excluding Tables or Data
+You may want to omit data from certain tables, such as in the case of cache tables. This is the reason for `exclude_table_data`. List one or more tables (astrix globbing allowed), whose _structure only_ should be copied.
 
-Often times when you are copying the content of a database, it is preferable to leave out the data from certain tables, such as in the case of cache tables. This is the reason for `exclude_table_data`. List one or more tables (astrix globbing allowed), whose _structure only_ should be copied.
+Create one or more workflows with your table/data exclusion rules. Then use those workflows as command arguments.
 
 ```yaml
 workflows:
@@ -39,7 +37,7 @@ workflows:
         - batch
 ```
 
-To export only table structure and no data, do like this:
+To export only table structure and no data from any table, do like this:
 
 ```yaml
 workflows:

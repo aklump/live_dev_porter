@@ -1,8 +1,9 @@
 # Plugins
 
-> This page is not current and needs updating.
+> This page needs updating.
 
 1. Plugins are folders saved to the _plugins/_ directory, resembling the following structure.
+
     ```
     └── mysql
         ├── README.md
@@ -14,13 +15,14 @@
 
    ```bash
    function mysql_on_init() {
-   ensure_files_local_directories && succeed_because "Updated fetch structure at $(path_unresolve "$APP_ROOT" "$FETCH_FILES_PATH")"
+     ensure_files_local_directories && succeed_because "Updated fetch structure at $(path_unresolve "$APP_ROOT" "$FETCH_FILES_PATH")"
    }
    ```
 4. Plugins may provide the following functions:
     1. Plugins implement hooks which are functions named by: PLUGIN_on_*.
     2. To find the hooks available, search the code for `plugin_implements` and `call_plugin`.
     3. Plugins may define private functions, but they should begin with an underscore.
+       
        ```bash
        function _mysql_get_remote_env() {
          case $REMOTE_ENV_ID in

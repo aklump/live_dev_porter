@@ -1,9 +1,9 @@
 # Workflows
 
-> Suggestion: Name your workflows using an _verb in the imperative_, e.g. "archive", "develop".
+> Suggestion: Name your workflows using a _verb in the imperative_, e.g. "archive", "develop".
 
 ## GOTCHA
 
 > When you pull, the workflow configuration is read from the local environment!
 
-The means you should always keep your workflow config in sync between environments or it starts to blow your mind.
+The means you MUST always keep _.live_dev_porter/config.yml_ in sync between environments otherwise strange things being to happen.

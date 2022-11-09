@@ -24,9 +24,11 @@
   <h1>Databases</h1>
   
 
-<p>If a project uses at least one database, it must be defined in configuration for it to be included in the copy. You must give it an <code>id</code> at minimum. Once defined, it can be referenced later in the configuration. You may define multiple databases if necessary.</p>
+<p>If a project uses at least one database, it must be defined in configuration. You must give it an ID. Using that ID, it can be referenced in other parts of the configuration. You may define multiple databases if that applies to your situation.</p>
 
-<p>In cases where a database can be assumed, such as <code>export</code> without the use of <code>--database=NAME</code>, the first database ID listed in the environment list will be used. In the following configuration example, <code>primary</code> will be assumed the default database.</p>
+<p>You must also define which plugin is used to access your database, along with the plugin-specifiy configuation. Example plugins are: <em>mysql</em>, <em>lando</em>, <em>lando_git</em>.</p>
+
+<p>If you have more than one database defined, the first listed in the configuration will be assumed unless you specify otherwise with <code>--database=ID</code>. In the following configuration example, <code>primary</code> will be assumed the default database.</p>
 
 <pre><code class="yaml">environments:
   -
@@ -38,19 +40,15 @@
       secondary:
         plugin: lando
         service: alt_database
-        mysqldump_options:
-          - add-drop-database
-          - bind-address
-          - dump-date
 </code></pre>
 
-<p>Sometimes you might define the same database with multiple ids, if you want to have different levels of export. For example you might have one that excludes many tables, and another that excludes none, that latter serving as a backup solution when you want more content than you would during normal development.</p>
+<h2>Excluding Tables or Data for Different Commands</h2>
 
-<p>The <code>mysqldump_options</code> allow you to customize the behavior of the CLI tool.</p>
+<p>You can omit entire tables using <code>exclude_tables</code>.</p>
 
-<h2>Excluding Tables or Data</h2>
+<p>You may want to omit data from certain tables, such as in the case of cache tables. This is the reason for <code>exclude_table_data</code>. List one or more tables (astrix globbing allowed), whose <em>structure only</em> should be copied.</p>
 
-<p>Often times when you are copying the content of a database, it is preferable to leave out the data from certain tables, such as in the case of cache tables. This is the reason for <code>exclude_table_data</code>. List one or more tables (astrix globbing allowed), whose <em>structure only</em> should be copied.</p>
+<p>Create one or more workflows with your table/data exclusion rules. Then use those workflows as command arguments.</p>
 
 <pre><code class="yaml">workflows:
   development:
@@ -61,7 +59,7 @@
         - batch
 </code></pre>
 
-<p>To export only table structure and no data, do like this:</p>
+<p>To export only table structure and no data from any table, do like this:</p>
 
 <pre><code class="yaml">workflows:
   development:
@@ -91,7 +89,7 @@
 <footer>
   <div class="pager"><a href="local_build_files.html" class="prev local_build_files">&laquo;Creating Scaffold Files from the Local Environment</a><a href="index.html" class="index pager__book-title">Live Dev Porter: Documentation</a><a href="processor_development.html" class="next processor_development">Developing New Processors&raquo;</a></div>  
   <div id="footer-legaleeze">
-    <p class="legaleeze center">Version: 0.0.100 &bull; Last Updated: Fri, 28 Oct 2022 14:30:12 -0700</p>
+    <p class="legaleeze center">Version: 0.0.100 &bull; Last Updated: Tue, 08 Nov 2022 22:17:51 -0800</p>
   </div>
 </footer>
 

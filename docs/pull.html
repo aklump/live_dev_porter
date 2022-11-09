@@ -9,7 +9,7 @@
 
 <body class="page--pull">
 <header>
-  <div class="pager"><a href="processors.html" class="prev processors">&laquo;Processors</a><a href="index.html" class="index pager__book-title">Live Dev Porter: Documentation</a><a href="remote.html" class="next remote">Remote Environment&raquo;</a></div></header>
+  <div class="pager"><a href="processors.html" class="prev processors">&laquo;Processors</a><a href="index.html" class="index pager__book-title">Live Dev Porter: Documentation</a><a href="push.html" class="next push">Push&raquo;</a></div></header>
 <section class="sub-header">
   <div class="breadcrumbs"><a href="index.html">Index</a>
          &raquo
@@ -26,7 +26,7 @@
 
 <h2><code>ldp pull</code></h2>
 
-<p>This is like git pull, it will copy the remote database and files, depending on your configuration, to your local environment.</p>
+<p>This is like <code>git pull</code>, it will copy the remote database and files, depending on your configuration, to your local environment.</p>
 
 <h2>Is There Something Like <code>git reset</code> for the Database?</h2>
 
@@ -35,7 +35,7 @@
 <pre><code class="yaml">delete_pull_dumpfiles: false
 </code></pre>
 
-<p>You might want to do this to give you a way to reset to the remote database without having to go back to the server.  When <code>false</code>,  the dumpfile remains in <em>.live_dev_porter/data/*</em> after you pull it down. It will show up as <em>pull.sql</em> in the list when you call `ldp import.</p>
+<p>You might want to do this to give you a way to reset to the remote database without having to go back to the server.  When <code>false</code>,  the dumpfile remains in <em>.live_dev_porter/data/*</em> after you pull it down. It will show up as <em>pull.sql</em> in the list when you call <code>ldp import</code>.</p>
 
 <p><strong>However, if you are using a workflow to sanitize your database, then keeping these "unsanitized" database dumps is a security concern.  It is better to leave <code>delete_pull_dumpfiles: true</code> and export your sanitized local database in your pull workflow.  This will still give you the "reset" ability, but without the security concern.</strong></p>
 
@@ -46,9 +46,9 @@
 </div>
 
 <footer>
-  <div class="pager"><a href="processors.html" class="prev processors">&laquo;Processors</a><a href="index.html" class="index pager__book-title">Live Dev Porter: Documentation</a><a href="remote.html" class="next remote">Remote Environment&raquo;</a></div>  
+  <div class="pager"><a href="processors.html" class="prev processors">&laquo;Processors</a><a href="index.html" class="index pager__book-title">Live Dev Porter: Documentation</a><a href="push.html" class="next push">Push&raquo;</a></div>  
   <div id="footer-legaleeze">
-    <p class="legaleeze center">Version: 0.0.100 &bull; Last Updated: Fri, 28 Oct 2022 14:30:17 -0700</p>
+    <p class="legaleeze center">Version: 0.0.100 &bull; Last Updated: Tue, 08 Nov 2022 22:17:55 -0800</p>
   </div>
 </footer>
 
