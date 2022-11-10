@@ -346,12 +346,12 @@ case $COMMAND in
       # This will create a quick link for the user to "open in Finder"
       table_add_row "export directory" "$export_directory_shortpath"
       [[ "$JSON_RESPONSE" != true ]] && echo && echo_slim_table
-      local compress=true
+      compress=true
       if has_option "uncompressed"; then
         compress=false
       fi
 
-      local force=false
+      force=false
       if has_option "force"; then
         force=true
       fi
