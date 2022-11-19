@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>Trouble Connecting to Remote</title>
+  <link href="search/tipuesearch.css" rel="stylesheet">
+  <link href="style.css" rel="stylesheet">
+</head>
+
+<body class="page--connection-problems">
+<header>
+  <div class="pager"><a href="source-control.html" class="prev source-control">&laquo;Source Control</a><a href="index.html" class="index pager__book-title">Live Dev Porter: Documentation</a><a href="workflows.html" class="next workflows">Workflows&raquo;</a></div></header>
+<section class="sub-header">
+  <div class="breadcrumbs"><a href="index.html">Index</a>
+         &raquo
+      </div>      <div class="search__wrapper">
+  <form action="search--results.html">
+    <input type="text" class="search-input" name="q" id="tipue_search_input" autocomplete="off" required>
+  </form>
+</div>
+  </section>
+
+<section>
+  <h1>Trouble Connecting to Remote</h1>
+  
+
+<h2><code>Too many authentication failures</code></h2>
+
+<ol>
+<li><code>mv ~/.ssh/config ~/.ssh/c</code></li>
+<li></li>
+</ol>
+
+<h2>Restart the Mac</h2>
+
+<p>Yes, actually this fixed it for me when nothing else here would.</p>
+
+<h2>Reinstall the SSH key</h2>
+
+<ol>
+<li>Make sure the value for <code>Host</code> in <em>~/.ssh/config</em> on your local matches the remote IP or domain.</li>
+<li>Make sure the <code>IdentityFile</code> exists.</li>
+<li>Paste the contents of <code>.pub</code> of the IndentiyFile to the remote <em>authorized_keys</em></li>
+<li>Update permissions on remote and local i.e., <code>chmod 0700 ~/.ssh;chmod 0600 ~/.ssh/*;chmod 0644 ~/.ssh/*.pub</code></li>
+</ol>
+
+<h2>Mitigation Options</h2>
+
+<h3>Force login using password</h3>
+
+<ol>
+<li>Add this to the ssh: <code>-o PreferredAuthentications=password</code></li>
+<li>Enter the password to see if you can connect that way. If so the issue is with the certificate.</li>
+</ol>
+
+</section>
+
+<div class="search__results">
+  <div id="tipue_search_content"></div>
+</div>
+
+<footer>
+  <div class="pager"><a href="source-control.html" class="prev source-control">&laquo;Source Control</a><a href="index.html" class="index pager__book-title">Live Dev Porter: Documentation</a><a href="workflows.html" class="next workflows">Workflows&raquo;</a></div>  
+  <div id="footer-legaleeze">
+    <p class="legaleeze center">Version: 0.0.104 &bull; Last Updated: Fri, 18 Nov 2022 16:29:35 -0800</p>
+  </div>
+</footer>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+  <script src="search/tipuesearch_content.js"></script>
+  <script src="search/tipuesearch_set.js"></script>
+  <script src="search/tipuesearch.min.js"></script>
+  <script>
+    $(document).ready(function() {
+      $('#tipue_search_input').tipuesearch()
+    })
+  </script>
+<script src="js/core.js"></script>
+</body>
+</html>
