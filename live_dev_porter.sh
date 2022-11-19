@@ -289,7 +289,7 @@ case $COMMAND in
         processor_output=$(cd "$APP_ROOT"; export CLOUDY_CONFIG_JSON; $CLOUDY_PHP "$ROOT/php/class_method_caller.php" "$basename" "$php_query")
         [[ $? -ne 0 ]] && fail_because "Processor failed.";
       fi
-      echo $processor_output
+      echo "$processor_output"
       has_failed && exit_with_failure
       exit_with_success
       ;;
