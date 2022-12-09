@@ -1,6 +1,11 @@
 <?php
+/**
+ * @file
+ * Merge Cloudy's composer.json into Live Dev Porter's composer.json.
+ */
 
-$requre = [];
+use function AKlump\WebPackage\BuildFailException;
+
 $build
   ->loadFile($argv[7] . '/cloudy/composer.json', function ($json) use (&$require) {
     $data = json_decode($json, TRUE);
@@ -11,10 +16,9 @@ $build
   ->loadFile($argv[7] . '/composer.json', function ($json) use ($require) {
     $data = json_decode($json, TRUE);
 
-
     foreach ($require as $package => $constraint) {
       if (isset($data['require'][$package]) && $data['require'][$package] !== $constraint) {
-        throw \AKlump\WebPackage\BuildFailException("Cloudy dependency conflict with app dependency: $package");
+        throw BuildFailException("Cloudy dependency conflict with app dependency: $package");
       }
     }
 
