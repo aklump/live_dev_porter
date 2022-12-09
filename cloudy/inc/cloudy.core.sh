@@ -786,17 +786,6 @@ function _cloudy_validate_input_against_schema() {
 # Expand some vars from our controlling script.
 export CONFIG="$(cd $(dirname "$r/$CONFIG") && pwd)/$(basename $CONFIG)"
 
-# The application script may explicitly define the path to the composer vendor
-# directory, otherwise we will try to find it based on likely scenarios.
-if [[ ! "$COMPOSER_VENDOR" ]]; then
-  # If it's installed as a Composer dependency it will be here:
-  COMPOSER_VENDOR="$r/../../../vendor/"
-  # Otherwise a Cloudy app will have it here:
-  [[ ! -d "$COMPOSER_VENDOR" ]] && COMPOSER_VENDOR="$r/framework/cloudy/vendor/"
-fi
-[[ -f "$COMPOSER_VENDOR/autoload.php" ]] || exit_with_failure "Composer autoloader not found in $COMPOSER_VENDOR"
-export COMPOSER_VENDOR="$(cd $COMPOSER_VENDOR && pwd)"
-
 if [[ "$LOGFILE" ]]; then
   log_dir="$(dirname $r/$LOGFILE)"
   mkdir -p "$log_dir" || exit_with_failure "Please manually create \"$log_dir\" and ensure it is writeable."
@@ -835,8 +824,31 @@ if [ ! -d "$CACHE_DIR" ]; then
   mkdir -p "$CACHE_DIR" || exit_with_failure "Unable to create cache folder: $CACHE_DIR"
 fi
 
+#
+# PHP Bootstrapping.
+#
+if [[ "$COMPOSER_VENDOR" ]]; then
+  # This will be used when this directory is defined at the top of the entry
+  # script as relative to that script.
+  COMPOSER_VENDOR="$(cd $(dirname "$r/$COMPOSER_VENDOR") && pwd)/$(basename $COMPOSER_VENDOR)"
+fi
+# If the application script did not explicitly define the path to the composer
+# vendor directory, then we will try to find it based on likely scenarios.
+if [[ ! "$COMPOSER_VENDOR" ]]; then
+  # If it's installed as a Composer dependency it will be here:
+  COMPOSER_VENDOR="$r/../../../vendor/"
+  # A stand-alone cloudy script will have it here, e.g. "cloudy new foo.sh".
+  [[ ! -d "$COMPOSER_VENDOR" ]] && COMPOSER_VENDOR="$r/cloudy/vendor/"
+  # Otherwise a Cloudy app will have it here:
+  [[ ! -d "$COMPOSER_VENDOR" ]] && COMPOSER_VENDOR="$r/framework/cloudy/vendor/"
+fi
 event_dispatch "pre_config" || exit_with_failure "Non-zero returned by on_pre_config()."
+
+[[ -f "$COMPOSER_VENDOR/autoload.php" ]] || exit_with_failure "Composer autoloader not found in $COMPOSER_VENDOR"
+export COMPOSER_VENDOR="$(cd $COMPOSER_VENDOR && pwd)"
+
 _cloudy_bootstrap_php || exit_with_failure "Invalid PHP"
+
 compile_config__runtime_files=$(event_dispatch "compile_config")
 config_cache_id=$("$CLOUDY_PHP" $CLOUDY_ROOT/php/helpers.php get_config_cache_id "$ROOT\n$compile_config__runtime_files")
 
