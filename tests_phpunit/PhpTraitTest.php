@@ -25,6 +25,20 @@ final class PhpTraitTest extends TestCase {
   /**
    * @dataProvider dataForTestVariantsOfCodeFormatProvider
    */
+  public function testVariantsOfCodeFormatAltContentOrder($variant) {
+    $password = 'd9_f2WaBYaA@*BWfcqrW';
+    $variant = sprintf($variant, $password);
+    $obj = new PhpTraitTestable();
+    $obj->loadedFile['contents'] = "<?php\n\n$variant;\n\$config['system.logging']['error_level'] = ERROR_REPORTING_DISPLAY_ALL;\n";
+
+    $this->assertStringContainsString($password, $obj->loadedFile['contents']);
+    $obj->phpReplaceValue('databases.default.default.password');
+    $this->assertStringNotContainsString($password, $obj->loadedFile['contents']);
+  }
+
+  /**
+   * @dataProvider dataForTestVariantsOfCodeFormatProvider
+   */
   public function testVariantsOfCodeFormat($variant) {
     $password = 'd9_f2WaBYaA@*BWfcqrW';
     $variant = sprintf($variant, $password);

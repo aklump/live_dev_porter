@@ -39,11 +39,14 @@ trait PhpTrait {
       $traverser->addVisitor(new ParentConnectingVisitor());
       $ast = $parser->parse($this->loadedFile['contents']);
       $ast = $traverser->traverse($ast);
-      $context = $this->getDotAssignment($ast);
-      array_unshift($context['dot'], $context['var']);
-      $dot_string = implode('.', $context['dot']);
-      if ($dot_string === $variable_name) {
-        return $context['value'];
+      $context = $this->getDotAssignments($ast);
+
+      foreach ($context['assignments'] as $assignment) {
+        array_unshift($assignment['dot'], $assignment['var']);
+        $dot_string = implode('.', $assignment['dot']);
+        if ($dot_string === $variable_name) {
+          return $assignment['value'];
+        }
       }
     }
     catch (Error $error) {
@@ -53,54 +56,60 @@ trait PhpTrait {
     return NULL;
   }
 
-  private function getDotAssignment($input, array &$context = []): array {
+  private function getDotAssignments($input, array &$context = []): array {
     $context += [
+      'pointer' => -1,
+      'assignments' => [],
+    ];
+    $base = [
       'var' => '',
-      'dot' => '',
+      'dot' => [],
       'value' => '',
     ];
     if (is_array($input)) {
       foreach ($input as $item) {
-        $this->getDotAssignment($item, $context);
+        $this->getDotAssignments($item, $context);
       }
     }
     elseif ($input instanceof Node\Stmt\Expression) {
-      $this->getDotAssignment($input->expr, $context);
+      $this->getDotAssignments($input->expr, $context);
     }
     elseif ($input instanceof Node\Expr\Assign) {
+      $context['pointer']++;
+      $context['assignments'][$context['pointer']] = $base;
       /** @var array $context */
-      $context['dot'] = [];
+      $context['assignments'][$context['pointer']]['dot'] = [];
       if (isset($input->expr->value)) {
-        $context['value'] = $input->expr->value;
+        $context['assignments'][$context['pointer']]['value'] = $input->expr->value;
       }
-      $this->getDotAssignment($input->var, $context);
-      $this->getDotAssignment($input->expr, $context);
+      $this->getDotAssignments($input->var, $context);
+      $this->getDotAssignments($input->expr, $context);
     }
     elseif ($input instanceof Variable) {
       $dot_value = $input->name;
-      $context['var'] = $dot_value;
+      $context['assignments'][$context['pointer']]['var'] = $dot_value;
     }
     elseif ($input instanceof Node\Expr\ArrayDimFetch) {
       if (isset($input->dim->value)) {
         $dot_value = $input->dim->value;
-        array_unshift($context['dot'], $dot_value);
+        array_unshift($context['assignments'][$context['pointer']]['dot'], $dot_value);
       }
-      $this->getDotAssignment($input->var, $context);
+      $this->getDotAssignments($input->var, $context);
     }
     elseif ($input instanceof Node\Expr\ArrayItem) {
       if (isset($input->key->value)) {
         $dot_value = $input->key->value;
-        $context['dot'][] = $dot_value;
+        $context['assignments'][$context['pointer']]['dot'][] = $dot_value;
       }
 
       if ($input->value instanceof Node\Scalar && isset($input->value->value)) {
-        $context['value'] = $input->value->value;
+        $context['assignments'][$context['pointer']]['value'] = $input->value->value;
       }
-      $this->getDotAssignment($input->value, $context);
+      $this->getDotAssignments($input->value, $context);
     }
     elseif ($input instanceof Node\Expr\Array_) {
       foreach ($input->items as $item) {
-        $this->getDotAssignment($item, $context);
+        $this->getDotAssignments($item, $context);
       }
     }
 
