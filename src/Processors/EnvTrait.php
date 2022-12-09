@@ -14,13 +14,11 @@ trait EnvTrait {
    * # Before
    * FOO=PGgWcC054cNoZCCkp1KTO2It
    * # After
-   * FOO=HIDDN
+   * FOO=""
    * @endcode
    *
-   * @param string $contents
-   *   The contents of the file.
    * @param string $variable_name
-   *   The name to search for.
+   *   The name to search for, e.g. "FOO"
    * @param string $replace_with
    *   The value to replace with.
    */
@@ -42,8 +40,6 @@ trait EnvTrait {
    * DATABASE_URL=mysql://foo:PASSWORD@mysql.foobar.com/barbaz
    * @endcode
    *
-   * @param string $contents
-   *   The contents of the file.
    * @param string $variable_name
    *   The name to search for.
    * @param string $replace_with
