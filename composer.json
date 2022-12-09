@@ -18,6 +18,7 @@
         "justinrainbow/json-schema": "^5.2",
         "aklump/loft-lib": "^1.1",
         "jasny/dotkey": "^1.0",
-        "ckr/arraymerger": "^2.0"
+        "ckr/arraymerger": "^2.0",
+        "nikic/php-parser": "^4.15"
     }
 }
