@@ -27,6 +27,11 @@ commands:
     arguments:
       remote_environment:
         help: 'Optional.  The ID of a remote environment.  Defaults to the configured "remote".'
+    options:
+      verbose:
+        type: boolean
+        help: Run in verbose mode; helps troubleshoot connections.
+        aliases: [ v ]
   help:
     help: 'Show this help screen.'
   info:

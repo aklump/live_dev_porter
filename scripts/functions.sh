@@ -381,7 +381,12 @@ function remote_ssh() {
   env_auth=$(get_ssh_auth "$environment_id")
   [[ "$env_auth" ]] || return 1
   write_log_debug "ssh -t -o BatchMode=yes "$env_auth" "${@:2}""
-  ssh -t -o BatchMode=yes "$env_auth" "${@:2}"
+  if has_option 'v'; then
+    echo "ssh "$env_auth""
+    echo
+    verbose=" -vvv"
+  fi
+  ssh$verbose -t -o BatchMode=yes "$env_auth" "${@:2}"
 }
 
 function echo_time_heading() {
