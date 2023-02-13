@@ -1,18 +1,29 @@
 # Developing New Processors
 
-You will probably want to test your processors in isolation when developing them, as this will be quicker in most all cases. Here's how:
+You will probably want to test your processors in isolation when developing them, as this will be quicker in most all cases.
 
-_.devenv_
+Open the processor config environment editor:
+
+```shell
+ldp process --config 
+```
+
+Set the desired values to be sent to the processor:
+
 ```dotenv
-LOCAL_ENV_ID=dev
-DATABASE_ID=drupal
 COMMAND=pull
+LOCAL_ENV_ID=dev
+#REMOTE_ENV_ID=
+DATABASE_ID=drupal
+#DATABASE_NAME=
+#FILES_GROUP_ID=
+#FILEPATH=
+#SHORTPATH=
 IS_WRITEABLE_ENVIRONMENT=true
 ```
 
-```shell
-ldp process delete_users.sh --env=.devenv
-```
+Now run the processor. Using `-v` will allow you to see the variables that are being sent.
 
-1. Create a file of any name wherein you can place your test variable values, e.g. _.devenv_
-2. Call the `process` command with the processor basename as the argument and the path to the dotenv file you created.
+```shell
+ldp process -v delete_users.sh
+```

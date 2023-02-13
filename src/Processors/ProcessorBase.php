@@ -57,6 +57,18 @@ abstract class ProcessorBase {
   }
 
   /**
+   * Get the sandboxed environment variable name.
+   *
+   * @param string $variable_name
+   *
+   * @return string
+   *   The value of the sandboxed environment variable.
+   */
+  protected function getEnv(string $variable_name): string {
+    return strval($this->config[$variable_name]) ?? '';
+  }
+
+  /**
    * Get source environment info.
    *
    * @return array

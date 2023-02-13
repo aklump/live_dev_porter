@@ -21,14 +21,6 @@ _An example bash processor for a database command:_
 ```shell
 #!/usr/bin/env bash
 
-#debug "$COMMAND;\$COMMAND"
-#debug "$LOCAL_ENV_ID;\$LOCAL_ENV_ID"
-#debug "$REMOTE_ENV_ID;\$REMOTE_ENV_ID"
-#debug "$DATABASE_ID;\$DATABASE_ID"
-#debug "$FILES_GROUP_ID;\$FILES_GROUP_ID"
-#debug "$FILEPATH;\$FILEPATH"
-#debug "$SHORTPATH;\$SHORTPATH"
-
 # Only do processing when we have a database event.
 [[ "$DATABASE_ID" ]] || exit 255
 
@@ -52,14 +44,6 @@ _An example bash processor for a file:_
 
 ```shell
 #!/usr/bin/env bash
-
-#debug "$COMMAND;\$COMMAND"
-#debug "$LOCAL_ENV_ID;\$LOCAL_ENV_ID"
-#debug "$REMOTE_ENV_ID;\$REMOTE_ENV_ID"
-#debug "$DATABASE_ID;\$DATABASE_ID"
-#debug "$FILES_GROUP_ID;\$FILES_GROUP_ID"
-#debug "$FILEPATH;\$FILEPATH"
-#debug "$SHORTPATH;\$SHORTPATH"
 
 # Only do processing when we have a file event.
 [[ "$COMMAND" != "pull" ]] && exit 255
@@ -91,6 +75,9 @@ final class RemoveSecrets extends ProcessorBase {
   use EnvTrait;
 
   public function process() {
+    if ($this->getEnv('LOCAL_ENV_ID') !== 'dev') {
+      throw new ProcessorSkippedException();
+    }
     if (!$this->loadFile() || 'install' !== $this->filesGroupId) {
       throw new ProcessorSkippedException();
     }
