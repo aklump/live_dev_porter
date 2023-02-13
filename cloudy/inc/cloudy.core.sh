@@ -827,7 +827,7 @@ fi
 #
 # PHP Bootstrapping.
 #
-if [[ "$COMPOSER_VENDOR" ]]; then
+if [[ "$COMPOSER_VENDOR" ]] && [[ ! -e "$COMPOSER_VENDOR" ]]; then
   # This will be used when this directory is defined at the top of the entry
   # script as relative to that script.
   COMPOSER_VENDOR="$(cd $(dirname "$r/$COMPOSER_VENDOR") && pwd)/$(basename $COMPOSER_VENDOR)"
