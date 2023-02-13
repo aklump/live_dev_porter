@@ -4,11 +4,21 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.0.105] - 2022-12-08
-### Added
-- `\AKlump\LiveDevPorter\Processors\PhpTrait` for processing PHP files secrets.
+## [0.0.109] - 2023-02-12
 
-  
+### Changed
+
+- How the process command gets it's environment variables. Add --config and --verbose to the process command.
+
+### Removed
+
+- The --env option from the process command. To set the variables you must now use "process --config"
+
+## [0.0.105] - 2022-12-08
+
+### Added
+
+- `\AKlump\LiveDevPorter\Processors\PhpTrait` for processing PHP files secrets.
 
 ## [0.0.101] - 2022-11-08
 

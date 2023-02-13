@@ -170,11 +170,18 @@ commands:
       - cc
     help: 'Clear all cached data.'
   process:
-    help: 'Execute a single workflow processor.'
+    help: 'Execute a single workflow processor in a controlled environment.'
     arguments:
       processor:
         help: 'The value as you would add it to a workflow (basename or class::method).'
     options:
-      env:
-        type: string
-        help: 'Path to an .env file which is used to seed the values you will be testing.'
+      config:
+        type: boolean
+        help: Edit the environment variables sent to the processor.
+        aliases:
+          - c
+      verbose:
+        type: boolean
+        help: Display the environment variables sent to the processor.
+        aliases:
+          - v

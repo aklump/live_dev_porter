@@ -7,7 +7,7 @@
 # Define the configuration file relative to this script.
 CONFIG="live_dev_porter.core.yml";
 
-COMPOSER_VENDOR=""
+COMPOSER_VENDOR="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/vendor"
 
 # Uncomment this line to enable file logging.
 #LOGFILE="live_dev_porter.core.log"
@@ -269,16 +269,33 @@ case $COMMAND in
       ;;
 
     "process")
-      env=$(get_option 'env')
-      if [[ "$env" ]]; then
-        if [[ ! -f "$env" ]]; then
-          fail_because "$env cannot be read."
-        else
-          source "$env"
-        fi
+      env="$CONFIG_DIR/processors/.env"
+      if [[ ! -f "$env" ]]; then
+        touch "$env"
       fi
+      if has_option 'config'; then
+        config_file="$CONFIG_DIR/processors/.env"
+        $EDITOR $config_file && exit_with_cache_clear
+      fi
+      source "$env"
+
+      if has_option "verbose"; then
+        list_clear
+        echo_heading "Values Sent to the Processor:"
+        list_add_item "COMMAND=\"$COMMAND\""
+        list_add_item "LOCAL_ENV_ID=\"$LOCAL_ENV_ID\""
+        list_add_item "REMOTE_ENV_ID=\"$REMOTE_ENV_ID\""
+        list_add_item "DATABASE_ID=\"$DATABASE_ID\""
+        list_add_item "FILES_GROUP_ID=\"$FILES_GROUP_ID\""
+        list_add_item "FILEPATH=\"$FILEPATH\""
+        list_add_item "SHORTPATH=\"$SHORTPATH\""
+        list_add_item "Use \"--config\" to change."
+        echo_list
+      fi
+
       basename=$(get_command_arg 0)
       processor_path="$CONFIG_DIR/processors/$basename"
+
       [[ ! -f "$processor_path" ]] && fail_because "Missing file processor: $processor"
       has_failed && exit_with_failure
       if [[ "$(path_extension "$processor_path")" == "sh" ]]; then

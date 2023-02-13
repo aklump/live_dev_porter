@@ -209,7 +209,7 @@ function database_get_name() {
   local database_id="$2"
 
   eval $(get_config_as plugin "environments.$environment_id.databases.$database_id.plugin")
-  ! [[ "$plugin" ]] && echo "Missing plugin for database_name" && return 1
+  ! [[ "$plugin" ]] && echo "Missing plugin empty configuration value for environments.$environment_id.databases.$database_id.plugin" && return 1
   call_plugin $plugin database_name "$@"
 }
 
