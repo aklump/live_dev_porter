@@ -293,19 +293,20 @@ case $COMMAND in
         echo_list
       fi
 
-      basename=$(get_command_arg 0)
-      processor_path="$CONFIG_DIR/processors/$basename"
+      processor=$(get_command_arg 0)
 
-      [[ ! -f "$processor_path" ]] && fail_because "Missing file processor: $processor"
-      has_failed && exit_with_failure
-      if [[ "$(path_extension "$processor_path")" == "sh" ]]; then
+      if [[ "$(path_extension "$processor")" == "sh" ]]; then
+        # We can only check for .sh files because the php argument will be
+        # "class::method", not the basepath.
+        processor_path="$CONFIG_DIR/processors/$processor"
+        [[ ! -f "$processor_path" ]] && fail_because "Missing file processor: $processor" && exit_with_failure
         echo_title "$(path_unresolve "$CONFIG_DIR" "$processor_path")"
         processor_output=$(cd "$APP_ROOT"; source "$SOURCE_DIR/processor_support.sh"; . "$processor_path")
         [[ $? -ne 0 ]] && fail_because "Processor failed.";
       else
         php_query="autoload=$CONFIG_DIR/processors/&COMMAND=$COMMAND&LOCAL_ENV_ID=$LOCAL_ENV_ID&REMOTE_ENV_ID=$REMOTE_ENV_ID&DATABASE_ID=$DATABASE_ID&DATABASE_NAME=$DATABASE_NAME&FILES_GROUP_ID=$FILES_GROUP_ID&FILEPATH=$FILEPATH&SHORTPATH=$SHORTPATH&IS_WRITEABLE_ENVIRONMENT=$IS_WRITEABLE_ENVIRONMENT"
         echo_title "$(path_unresolve "$CONFIG_DIR" "$processor_path")"
-        processor_output=$(cd "$APP_ROOT"; export CLOUDY_CONFIG_JSON; $CLOUDY_PHP "$ROOT/php/class_method_caller.php" "$basename" "$php_query")
+        processor_output=$(cd "$APP_ROOT"; export CLOUDY_CONFIG_JSON; $CLOUDY_PHP "$ROOT/php/class_method_caller.php" "$processor" "$php_query")
         [[ $? -ne 0 ]] && fail_because "Processor failed.";
       fi
       echo "$processor_output"
