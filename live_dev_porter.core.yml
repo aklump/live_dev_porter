@@ -1,7 +1,7 @@
 title: 'Live Dev Porter'
 name: 'Live Dev Porter'
 description: 'Simplifies the management and transfer of assets between website environments.'
-version: 0.0.108
+version: 0.0.109
 author: 'Aaron Klump <sourcecode@intheloftstudios.com>'
 config_path_base: ../../..
 path_to_app: .
@@ -177,11 +177,11 @@ commands:
     options:
       config:
         type: boolean
-        help: Edit the environment variables sent to the processor.
+        help: 'Edit the environment variables sent to the processor.'
         aliases:
           - c
       verbose:
         type: boolean
-        help: Display the environment variables sent to the processor.
+        help: 'Display the environment variables sent to the processor.'
         aliases:
           - v
