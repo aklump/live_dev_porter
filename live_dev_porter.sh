@@ -7,7 +7,7 @@
 # Define the configuration file relative to this script.
 CONFIG="live_dev_porter.core.yml";
 
-COMPOSER_VENDOR="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/vendor"
+COMPOSER_VENDOR=""
 
 # Uncomment this line to enable file logging.
 #LOGFILE="live_dev_porter.core.log"
