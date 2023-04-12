@@ -24,23 +24,30 @@
   <h1>Developing New Processors</h1>
   
 
-<p>You will probably want to test your processors in isolation when developing them, as this will be quicker in most all cases. Here's how:</p>
+<p>You will probably want to test your processors in isolation when developing them, as this will be quicker in most all cases.</p>
 
-<p><em>.devenv</em></p>
+<p>Open the processor config environment editor:</p>
 
-<pre><code class="dotenv">LOCAL_ENV_ID=dev
+<pre><code class="shell">ldp process --config 
+</code></pre>
+
+<p>Set the desired values to be sent to the processor:</p>
+
+<pre><code class="dotenv">COMMAND=pull
+LOCAL_ENV_ID=dev
+#REMOTE_ENV_ID=
 DATABASE_ID=drupal
-COMMAND=pull
+#DATABASE_NAME=
+#FILES_GROUP_ID=
+#FILEPATH=
+#SHORTPATH=
 IS_WRITEABLE_ENVIRONMENT=true
 </code></pre>
 
-<pre><code class="shell">ldp process delete_users.sh --env=.devenv
-</code></pre>
+<p>Now run the processor. Using <code>-v</code> will allow you to see the variables that are being sent.</p>
 
-<ol>
-<li>Create a file of any name wherein you can place your test variable values, e.g. <em>.devenv</em></li>
-<li>Call the <code>process</code> command with the processor basename as the argument and the path to the dotenv file you created.</li>
-</ol>
+<pre><code class="shell">ldp process -v delete_users.sh
+</code></pre>
 
 </section>
 
@@ -51,7 +58,7 @@ IS_WRITEABLE_ENVIRONMENT=true
 <footer>
   <div class="pager"><a href="databases.html" class="prev databases">&laquo;Databases</a><a href="index.html" class="index pager__book-title">Live Dev Porter: Documentation</a><a href="environment_roles.html" class="next environment_roles">Environment Roles&raquo;</a></div>  
   <div id="footer-legaleeze">
-    <p class="legaleeze center">Version: 0.0.111 &bull; Last Updated: Sun, 12 Feb 2023 17:12:52 -0800</p>
+    <p class="legaleeze center">Version: 0.0.112 &bull; Last Updated: Tue, 11 Apr 2023 18:30:49 -0700</p>
   </div>
 </footer>
 
