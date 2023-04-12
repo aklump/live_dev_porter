@@ -296,6 +296,11 @@ case $COMMAND in
       fi
 
       processor=$(get_command_arg 0)
+      if [[ ! "$processor" ]]; then
+        choose__array=($($CLOUDY_PHP "$ROOT/php/get_processors.php" "$CONFIG_DIR"))
+        processor=$(choose "Which processor?")
+        [ $? -ne 0 ] && succeed_because "Cancelled." && exit_with_success
+      fi
 
       if [[ "$(path_extension "$processor")" == "sh" ]]; then
         # We can only check for .sh files because the php argument will be
@@ -311,8 +316,8 @@ case $COMMAND in
         processor_output=$(cd "$APP_ROOT"; export CLOUDY_CONFIG_JSON; $CLOUDY_PHP "$ROOT/php/class_method_caller.php" "$processor" "$php_query")
         [[ $? -ne 0 ]] && fail_because "Processor failed.";
       fi
-      echo "$processor_output"
-      has_failed && exit_with_failure
+      has_failed && fail_because "$processor_output" && exit_with_failure
+      succeed_because "$processor_output"
       exit_with_success
       ;;
 

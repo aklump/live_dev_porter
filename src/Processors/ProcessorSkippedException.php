@@ -7,7 +7,7 @@ namespace AKlump\LiveDevPorter\Processors;
  */
 class ProcessorSkippedException extends \RuntimeException {
 
-  public function __construct() {
-    parent::__construct('', 255);
+  public function __construct($message = "") {
+    parent::__construct($message, 255);
   }
 }

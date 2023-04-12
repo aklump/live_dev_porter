@@ -18,7 +18,7 @@ trait PhpTrait {
    *
    * @return void
    */
-  public function phpReplaceValue(string $variable_name, string $replace_with = '') {
+  protected function phpReplaceValue(string $variable_name, string $replace_with = '') {
     $this->validateFileIsLoaded();
     if (empty($this->loadedFile['contents'])) {
       return;

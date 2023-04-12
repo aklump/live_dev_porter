@@ -32,7 +32,7 @@ final class PhpTraitTest extends TestCase {
     $obj->loadedFile['contents'] = "<?php\n\n$variant;\n\$config['system.logging']['error_level'] = ERROR_REPORTING_DISPLAY_ALL;\n";
 
     $this->assertStringContainsString($password, $obj->loadedFile['contents']);
-    $obj->phpReplaceValue('databases.default.default.password');
+    $obj->_phpReplaceValue('databases.default.default.password');
     $this->assertStringNotContainsString($password, $obj->loadedFile['contents']);
   }
 
@@ -46,7 +46,7 @@ final class PhpTraitTest extends TestCase {
     $obj->loadedFile['contents'] = "<?php\n\n\$config['system.logging']['error_level'] = ERROR_REPORTING_DISPLAY_ALL;\n$variant;\n";
 
     $this->assertStringContainsString($password, $obj->loadedFile['contents']);
-    $obj->phpReplaceValue('databases.default.default.password');
+    $obj->_phpReplaceValue('databases.default.default.password');
     $this->assertStringNotContainsString($password, $obj->loadedFile['contents']);
   }
 
@@ -54,7 +54,7 @@ final class PhpTraitTest extends TestCase {
     $this->expectException(ProcessorFailedException::class);
     $obj = new PhpTraitTestable();
     $obj->loadedFile['contents'] = "<?php \$a = 123;\n";
-    $obj->phpReplaceValue("\$databases['default']['default']['password']");
+    $obj->_phpReplaceValue("\$databases['default']['default']['password']");
   }
 
   public function testPhpReplaceValueWorksAsExpectedOnMultiDots() {
@@ -72,7 +72,7 @@ final class PhpTraitTest extends TestCase {
 \$databases['default']['default']['password'] = '$password';\n";
 
     $this->assertStringContainsString($password, $obj->loadedFile['contents']);
-    $obj->phpReplaceValue('databases.default.default.password');
+    $obj->_phpReplaceValue('databases.default.default.password');
     $this->assertStringNotContainsString($password, $obj->loadedFile['contents']);
   }
 
@@ -86,6 +86,10 @@ final class PhpTraitTestable {
 
   protected function validateFileIsLoaded() {
 
+  }
+
+  public function _phpReplaceValue() {
+    return call_user_func_array([$this, 'phpReplaceValue'], func_get_args());
   }
 
 }
