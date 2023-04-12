@@ -64,6 +64,8 @@ function json_get_value() {
 # $1 - The message to display
 # $2 - Optional.  Alter the option to display for cancel.
 #
+# The choices should be defined in the variable: choose__array before calling.
+#
 # Returns 0 and echos the choice if one was selected; returns 1 if cancelled.
 function choose() {
   parse_args "$@"
@@ -83,7 +85,7 @@ function choose() {
   fi
 
   choose__array=("${choose__array[@]}" "$cancel_label")
-  select option in ${choose__array[@]}; do
+  select option in "${choose__array[@]}"; do
     [[ "$option" != "$cancel_label" ]] && echo "$option" && return 0
     break;
   done
@@ -1880,12 +1882,23 @@ function throw() {
     exit 3
 }
 
-##
- # @link https://www.php-fig.org/psr/psr-3/
- #
-function write_log_emergency() {
-    local args=("emergency" "$@")
-    _cloudy_write_log ${args[@]}
+# Echo a message to the user to either enable and repeat, or view log for info.
+#
+# $1 - Path to the logfile; usually you send $LOGFILE, which is the global path.
+#
+# @code
+# fail_because "$(echo_see_log $LOGFILE)"
+# @endcode
+#
+# Returns nothing.
+function echo_see_log() {
+  local logfile="$1"
+
+  if [[ ! "$logfile" ]]; then
+    echo "For details enable logging and try again."
+  else
+    echo "See log for details: $logfile"
+  fi
 }
 
 ##
@@ -1898,6 +1911,14 @@ function write_log() {
     if [ $# -eq 1 ]; then
         args=("log" "${args[@]}")
     fi
+    _cloudy_write_log ${args[@]}
+}
+
+##
+ # @link https://www.php-fig.org/psr/psr-3/
+ #
+function write_log_emergency() {
+    local args=("emergency" "$@")
     _cloudy_write_log ${args[@]}
 }
 

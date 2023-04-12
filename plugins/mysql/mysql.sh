@@ -389,14 +389,25 @@ function mysql_on_push_db() {
     result_status=$?
     if [[ $result_status -ne 0 ]]; then
       write_log_error "Remote exited with: $result_status"
-      write_log_error "$result_json"
-      fail_because "$result_json"
     fi
-    [[ $result_status -eq 1 ]] && echo_task_failed && fail_because "$remote_base_path does not exist." && return 1
-    [[ $result_status -eq 2 ]] && echo_task_failed && fail_because "$remote_base_path/vendor/bin/ldp is missing or does not have execute permissions." && return 1
-    [[ $result_status -eq 3 ]] && echo_task_failed && fail_because "Remote backup failed" && return 1
+    [[ $result_status -eq 1 ]] && fail_because "$remote_base_path does not exist."
+    [[ $result_status -eq 2 ]] && fail_because "$remote_base_path/vendor/bin/ldp is missing or does not have execute permissions."
+    [[ $result_status -eq 3 ]] && fail_because "Remote backup failed"
 
-    json_set "$result_json"
+    # Parse the JSON result to get the filepath.
+    if json_set "$result_json"; then
+      write_log_info "JSON received: $result_json"
+    else
+      fail_because "Invalid JSON received: $result_json"
+    fi
+
+    # Handle any failure up to this point.
+    if has_failed; then
+      fail_because "$(echo_see_log $LOGFILE)"
+      echo_task_failed
+      return 1
+    fi
+
     echo_task_completed
     has_option v && echo "$LIL $(json_get_value "filepath")"
     echo_time_heading
@@ -448,6 +459,7 @@ function mysql_on_push_db() {
   result_status=$?
   if [[ $result_status -ne 0 ]]; then
     write_log_error "Remote exited with: $result_status"
+    fail_because "$(echo_see_log $LOGFILE)"
   fi
   [[ $result_status -eq 3 ]] && echo_task_failed && fail_because "Remote import failed" && return 1
   echo_task_completed
@@ -509,31 +521,36 @@ function mysql_on_pull_db() {
   else
     result_json=$(cd "$remote_base_path" || exit 1;[[ -e ./vendor/bin/ldp ]] || exit 2; ./vendor/bin/ldp export "pull_by_$(whoami)" --force --format=json --id="$DATABASE_ID"$remote_ldp_options || exit 3)
   fi
+
+  # Handle the result, make sure the exit code was 0 and the JSON is accurate.
   result_status=$?
   if [[ $result_status -ne 0 ]]; then
     write_log_error "Remote exited with: $result_status"
-    write_log_error "$result_json"
-    fail_because "$result_json"
   fi
-
-  [[ $result_status -eq 1 ]] && echo_task_failed && fail_because "$remote_base_path does not exist." && return 1
-  [[ $result_status -eq 2 ]] && echo_task_failed && fail_because "$remote_base_path/vendor/bin/ldp is missing or does not have execute permissions." && return 1
-  [[ $result_status -eq 3 ]] && echo_task_failed && fail_because "Remote export failed" && return 1
+  [[ $result_status -eq 1 ]] && fail_because "$remote_base_path does not exist."
+  [[ $result_status -eq 2 ]] && fail_because "$remote_base_path/vendor/bin/ldp is missing or does not have execute permissions."
+  [[ $result_status -eq 3 ]] && fail_because "Remote export failed."
 
   # Parse the JSON result to get the path to the remote dumpfile.
   if json_set "$result_json"; then
-    write_log_debug "JSON received: $result_json"
+    write_log_info "JSON received: $result_json"
   else
-    write_log_error "Invalid JSON received: $result_json"
+    fail_because "Invalid JSON received: $result_json"
   fi
-
-  # Download the dumpfile.
   remote_dumpfile_path="$(json_get_value "filepath")"
-  [[ ! "$remote_dumpfile_path" ]] && fail_because "Remote db export filepath is empty." && echo_task_failed && return 1
+  [[ ! "$remote_dumpfile_path" ]] && fail_because "Remote db export filepath is empty."
+
+  # Handle any failure up to this point.
+  if has_failed; then
+    fail_because "$(echo_see_log $LOGFILE)"
+    echo_task_failed
+    return 1
+  fi
 
   echo_task_completed
   echo_time_heading
 
+  # Download the dumpfile.
   local save_as="$dumpfiles_dir/$(basename "$remote_dumpfile_path")"
   echo_task "Download as $(basename "$save_as")"
   if has_option "verbose"; then
