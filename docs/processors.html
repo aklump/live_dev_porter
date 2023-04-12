@@ -86,6 +86,8 @@ fi
 echo "Contents approved in $SHORTPATH"
 </code></pre>
 
+<p>When creating PHP processors, you should make all methods private, except those that are to be considered callable as a processor.  The processor indexing method will expose all public methods in the options menu.</p>
+
 <p><em>Here is an example in PHP:</em></p>
 
 <pre><code class="php">&lt;?php
@@ -103,10 +105,10 @@ final class RemoveSecrets extends ProcessorBase {
 
   public function process() {
     if ($this-&gt;getEnv('LOCAL_ENV_ID') !== 'dev') {
-      throw new ProcessorSkippedException();
+      throw new ProcessorSkippedException('Local environment is not "dev"');
     }
     if (!$this-&gt;loadFile() || 'install' !== $this-&gt;filesGroupId) {
-      throw new ProcessorSkippedException();
+      throw new ProcessorSkippedException('Files group is not "install".');
     }
 
     if ($this-&gt;getFileInfo()['basename'] == '.env') {
@@ -139,7 +141,7 @@ final class RemoveSecrets extends ProcessorBase {
 <footer>
   <div class="pager"><a href="plugins.html" class="prev plugins">&laquo;Plugins</a><a href="index.html" class="index pager__book-title">Live Dev Porter: Documentation</a><a href="pull.html" class="next pull">Pulling Remote to Local&raquo;</a></div>  
   <div id="footer-legaleeze">
-    <p class="legaleeze center">Version: 0.0.113 &bull; Last Updated: Wed, 12 Apr 2023 12:28:31 -0700</p>
+    <p class="legaleeze center">Version: 0.0.114 &bull; Last Updated: Wed, 12 Apr 2023 13:58:58 -0700</p>
   </div>
 </footer>
 
