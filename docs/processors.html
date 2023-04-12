@@ -50,14 +50,6 @@
 
 <pre><code class="shell">#!/usr/bin/env bash
 
-#debug "$COMMAND;\$COMMAND"
-#debug "$LOCAL_ENV_ID;\$LOCAL_ENV_ID"
-#debug "$REMOTE_ENV_ID;\$REMOTE_ENV_ID"
-#debug "$DATABASE_ID;\$DATABASE_ID"
-#debug "$FILES_GROUP_ID;\$FILES_GROUP_ID"
-#debug "$FILEPATH;\$FILEPATH"
-#debug "$SHORTPATH;\$SHORTPATH"
-
 # Only do processing when we have a database event.
 [[ "$DATABASE_ID" ]] || exit 255
 
@@ -80,14 +72,6 @@ echo "$(cat $query_result) total users remain in $DATABASE_NAME"
 <p><em>An example bash processor for a file:</em></p>
 
 <pre><code class="shell">#!/usr/bin/env bash
-
-#debug "$COMMAND;\$COMMAND"
-#debug "$LOCAL_ENV_ID;\$LOCAL_ENV_ID"
-#debug "$REMOTE_ENV_ID;\$REMOTE_ENV_ID"
-#debug "$DATABASE_ID;\$DATABASE_ID"
-#debug "$FILES_GROUP_ID;\$FILES_GROUP_ID"
-#debug "$FILEPATH;\$FILEPATH"
-#debug "$SHORTPATH;\$SHORTPATH"
 
 # Only do processing when we have a file event.
 [[ "$COMMAND" != "pull" ]] &amp;&amp; exit 255
@@ -118,6 +102,9 @@ final class RemoveSecrets extends ProcessorBase {
   use EnvTrait;
 
   public function process() {
+    if ($this-&gt;getEnv('LOCAL_ENV_ID') !== 'dev') {
+      throw new ProcessorSkippedException();
+    }
     if (!$this-&gt;loadFile() || 'install' !== $this-&gt;filesGroupId) {
       throw new ProcessorSkippedException();
     }
@@ -152,7 +139,7 @@ final class RemoveSecrets extends ProcessorBase {
 <footer>
   <div class="pager"><a href="plugins.html" class="prev plugins">&laquo;Plugins</a><a href="index.html" class="index pager__book-title">Live Dev Porter: Documentation</a><a href="pull.html" class="next pull">Pulling Remote to Local&raquo;</a></div>  
   <div id="footer-legaleeze">
-    <p class="legaleeze center">Version: 0.0.111 &bull; Last Updated: Sun, 12 Feb 2023 17:12:52 -0800</p>
+    <p class="legaleeze center">Version: 0.0.112 &bull; Last Updated: Tue, 11 Apr 2023 18:30:50 -0700</p>
   </div>
 </footer>
 
