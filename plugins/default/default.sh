@@ -159,6 +159,12 @@ function default_on_remote_shell() {
   # The -l command runs bash as if it was a login shell, which is more likely
   # going to contain the customizations the user is expecting.  Another
   # possibility for $SHELL is mysecureshell which does not have that option.
+
+  if has_option "verbose"; then
+    echo "ssh "$(get_ssh_auth "$REMOTE_ENV_ID")""
+    echo
+  fi
+
   remote_ssh "$REMOTE_ENV_ID" "(cd $remote_base_path; [[ \$(basename \$SHELL) == bash ]] && exec \$SHELL -l || exec \$SHELL)"
 }
 

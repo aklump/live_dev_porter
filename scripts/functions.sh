@@ -376,14 +376,13 @@ function implement_configtest() {
 #
 # Returns 0 if .
 function remote_ssh() {
+  # DO NOT ECHO ANYTHING IN THIS METHOD AS IT WILL SCREW UP THE JSON PARSING!
   local environment_id="$1"
 
   env_auth=$(get_ssh_auth "$environment_id")
   [[ "$env_auth" ]] || return 1
   write_log_debug "ssh -t -o BatchMode=yes "$env_auth" "${@:2}""
-  if has_option 'v'; then
-    echo "ssh "$env_auth""
-    echo
+  if has_option "verbose"; then
     verbose=" -vvv"
   fi
   ssh$verbose -t -o BatchMode=yes "$env_auth" "${@:2}"

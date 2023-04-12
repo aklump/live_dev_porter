@@ -519,15 +519,29 @@ function mysql_on_pull_db() {
   [[ $result_status -eq 1 ]] && echo_task_failed && fail_because "$remote_base_path does not exist." && return 1
   [[ $result_status -eq 2 ]] && echo_task_failed && fail_because "$remote_base_path/vendor/bin/ldp is missing or does not have execute permissions." && return 1
   [[ $result_status -eq 3 ]] && echo_task_failed && fail_because "Remote export failed" && return 1
+
+  # Parse the JSON result to get the path to the remote dumpfile.
+  if json_set "$result_json"; then
+    write_log_debug "JSON received: $result_json"
+  else
+    write_log_error "Invalid JSON received: $result_json"
+  fi
+
+  # Download the dumpfile.
+  remote_dumpfile_path="$(json_get_value "filepath")"
+  [[ ! "$remote_dumpfile_path" ]] && fail_because "Remote db export filepath is empty." && echo_task_failed && return 1
+
   echo_task_completed
   echo_time_heading
 
-  # Download the dumpfile.
-  json_set "$result_json"
-  remote_dumpfile_path="$(json_get_value "filepath")"
   local save_as="$dumpfiles_dir/$(basename "$remote_dumpfile_path")"
   echo_task "Download as $(basename "$save_as")"
-  ! scp "${REMOTE_ENV_AUTH}$remote_dumpfile_path" "$save_as" &> /dev/null && echo_task_failed && return 1
+  if has_option "verbose"; then
+    echo "scp "${REMOTE_ENV_AUTH}$remote_dumpfile_path" "$save_as""
+    ! scp "${REMOTE_ENV_AUTH}$remote_dumpfile_path" "$save_as" && echo_task_failed && return 1
+  else
+    ! scp "${REMOTE_ENV_AUTH}$remote_dumpfile_path" "$save_as" &> /dev/null && echo_task_failed && return 1
+  fi
   echo_task_completed
   echo_time_heading
 

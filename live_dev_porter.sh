@@ -248,6 +248,8 @@ implement_route_access
 # Uncomment this to add additional developer commands.
 #source "$SOURCE_DIR/developer_commands.sh"
 
+write_log_info "Executing command: $COMMAND"
+
 # Handle other commands.
 case $COMMAND in
     "config-test")
