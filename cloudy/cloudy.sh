@@ -65,8 +65,19 @@ function json_get_value() {
 # $2 - Optional.  Alter the option to display for cancel.
 #
 # The choices should be defined in the variable: choose__array before calling.
+# You may pass another array which is the labels to appear in the menu if you
+# want, it must have the same number of elements as choose__array and the
+# indexes must correspond label/value. Here is an example of a menu to choose a
+# file in a directory:
+# @code
+# choose__array=($(ls "$CONFIG_DIR"/processors/))
+# processor=$(choose "Which processor?")
+# [ $? -ne 0 ] && exit_with_success
+# @endcode
 #
 # Returns 0 and echos the choice if one was selected; returns 1 if cancelled.
+choose__array=()
+choose__labels=()
 function choose() {
   parse_args "$@"
   local message="${parse_args__args[0]}"
@@ -84,12 +95,23 @@ function choose() {
     PS3="$(echo_green_highlight "$message") "
   fi
 
-  choose__array=("${choose__array[@]}" "$cancel_label")
-  select option in "${choose__array[@]}"; do
-    [[ "$option" != "$cancel_label" ]] && echo "$option" && return 0
-    break;
+  choose__values=("${choose__array[@]}" "$cancel_label")
+  if [[ ${#choose__labels[@]} -eq 0 ]]; then
+    choose__labels=("${choose__values[@]}")
+  fi
+
+  select selection in "${choose__labels[@]}"; do
+    [[ "$selection" == "$cancel_label" ]] && return 1
+
+    # Convert label to value, if necessary.
+    for (( i=0; i<${#choose__values[@]}; i++ )); do
+      if [[ "${choose__labels[$i]}" == "$selection" ]]; then
+        echo "${choose__values[$i]}" && return 0
+      fi
+    done
+
+    echo "$selection" && return 0
   done
-  return 1
 }
 
 # Prompt for a Y or N confirmation.

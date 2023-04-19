@@ -426,19 +426,18 @@ case $COMMAND in
         table_add_row "$LOCAL_ENV_ID" "$(path_unresolve "$PWD" "$backups_dir")"
         echo; echo_slim_table
 
+        echo_heading "Sorted newest to oldest by local date"
+        echo
+
+        # Get the JSON that represents our import choices.
+        json_set "$($CLOUDY_PHP "$ROOT/php/get_db_dumps.php" "$filepath" "$PWD" "$pull_dir" "$backups_dir")"
         choose__array=()
-        # http://mywiki.wooledge.org/ParsingLs
-        for i in "${pull_dir%/}"/*$filepath*.sql*; do
-          [[ -f "$i" ]] && choose__array=("${choose__array[@]}" "$(path_unresolve "$PWD" "$i")")
+        choose__labels=()
+        for (( i=0; i<$(json_get_value count); i++ )); do
+          choose__array=("${choose__array[@]}" "$(json_get_value values.$i)")
+          choose__labels=("${choose__labels[@]}" "$(json_get_value labels.$i)")
         done
-        for i in *$filepath*.sql*; do
-          [[ -f "$i" ]] && choose__array=("${choose__array[@]}" "$i")
-        done
-        for i in "${backups_dir%/}"/*$filepath*.sql*; do
-          [[ -f "$i" ]] && choose__array=("${choose__array[@]}" "$(path_unresolve "$PWD" "$i")")
-        done
-        ! shortpath=$(choose "Type the number of the file to import") && exit_with_failure "Import cancelled."
-        filepath=$(path_resolve "${PWD%/}" "$shortpath")
+        ! filepath=$(choose "Pick a file to import") && exit_with_failure "Import cancelled."
         echo
       fi
       if [[ ! -f "$filepath" ]]; then
