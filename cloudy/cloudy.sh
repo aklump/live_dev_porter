@@ -95,10 +95,12 @@ function choose() {
     PS3="$(echo_green_highlight "$message") "
   fi
 
-  choose__values=("${choose__array[@]}" "$cancel_label")
+  choose__values=("${choose__array[@]}")
   if [[ ${#choose__labels[@]} -eq 0 ]]; then
     choose__labels=("${choose__values[@]}")
   fi
+  choose__values=("${choose__values[@]}" "$cancel_label")
+  choose__labels=("${choose__labels[@]}" "$cancel_label")
 
   select selection in "${choose__labels[@]}"; do
     [[ "$selection" == "$cancel_label" ]] && return 1
