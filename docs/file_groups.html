@@ -45,6 +45,36 @@
   <p>If a remote folder or file that was previously pulled gets deleted, it will be automatically be deleted from your local environment the next time you pull.</p>
 </blockquote>
 
+<h2>Beware of Directory Contents</h2>
+
+<p>If you are trying to match a directory, then you are also trying to match it's contents. Make sure to end the line with a '/' or the contents will not be considered. In <em>Example 1</em>, <code>/members/100</code> will be treated as a file and if it happens to be a directory, the content will never be seen.</p>
+
+<p>However as shown in <em>Example 2 (A &amp; B)</em> using two syntax variations, <code>/members/100</code> will be treated as a directory, and it's contents will be excluded/included as appropriate to the directive.  <strong>The ending <code>/</code> or <code>/**</code> is critical.</strong></p>
+
+<p>Example 1:</p>
+
+<pre><code class="yaml">file_groups:
+  test_content:
+    include:
+      - /members/100
+</code></pre>
+
+<p>Example 2A:</p>
+
+<pre><code class="yaml">file_groups:
+  test_content:
+    include:
+      - /members/100/
+</code></pre>
+
+<p>Example 2B:</p>
+
+<pre><code class="yaml">file_groups:
+  test_content:
+    include:
+      - /members/100/**
+</code></pre>
+
 </section>
 
 <div class="search__results">
@@ -54,7 +84,7 @@
 <footer>
   <div class="pager"><a href="environments.html" class="prev environments">&laquo;Environments</a><a href="index.html" class="index pager__book-title">Live Dev Porter: Documentation</a><a href="import.html" class="next import">Import&raquo;</a></div>  
   <div id="footer-legaleeze">
-    <p class="legaleeze center">Version: 0.0.116 &bull; Last Updated: Wed, 19 Apr 2023 17:30:49 -0700</p>
+    <p class="legaleeze center">Version: 0.0.117 &bull; Last Updated: Thu, 20 Apr 2023 17:16:19 -0700</p>
   </div>
 </footer>
 
