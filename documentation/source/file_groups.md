@@ -16,3 +16,36 @@ If the `include` filter is used, for a file or folder to be copied it must be ma
 > If a local folder or file exists, yet it appears in a file group's `exclude` rules, it will never be removed by the pull command. You would have to manually remove it.
 
 > If a remote folder or file that was previously pulled gets deleted, it will be automatically be deleted from your local environment the next time you pull.
+
+## Beware of Directory Contents
+
+If you are trying to match a directory, then you are also trying to match it's contents. Make sure to end the line with a '/' or the contents will not be considered. In _Example 1_, `/members/100` will be treated as a file and if it happens to be a directory, the content will never be seen.
+
+However as shown in _Example 2 (A & B)_ using two syntax variations, `/members/100` will be treated as a directory, and it's contents will be excluded/included as appropriate to the directive.  **The ending `/` or `/**` is critical.**
+
+Example 1:
+
+```yaml
+file_groups:
+  test_content:
+    include:
+      - /members/100
+```
+
+Example 2A:
+
+```yaml
+file_groups:
+  test_content:
+    include:
+      - /members/100/
+```
+
+Example 2B:
+
+```yaml
+file_groups:
+  test_content:
+    include:
+      - /members/100/**
+```

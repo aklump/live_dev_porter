@@ -4,6 +4,10 @@ namespace AKlump\LiveDevPorter\Config;
 
 class RsyncHelper {
 
+  const TYPE_INCLUDE = 'include';
+
+  const TYPE_EXCLUDE = 'exclude';
+
   public function __construct(array $config, array $cloudy_config) {
     $this->config = $cloudy_config;
     $this->dist = $config['CACHE_DIR'];
@@ -23,8 +27,8 @@ class RsyncHelper {
       if (!empty($group_data['include'])) {
         $filter_type[] = 'include';
       }
-      if (!empty($group_data['exclude'])) {
-        $filter_type[] = 'exclude';
+      if (!empty($group_data[self::TYPE_EXCLUDE])) {
+        $filter_type[] = self::TYPE_EXCLUDE;
       }
       if (count($filter_type) > 2) {
         throw new \RuntimeException(sprintf('Both "include" and "exclude" may not be used at the same time.  Configuration problem with file group: %s', $group_id));
@@ -35,14 +39,14 @@ class RsyncHelper {
       if (!empty($group_data[$filter_type])) {
         $path = sprintf('%s/rsync_ruleset.%s.txt', $this->dist, $group_id);
         foreach ($group_data[$filter_type] as $rule) {
-          $rules = $this->inflateRule($rule);
+          $rules = $this->inflateRule($rule, $filter_type);
           $rules = array_map(function ($item) use ($filter_type) {
-            return ($filter_type === 'include' ? '+ ' : '- ') . $item;
+            return ($filter_type === self::TYPE_INCLUDE ? '+ ' : '- ') . $item;
           }, $rules);
           $ruleset = array_merge($ruleset, $rules);
         }
       }
-      $ruleset[] = ($filter_type === 'include' ? '- *' : '+ *');
+      $ruleset[] = ($filter_type === self::TYPE_INCLUDE ? '- *' : '+ *');
       $result = file_put_contents($path, implode(PHP_EOL, $ruleset));
       if (!$result) {
         throw new \RuntimeException(sprintf('Failed to save %s', $path));
@@ -57,7 +61,15 @@ class RsyncHelper {
    *
    * @link https://www.man7.org/linux/man-pages/man1/rsync.1.html#INCLUDE/EXCLUDE_PATTERN_RULES
    */
-  public static function inflateRule(string $rule): array {
+  public static function inflateRule(string $rule, string $type): array {
+
+    // This is here to match the contents of the directory, without it, the
+    // contents will not be considered in the rsync.
+    if (substr($rule, -1) === '/') {
+      if (self::TYPE_INCLUDE === $type) {
+        $rule .= '**';
+      }
+    }
     if (substr_count(rtrim($rule, '/'), '/') < 2) {
       return [$rule];
     }
@@ -73,7 +85,7 @@ class RsyncHelper {
       array_pop($rule);
     }
 
-    return array_reverse($rules);
+    return array_reverse(array_unique($rules));
   }
 
 }
