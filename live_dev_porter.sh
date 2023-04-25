@@ -283,7 +283,7 @@ case $COMMAND in
 
       if has_option "verbose"; then
         list_clear
-        echo_heading "Values Sent to the Processor:"
+        echo_heading "ENV vars:"
         list_add_item "COMMAND=\"$COMMAND\""
         list_add_item "LOCAL_ENV_ID=\"$LOCAL_ENV_ID\""
         list_add_item "REMOTE_ENV_ID=\"$REMOTE_ENV_ID\""
@@ -291,8 +291,11 @@ case $COMMAND in
         list_add_item "FILES_GROUP_ID=\"$FILES_GROUP_ID\""
         list_add_item "FILEPATH=\"$FILEPATH\""
         list_add_item "SHORTPATH=\"$SHORTPATH\""
-        list_add_item "Use \"--config\" to change."
         echo_list
+        echo
+        echo "Use \"--config\" to change these values."
+      else
+        echo "Use --verbose (-v) to see ENV vars."
       fi
 
       processor=$(get_command_arg 0)
@@ -309,16 +312,26 @@ case $COMMAND in
         [[ ! -f "$processor_path" ]] && fail_because "Missing file processor: $processor" && exit_with_failure
         echo_title "$(path_unresolve "$CONFIG_DIR" "$processor_path")"
         processor_output=$(cd "$APP_ROOT"; source "$SOURCE_DIR/processor_support.sh"; . "$processor_path")
-        [[ $? -ne 0 ]] && fail_because "Processor failed.";
+        processor_result=$?
       else
         php_query="autoload=$CONFIG_DIR/processors/&COMMAND=$COMMAND&LOCAL_ENV_ID=$LOCAL_ENV_ID&REMOTE_ENV_ID=$REMOTE_ENV_ID&DATABASE_ID=$DATABASE_ID&DATABASE_NAME=$DATABASE_NAME&FILES_GROUP_ID=$FILES_GROUP_ID&FILEPATH=$FILEPATH&SHORTPATH=$SHORTPATH&IS_WRITEABLE_ENVIRONMENT=$IS_WRITEABLE_ENVIRONMENT"
         echo_title "$(path_unresolve "$CONFIG_DIR" "$processor_path")"
         processor_output=$(cd "$APP_ROOT"; export CLOUDY_CONFIG_JSON; $CLOUDY_PHP "$ROOT/php/class_method_caller.php" "$processor" "$php_query")
-        [[ $? -ne 0 ]] && fail_because "Processor failed.";
+        processor_result=$?
       fi
+
+      if [[ $processor_result -eq 255 ]]; then
+        warn_because "Processor not applied."
+        if [[ ! "$processor_output" ]]; then
+          exit_message="Nothing done."
+        fi
+      elif [[ $processor_result -ne 0 ]]; then
+        fail_because "Processor failed.";
+      fi
+
       has_failed && fail_because "$processor_output" && exit_with_failure
       succeed_because "$processor_output"
-      exit_with_success
+      exit_with_success "$exit_message"
       ;;
 
     "remote")
