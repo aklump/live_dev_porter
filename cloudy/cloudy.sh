@@ -1317,7 +1317,7 @@ function warn_because() {
     local message="$1"
     local default="$2"
 
-    [[ "$message" ]] || [[ "$default" ]] || return 1
+    [[ "$message" ]] || [[ "$default" ]] || return 0
     [[ "$message" ]] && CLOUDY_SUCCESSES=("${CLOUDY_SUCCESSES[@]}" "$(echo_yellow "$message")")
     [[ "$default" ]] && CLOUDY_SUCCESSES=("${CLOUDY_SUCCESSES[@]}" "$(echo_yellow "$default")")
     return 0
@@ -1338,7 +1338,7 @@ function succeed_because() {
     local default="$2"
 
     CLOUDY_EXIT_STATUS=0
-    [[ "$message" ]] || [[ "$default" ]] || return 1
+    [[ "$message" ]] || [[ "$default" ]] || return 0
     [[ "$message" ]] && CLOUDY_SUCCESSES=("${CLOUDY_SUCCESSES[@]}" "$message")
     [[ "$default" ]] && CLOUDY_SUCCESSES=("${CLOUDY_SUCCESSES[@]}" "$default")
     return 0
@@ -1568,7 +1568,8 @@ function fail_because() {
     message="${parse_args__args[0]}"
     default="${parse_args__args[1]}"
     fail $@
-    [[ "$message" ]] || [[ "$default" ]] || return 1
+
+    [[ "$message" ]] || [[ "$default" ]] || return 0
     [[ "$message" ]] && CLOUDY_FAILURES=("${CLOUDY_FAILURES[@]}" "$message")
     [[ "$default" ]] && CLOUDY_FAILURES=("${CLOUDY_FAILURES[@]}" "$default")
     return 0
