@@ -48,7 +48,7 @@ trait EnvTrait {
    * @return string
    *   The sanitized string if $variable_name was found.
    */
-  protected function envReplaceUrlPassword(string $variable_name, string $replace_with = null) {
+  protected function envReplaceUrlPassword(string $variable_name, string $replace_with = NULL) {
     $replace_with = $replace_with ?? ProcessorBase::TOKENS__PASSWORD;
     $this->validateFileIsLoaded();
     if (empty($this->loadedFile['contents'])) {
@@ -58,7 +58,7 @@ trait EnvTrait {
       $url = parse_url(trim($matches[2], '\'" '));
       $url['pass'] = $replace_with;
       $host_port = rtrim($url['host'] . ':' . ($url['port'] ?? ''), ':');
-      $replace = sprintf('%s://%s:%s@%s%s', $url['scheme'], $url['user'] ?? 'USER', $url['pass'] ?? 'PASS', $host_port, $url['path']);
+      $replace = sprintf('%s://%s:%s@%s%s', $url['scheme'] ?? '', $url['user'] ?? 'USER', $url['pass'] ?? 'PASS', $host_port, $url['path'] ?? '');
 
       return str_replace($matches[2], $replace, $matches[0]);
     }, $this->loadedFile['contents']);
