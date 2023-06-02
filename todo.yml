@@ -1,0 +1,5 @@
+-
+  bug: init fails
+  steps:
+    - ./vendor/bin/ldp init
+    - 'cp: /Users/aklump/Code/Projects/ChapterAndVerse/Numerica/site/app/vendor/aklump/live-dev-porter/init/processors is a directory (not copied).'

@@ -2,7 +2,7 @@
 
 If a project uses at least one database, it must be defined in configuration. You must give it an ID. Using that ID, it can be referenced in other parts of the configuration. You may define multiple databases if that applies to your situation.
 
-You must also define which plugin is used to access your database, along with the plugin-specifiy configuation. Example plugins are: _mysql_, _lando_, _lando_git_.
+You must also define which plugin is used to access your database, along with the plugin-specifiy configuation. Example plugins are: _mysql_, _env_, _lando_, _lando_git_.
 
 If you have more than one database defined, the first listed in the configuration will be assumed unless you specify otherwise with `--database=ID`. In the following configuration example, `primary` will be assumed the default database.
 
