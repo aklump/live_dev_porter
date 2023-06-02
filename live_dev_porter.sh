@@ -134,14 +134,15 @@ case $COMMAND in
       ;;
 
     "config")
-      if [[ ! "$EDITOR" ]]; then
-        exit_with_failure "You must set environment variable \$EDITOR with a command first, e.g. in ~/.bash_profile, export EDITOR=nano"
+      editor="$VISUAL"
+      if [[ ! "$editor" ]]; then
+        editor="${EDITOR:-nano}"
       fi
       config_file="$CONFIG_DIR/config.yml"
       if has_option 'local'; then
         config_file="$CONFIG_DIR/config.local.yml"
       fi
-      $EDITOR $config_file && exit_with_cache_clear
+      $editor $config_file && exit_with_cache_clear
       ;;
 
 esac
