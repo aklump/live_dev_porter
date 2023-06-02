@@ -141,7 +141,12 @@ commands:
       id:
         help: 'Use to enter a database other than the first/default listed for the local environment.'
   config:
-    help: 'Open configuration in $EDITOR.'
+    help: 'Get or set a single config value, e.g. "local" or open configuration for editing'
+    arguments:
+      name:
+        help: Optional variable name, if getting or setting a single value.
+      value:
+        help: Optional, only use when setting a single value.
     options:
       local:
         type: boolean

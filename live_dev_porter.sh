@@ -134,6 +134,23 @@ case $COMMAND in
       ;;
 
     "config")
+      # If we have two arguments then we are setting a value...
+      var_name=$(get_command_arg 0)
+      set_value=$(get_command_arg 1)
+      if [ "$var_name" ] && [ "$set_value" ]; then
+        config_file="$CONFIG_DIR/config.local.yml"
+        call_php_class_method "\AKlump\LiveDevPorter\Config\Config::set" "filepath=$config_file&name=$var_name&value=$set_value"
+        succeed_because "Config value \"$var_name\" has been set to \"$set_value\"."
+        exit_with_cache_clear
+
+      # If we have one, then we are reading...
+      elif [ "$var_name" ]; then
+        config_file="$CONFIG_DIR/config.local.yml"
+        call_php_class_method "\AKlump\LiveDevPorter\Config\Config::get" "filepath=$config_file&name=$var_name"
+        exit_with_cache_clear
+      fi
+
+      # Otherwise, to the editor.
       editor="$VISUAL"
       if [[ ! "$editor" ]]; then
         editor="${EDITOR:-nano}"
@@ -155,7 +172,7 @@ exit_with_failure_if_empty_config 'LOCAL_ENV_ID' 'local'
 # to be executed in such state.
 eval $(get_config_as local_base_path "environments.$LOCAL_ENV_ID.base_path")
 if [[ ! -e "$local_base_path" ]]; then
-  echo_scream "Configuration \"local: test\" doesn't look right"
+  echo_scream "Configuration \"local: $LOCAL_ENV_ID\" doesn't look right"
   fail_because "Are you sure that \"$LOCAL_ENV_ID\" is the correct environment ID for local?"
   fail_because "If it is, do you need to simply create it's base_path: $local_base_path?"
   fail_because "Otherwise, you will need to configure local to other than \"$LOCAL_ENV_ID\" or correct \"$LOCAL_ENV_ID.base_path\"."

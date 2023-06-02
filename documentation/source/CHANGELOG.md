@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.120] - 2023-06-01
+
+### Added
+
+- You can now set the `local` or `remote` env from CLI using `ldp config local <ENV>` or `ldp config remote <ENV>`, without opening an editor.
+
 ## [0.0.109] - 2023-02-12
 
 ### Changed
