@@ -309,6 +309,7 @@ case $COMMAND in
         list_add_item "FILES_GROUP_ID=\"$FILES_GROUP_ID\""
         list_add_item "FILEPATH=\"$FILEPATH\""
         list_add_item "SHORTPATH=\"$SHORTPATH\""
+        list_add_item "WORKFLOW_ID=\"$WORKFLOW_ID\""
         echo_list
         echo
         echo "Use \"--config\" to change these values."
