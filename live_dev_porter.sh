@@ -548,7 +548,7 @@ case $COMMAND in
         [[ "$time_estimate" ]] && echo_heading "Time estimate: $time_estimate"
       fi
 
-      if !has_option "dry-run" && ! confirm --caution "Proceed?"; then
+      if ! has_option "dry-run" && ! confirm --caution "Proceed?"; then
         fail_because "You cancelled this action."
       fi
 
