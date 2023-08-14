@@ -1,0 +1,25 @@
+page_order:
+  - readme
+  - changelog
+  - connection_problems
+  - databases
+  - environment_roles
+  - environments
+  - file_groups
+  - import
+  - lando
+  - local_build_files
+  - loft_deploy_migrations
+  - logging
+  - outline.merge
+  - plugins
+  - processor_development
+  - processors
+  - pull
+  - push
+  - remote
+  - sanitation
+  - search__results
+  - source_control
+  - troubleshooting
+  - workflows

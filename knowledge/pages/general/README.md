@@ -1,6 +1,12 @@
+<!--
+id: readme
+title: 'Start Here'
+tags: ''
+-->
+
 # Live Dev Porter
 
-![live_dev_porter](images/live-dev-porter.jpg)
+![live_dev_porter](../../images/live-dev-porter.jpg)
 
 ## Summary
 
