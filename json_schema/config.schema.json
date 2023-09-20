@@ -18,13 +18,65 @@
         "minLength": 1
       }
     },
-    "databaseTableList": {
+    "database_tablenames": {
       "type": "array",
       "minItems": 1,
       "items": {
         "type": "string",
         "minLength": 1
       }
+    },
+    "workflow__databases": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "enum": [
+          "DATABASE_IDS"
+        ]
+      },
+      "patternProperties": {
+        ".+": {
+          "type": "object",
+          "minProperties": 1,
+          "oneOf": [
+            {
+              "additionalProperties": false,
+              "properties": {
+                "include_tables": {
+                  "$ref": "#/$defs/database_tablenames"
+                },
+                "include_table_data": {
+                  "$ref": "#/$defs/database_tablenames"
+                }
+              }
+            },
+            {
+              "additionalProperties": false,
+              "properties": {
+                "exclude_tables": {
+                  "$ref": "#/$defs/database_tablenames"
+                },
+                "exclude_table_data": {
+                  "$ref": "#/$defs/database_tablenames"
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "workflow__file_groups": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "FILE_GROUP_IDS"
+        ]
+      }
+    },
+    "workflow__processor": {
+      "type": "string",
+      "pattern": "^[^ ]+\\.(sh|php)|[^ ]+::[^ ]+$"
     }
   },
   "additionalProperties": false,
@@ -59,60 +111,30 @@
     },
     "workflows": {
       "type": "object",
+      "propertyNames": {
+        "$ref": "#/$defs/id"
+      },
       "patternProperties": {
-        "^\\D\\S{3,}$": {
+        ".+": {
           "type": "object",
+          "minProperties": 1,
           "properties": {
             "databases": {
-              "type": "object",
-              "propertyNames": {
-                "type": "string",
-                "enum": [
-                  "DATABASE_IDS"
-                ]
-              },
-              "patternProperties": {
-                ".+": {
-                  "type": "object",
-                  "properties": {
-                    "exclude_tables": {
-                      "$ref": "#/$defs/databaseTableList"
-                    },
-                    "exclude_table_data": {
-                      "$ref": "#/$defs/databaseTableList"
-                    },
-                    "include_table_data_where": {
-                      "type": "array",
-                      "items": {
-                        "type": "string",
-                        "pattern": ".+\\s+(?:where|WHERE)\\s+.+"
-                      }
-                    }
-                  }
-                }
-              }
+              "$ref": "#/$defs/workflow__databases"
             },
             "file_groups": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "enum": [
-                  "FILE_GROUP_IDS"
-                ]
-              }
+              "$ref": "#/$defs/workflow__file_groups"
             },
             "preprocessors": {
               "type": "array",
               "items": {
-                "type": "string",
-                "pattern": "^[^ ]+\\.(sh|php)|[^ ]+::[^ ]+$"
+                "$ref": "#/$defs/workflow__processor"
               }
             },
             "processors": {
               "type": "array",
               "items": {
-                "type": "string",
-                "pattern": "^[^ ]+\\.(sh|php)|[^ ]+::[^ ]+$"
+                "$ref": "#/$defs/workflow__processor"
               }
             }
           }
@@ -121,8 +143,11 @@
     },
     "environments": {
       "type": "object",
+      "propertyNames": {
+        "$ref": "#/$defs/id"
+      },
       "patternProperties": {
-        "^\\D\\S{3,}$": {
+        ".+": {
           "type": "object",
           "required": [
             "plugin",
@@ -262,8 +287,11 @@
     },
     "file_groups": {
       "type": "object",
+      "propertyNames": {
+        "$ref": "#/$defs/id"
+      },
       "patternProperties": {
-        "^\\D\\S{3,}$": {
+        ".+": {
           "type": "object",
           "oneOf": [
             {

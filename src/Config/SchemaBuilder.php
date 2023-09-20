@@ -42,9 +42,13 @@ final class SchemaBuilder {
         throw new \RuntimeException(sprintf('Failed to create json schema distribution directory: %s', $parent_dir));
       }
     }
-    $data = json_decode(file_get_contents($this->jsonSchemaSource), TRUE);
+    if (!file_exists($this->jsonSchemaSource)) {
+      throw new \RuntimeException(sprintf('Cannot compile JSON Schema for project; file not found; %s', $this->jsonSchemaSource));
+    }
+    $json = file_get_contents($this->jsonSchemaSource);
+    $data = json_decode($json, TRUE);
     if (!is_array($data) || empty($data)) {
-      throw new \RuntimeException(sprintf('Failed to load json schema:  %s', $this->jsonSchemaSource));
+      throw new \RuntimeException(sprintf('Failed to parse JSON Schema file:  %s', $this->jsonSchemaSource));
     }
 
     // This step replaces our tokens with user-configured, realtime values.
@@ -96,6 +100,7 @@ final class SchemaBuilder {
     foreach ($this->config['environments'] as $environment) {
       $ids = array_merge($ids, array_keys($environment['databases'] ?? []));
     }
+
     return array_unique($ids);
   }
 

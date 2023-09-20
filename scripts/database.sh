@@ -57,14 +57,19 @@ function database_get_export_tables() {
   table_query="SET group_concat_max_len = 40960;"
   table_query="${table_query} SELECT GROUP_CONCAT(table_name separator ' ') FROM information_schema.tables WHERE table_schema='$database_name'"
 
-  # Look at the configuration for explicit tables unless using --all.
   if [[ "$parse_args__options__data" ]]; then
+    # --structure || --data
+
     conditions="$(database_get_table_list_where "$database_id" "$workflow" "exclude_table_data")" || return
+    table_query="${table_query}$conditions"
+    conditions="$(database_get_table_list_where "$database_id" "$workflow" "include_table_data")" || return
     table_query="${table_query}$conditions"
   fi
 
-  # Omit the tables listed in tables.ignore, again this is needed here too.
+  # Omit the tables listed in exclude_tables, YES this is needed here too.
   conditions="$(database_get_table_list_where "$database_id" "$workflow" "exclude_tables")" || return
+  table_query="${table_query}$conditions"
+  conditions="$(database_get_table_list_where "$database_id" "$workflow" "include_tables")" || return
   table_query="${table_query}$conditions"
 
   defaults_file=$(database_get_defaults_file "$environment_id" "$database_id")
@@ -90,7 +95,7 @@ function database_has_tables() {
 #
 # $1 - The database ID.
 # $2 - The workflow ID.
-# $3 - The workflow item key, e.g. 'exclude_tables' or 'exclude_table_data'.
+# $3 - The workflow item key, e.g. 'exclude_tables', 'exclude_table_data', 'include_tables', or 'include_table_data'
 #
 # Returns 0 and echos the where clause for table selection.  Returns 1 to
 # indicate that all tables have been excluded, meaning no query should be run.
@@ -102,6 +107,12 @@ function database_get_table_list_where() {
 
   local array_csv__array
   local where
+  local qualifier
+
+  if [[ "exclude_tables" == "$workflow_key" ]] || [[ "exclude_table_data" == "$workflow_key" ]]; then
+    qualifier='NOT '
+  fi
+
   eval $(get_config_as -a tables "workflows.$workflow.databases.$database_id.$workflow_key")
   [[ ${#tables[@]} -eq 0 ]] && return 0
 
@@ -117,14 +128,14 @@ function database_get_table_list_where() {
       # there is modification of the table_schema query necessary.
       return 1
     elif [[ $p == *"%"* ]]; then
-      where="$where AND table_name NOT LIKE '$p'"
+      where="$where AND table_name $qualifierLIKE '$p'"
     else
       array_csv__array=("${array_csv__array[@]}" "$p")
     fi
   done
 
   if [[ "${#array_csv__array[@]}" -gt 0 ]]; then
-    where="$where AND table_name NOT IN ($(array_csv --single-quotes))"
+    where="$where AND table_name $qualifierIN ($(array_csv --single-quotes))"
   fi
   echo "$where"
 }

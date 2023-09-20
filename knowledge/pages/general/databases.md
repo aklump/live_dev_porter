@@ -64,3 +64,12 @@ workflows:
         - foo
         - bar
 ```
+
+## Explicitly Including Tables
+
+The counterpoint keys are also available: `include_tables`, and `include_table_data`. They cannot, however be used at the same time as their `exclude_` counterparts.
+
+To cherry pick only tables and data use `include_table_data`.
+To cherry pick table structure only use `include_tables`.
+
+
