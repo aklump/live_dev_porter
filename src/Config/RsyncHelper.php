@@ -8,8 +8,8 @@ class RsyncHelper {
 
   const TYPE_EXCLUDE = 'exclude';
 
-  public function __construct(array $config, array $cloudy_config) {
-    $this->config = $cloudy_config;
+  public function __construct(array $config, RuntimeConfigInterface $cloudy_config) {
+    $this->config = $cloudy_config->all();
     $this->dist = $config['CACHE_DIR'];
   }
 

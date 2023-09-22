@@ -1,5 +1,61 @@
 #!/usr/bin/env bash
 
+#
+# @see class_method_caller.php
+# @see call_php_class_method_echo_or_fail for another version.
+#
+# Returns 0 if successful.  Non-zero otherwise.
+function call_php_class_method() {
+  local callback="$1"
+  local serialized_args="$2"
+
+  export CLOUDY_CONFIG_JSON
+  export CACHE_DIR
+  export SOURCE_DIR
+  export TEMP_DIR
+  export PLUGINS_DIR
+  $CLOUDY_PHP "$ROOT/php/class_method_caller.php" "$callback" "$serialized_args"
+}
+
+# Call a php class method AND set success/failure status and messaging.
+#
+# @see class_method_caller.php
+# @see call_php_class_method for a non outputting version.
+#
+# Returns 0 if successful.  Non-zero otherwise.
+function call_php_class_method_echo_or_fail() {
+  local callback="$1"
+  local serialized_args="$2"
+
+  export CLOUDY_CONFIG_JSON
+
+  # TODO Do we really need the third arg?  I don't see it used in code.
+  message="$($CLOUDY_PHP "$ROOT/php/class_method_caller.php" "$callback" "$serialized_args" "${@:3}")"
+  status=$?
+  if [[ $status -ne 0 ]]; then
+    fail_because "$message"
+    exit_with_failure --status=$status "$callback() failed."
+  elif [[ "$message" ]]; then
+    succeed_because "$message"
+  fi
+}
+
+# Echo the return value of a php class method
+#
+# $1 - The PHP class (not-static) method, e.g. "\SchemaBuilder::build".
+# $2 - An encoded query string.  This will be passed to the class constructor
+# as the first argument.  Note: The class constructor will receive cloudy config
+# as the second argument; see caller.php for more info.
+#
+# Returns 0 if .
+function echo_php_class_method() {
+  local callback="$1"
+  local query_string="$2"
+
+  export CLOUDY_CONFIG_JSON
+  $CLOUDY_PHP "$ROOT/php/class_method_caller.php" "$callback" "$query_string" "${@:3}"
+}
+
 # Ensure a directory is within the $APP_ROOT.
 #
 # This should be called before any write operations to the file system as it

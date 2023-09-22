@@ -219,7 +219,7 @@ function default_on_push_files() {
     if [[ "$source" ]] && [[ "$destination" ]]; then
 
       stat_arguments="CACHE_DIR=$CACHE_DIR&COMMAND=push&TYPE=2&ID=$FILES_GROUP_ID&SOURCE=$LOCAL_ENV_ID"
-      call_php_class_method "\AKlump\LiveDevPorter\Statistics::start" "$stat_arguments"
+      call_php_class_method_echo_or_fail "\AKlump\LiveDevPorter\Statistics::start" "$stat_arguments"
 
       rsync_options="$base_rsync_options"
       source_path=$(path_resolve "$source_base" "$source")
@@ -255,7 +255,7 @@ function default_on_push_files() {
           fi
         fi
 
-        call_php_class_method "\AKlump\LiveDevPorter\Statistics::stop" "$stat_arguments"
+        call_php_class_method_echo_or_fail "\AKlump\LiveDevPorter\Statistics::stop" "$stat_arguments"
       fi
     fi
   done
@@ -314,7 +314,7 @@ function default_on_pull_files() {
     if [[ "$source" ]] && [[ "$destination" ]]; then
 
       stat_arguments="CACHE_DIR=$CACHE_DIR&COMMAND=pull&TYPE=2&ID=$FILES_GROUP_ID&SOURCE=$REMOTE_ENV_ID"
-      call_php_class_method "\AKlump\LiveDevPorter\Statistics::start" "$stat_arguments"
+      call_php_class_method_echo_or_fail "\AKlump\LiveDevPorter\Statistics::start" "$stat_arguments"
 
       rsync_options="$base_rsync_options"
       source_path=$(path_resolve "$source_base" "$source")
@@ -359,7 +359,7 @@ function default_on_pull_files() {
           has_failed && return 1
         fi
 
-        call_php_class_method "\AKlump\LiveDevPorter\Statistics::stop" "$stat_arguments"
+        call_php_class_method_echo_or_fail "\AKlump\LiveDevPorter\Statistics::stop" "$stat_arguments"
       fi
     fi
   done

@@ -5,47 +5,91 @@
  *
  * PHP Controller file to allow bash to call class methods.
  *
- * 1. The first argument is expected to be a class::method string
- * 1. If ::method is static it will receive the arguments.
- * 1. If ::method is not static the class constructor will receive the
- * arguments, and the method will be called without arguments.
- * 3. On error, the method must throw an exception.
- * 4. If successful, a string, if returned, will be passed to Cloudy's succeed_because() function.
+ * Do not access this file directly, instead use one of:
+ *
+ * @see call_php_class_method
+ * @see call_php_class_method_echo_or_fail
+ *
+ * 1. The first argument is expected to be a class::method string, e.g. "Foo::bar"
+ * 1. The second argument is a query string e.g., "1=foo&2=bar" or CSV "foo,bar", which will be deserialized as arguments.
+ * 1. Arguments may contain PHP constants, as they will be value-replaced, e.g. "foo,bar,\AKlump\LiveDevPorter\Database\GetExportTables::STRUCTURE"
+ * 1. The exit code will be 0 if successful.
+ * 1. On error, the method must throw an exception.  The exit code will be 1 or the exception code if > 0.
  */
+
+use AKlump\LiveDevPorter\Config\RuntimeConfig;
+use AKlump\LiveDevPorter\Config\RuntimeConfigInterface;
+use AKlump\LiveDevPorter\Php\ClassMethodCaller;
 
 require_once __DIR__ . '/../cloudy/php/bootstrap.php';
 
-$method_args = $argv;
-array_shift($method_args);
-$callback = array_shift($method_args);
-$query_string = array_shift($method_args);
+$callback = $argv[1] ?? NULL;
+$serialized_args = $argv[2] ?? '';
+if ('' === $serialized_args && preg_match('/(.+)\((.+)\)/', $callback, $matches)) {
+  $callback = $matches[1];
+  $serialized_args = $matches[2];
+}
 
-$config = [];
-parse_str($query_string, $config);
-try {
-  list($class, $method) = explode('::', $callback);
+
+function get_cloudy_config(): RuntimeConfigInterface {
+  // This is only available because we export it in call_php_class_method() in
+  // live_dev_porter.sh
+  $config = [];
+  $getenv = function ($name) {
+    $value = getenv($name);
+    if (FALSE === $value) {
+      return NULL;
+    }
+
+    return $value;
+  };
+  $config['CACHE_DIR'] = $getenv('CACHE_DIR');
+  $config['SOURCE_DIR'] = $getenv('SOURCE_DIR');
+  $config['TEMP_DIR'] = $getenv('TEMP_DIR');
+  $config['PLUGINS_DIR'] = $getenv('PLUGINS_DIR');
+  $cloudy_config = json_decode($getenv('CLOUDY_CONFIG_JSON'), TRUE) ?? [];
+  if ($cloudy_config) {
+    $config = array_merge($config, $cloudy_config);
+  }
+
+  return new RuntimeConfig($config);
+}
+
+function ensure_class_exists(string $class, string $base_dir): void {
   if (!class_exists($class)
-    && isset($config['autoload'])
-    && ($basename = $config['autoload'] . '/' . ltrim($class, '\\') . '.php')
+    && $base_dir
+    && ($basename = $base_dir . '/' . ltrim($class, '\\') . '.php')
     && file_exists($basename)) {
     require_once $basename;
   }
-  $cloudy_config = json_decode(getenv('CLOUDY_CONFIG_JSON'), TRUE) ?? [];
-  $method_reflection = new ReflectionMethod($callback);
-  if ($method_reflection->isStatic()) {
-    $method_args[] = $config;
-    $method_args[] = $cloudy_config;
-    $result = call_user_func_array($callback, $method_args);
+  if (!class_exists($class)) {
+    throw new \RuntimeException(sprintf('Failed to load PHP class: %s', $class));
   }
-  else {
-    $instance = new $class($config, $cloudy_config);
-    $result = call_user_func_array([$instance, $method], $method_args);
-  }
-  echo $result;
-  exit(0);
-}
-catch (\Exception $exception) {
-  echo $exception->getMessage();
-  exit(max($exception->getCode(), 1));
 }
 
+try {
+  $class_args = ClassMethodCaller::decodeClassArgs($serialized_args);
+  $cloudy_config = get_cloudy_config();
+  if (!$cloudy_config->all()) {
+    throw new \RuntimeException(sprintf('Missing CLOUDY_CONFIG_JSON; did you `export CLOUDY_CONFIG_JSON` before executing %s', __FILE__));
+  }
+  list($class, $method) = explode('::', $callback);
+  ensure_class_exists($class, $class_args['autoload'] ?? '');
+  $class_args = ClassMethodCaller::expressConstants($class_args);
+
+  $caller = new ClassMethodCaller($cloudy_config);
+  $result = $caller($class, $method, $class_args);
+
+  // TODO This may prove fragile, however it should be a short-term fix so I don't want to overcomplicate things.
+  if (is_array($result)) {
+    $result = implode(' ', $result);
+  }
+}
+catch (\Exception $exception) {
+  echo PHP_EOL;
+  echo $exception->getMessage();
+  $code = $exception->getCode() ?: 1;
+  exit($code);
+}
+echo $result;
+exit(0);

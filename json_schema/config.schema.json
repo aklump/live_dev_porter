@@ -26,6 +26,28 @@
         "minLength": 1
       }
     },
+    "database__mysql": {
+      "type": "object",
+      "required": [
+        "plugin",
+        "host",
+        "database",
+        "user",
+        "password"
+      ],
+      "propertyNames": {
+        "type": "string",
+        "pattern": "plugin|protocol|host|port|database|user|password"
+      },
+      "properties": {
+        "plugin": {
+          "const": "mysql"
+        },
+        "protocol": {
+          "type": "number"
+        }
+      }
+    },
     "workflow__databases": {
       "type": "object",
       "propertyNames": {
@@ -79,7 +101,7 @@
       "pattern": "^[^ ]+\\.(sh|php)|[^ ]+::[^ ]+$"
     }
   },
-  "additionalProperties": false,
+  "additionalProperties": true,
   "properties": {
     "local": {
       "type": "string",
@@ -220,6 +242,9 @@
               "patternProperties": {
                 ".+": {
                   "oneOf": [
+                    {
+                      "$ref": "#/$defs/database__mysql"
+                    },
                     {
                       "type": "object",
                       "required": [

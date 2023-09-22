@@ -4,7 +4,8 @@
   "license": "BSD-3-Clause",
   "autoload": {
     "psr-4": {
-      "AKlump\\LiveDevPorter\\": "src"
+      "AKlump\\LiveDevPorter\\": "src/",
+      "AKlump\\LiveDevPorter\\Tests\\": "tests_phpunit/"
     }
   },
   "require-dev": {

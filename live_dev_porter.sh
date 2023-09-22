@@ -12,45 +12,6 @@ COMPOSER_VENDOR=""
 # Uncomment this line to enable file logging.
 #LOGFILE="live_dev_porter.core.log"
 
-# Call a php class method as set success/failure status and messaging.
-#
-# $1 - The PHP class (not-static) method, e.g. "\SchemaBuilder::build".
-# $2 - An encoded query string.  This will be passed to the class constructor
-# as the first argument.  Note: The class constructor will receive cloudy config
-# as the second argument; see caller.php for more info.
-#
-# Returns 0 if .
-function call_php_class_method() {
-  local callback="$1"
-  local query_string="$2"
-
-  export CLOUDY_CONFIG_JSON
-  message="$($CLOUDY_PHP "$ROOT/php/class_method_caller.php" "$callback" "$query_string" "${@:3}")"
-  status=$?
-  if [[ $status -ne 0 ]]; then
-    fail_because "$message"
-    exit_with_failure "$callback() failed."
-  elif [[ "$message" ]]; then
-    succeed_because "$message"
-  fi
-}
-
-# Echo the return value of a php class method
-#
-# $1 - The PHP class (not-static) method, e.g. "\SchemaBuilder::build".
-# $2 - An encoded query string.  This will be passed to the class constructor
-# as the first argument.  Note: The class constructor will receive cloudy config
-# as the second argument; see caller.php for more info.
-#
-# Returns 0 if .
-function echo_php_class_method() {
-  local callback="$1"
-  local query_string="$2"
-
-  export CLOUDY_CONFIG_JSON
-  $CLOUDY_PHP "$ROOT/php/class_method_caller.php" "$callback" "$query_string" "${@:3}"
-}
-
 function on_pre_config() {
   if [[ "$(get_command)" == "init" ]]; then
     handle_init || exit_with_failure "${CLOUDY_FAILED:-Initialization failed.}"
@@ -74,7 +35,7 @@ function on_compile_config() {
 }
 
 function on_clear_cache() {
-  call_php_class_method "\AKlump\LiveDevPorter\Config\SchemaBuilder::destroy" "CACHE_DIR=$CONFIG_DIR/.cache"
+  call_php_class_method_echo_or_fail "\AKlump\LiveDevPorter\Config\SchemaBuilder::destroy" "CACHE_DIR=$CONFIG_DIR/.cache"
 
   # We have to do all plugins because a plugin may have changed, and if we only
   # did active ones, there inactive plugin will not know to clean up it's
@@ -139,14 +100,14 @@ case $COMMAND in
       set_value=$(get_command_arg 1)
       if [ "$var_name" ] && [ "$set_value" ]; then
         config_file="$CONFIG_DIR/config.local.yml"
-        call_php_class_method "\AKlump\LiveDevPorter\Config\Config::set" "filepath=$config_file&name=$var_name&value=$set_value"
+        call_php_class_method_echo_or_fail "\AKlump\LiveDevPorter\Config\Config::set" "filepath=$config_file&name=$var_name&value=$set_value"
         succeed_because "Config value \"$var_name\" has been set to \"$set_value\"."
         exit_with_cache_clear
 
       # If we have one, then we are reading...
       elif [ "$var_name" ]; then
         config_file="$CONFIG_DIR/config.local.yml"
-        call_php_class_method "\AKlump\LiveDevPorter\Config\Config::get" "filepath=$config_file&name=$var_name"
+        call_php_class_method_echo_or_fail "\AKlump\LiveDevPorter\Config\Config::get" "filepath=$config_file&name=$var_name"
         exit_with_cache_clear
       fi
 
@@ -249,9 +210,9 @@ else
 fi
 
 if [[ "$CLOUDY_CONFIG_HAS_CHANGED" == true ]] && [[ "$COMMAND" != "clear-cache" ]]; then
-  call_php_class_method "\AKlump\LiveDevPorter\Config\RsyncHelper::createFiles" "CACHE_DIR=$CONFIG_DIR/.cache"
-  call_php_class_method "\AKlump\LiveDevPorter\Config\SchemaBuilder::build"  "CACHE_DIR=$CONFIG_DIR/.cache"
-  call_php_class_method "\AKlump\LiveDevPorter\Config\Validator::validate" "CACHE_DIR=$CONFIG_DIR/.cache"
+  call_php_class_method_echo_or_fail "\AKlump\LiveDevPorter\Config\RsyncHelper::createFiles" "CACHE_DIR=$CONFIG_DIR/.cache"
+  call_php_class_method_echo_or_fail "\AKlump\LiveDevPorter\Config\SchemaBuilder::build"  "CACHE_DIR=$CONFIG_DIR/.cache"
+  call_php_class_method_echo_or_fail "\AKlump\LiveDevPorter\Config\Validator::validate" "CACHE_DIR=$CONFIG_DIR/.cache"
 
   for plugin in "${ACTIVE_PLUGINS[@]}"; do
     plugin_implements "$plugin" rebuild_config && call_plugin "$plugin" rebuild_config
@@ -383,7 +344,7 @@ case $COMMAND in
 
       stat_arguments="CACHE_DIR=$CACHE_DIR&COMMAND=$COMMAND&TYPE=1&ID=$DATABASE_ID&SOURCE=$LOCAL_ENV_ID"
       time_estimate=$(echo_php_class_method "\AKlump\LiveDevPorter\Statistics::getDuration" "$stat_arguments")
-      call_php_class_method "\AKlump\LiveDevPorter\Statistics::start" "$stat_arguments"
+      call_php_class_method_echo_or_fail "\AKlump\LiveDevPorter\Statistics::start" "$stat_arguments"
 
       eval $(get_config_as plugin "environments.$LOCAL_ENV_ID.databases.$DATABASE_ID.plugin")
       if [[ "$JSON_RESPONSE" != true ]]; then
@@ -432,7 +393,7 @@ case $COMMAND in
       has_failed && exit_with_failure "Failed to export database."
       echo_time_heading
 
-      call_php_class_method "\AKlump\LiveDevPorter\Statistics::stop" "$stat_arguments"
+      call_php_class_method_echo_or_fail "\AKlump\LiveDevPorter\Statistics::stop" "$stat_arguments"
       exit_with_success_elapsed "Database exported."
     ;;
 
@@ -477,7 +438,7 @@ case $COMMAND in
       else
         stat_arguments="CACHE_DIR=$CACHE_DIR&COMMAND=$COMMAND&TYPE=1&ID=$DATABASE_ID&SOURCE=$(basename "$filepath")"
         time_estimate=$(echo_php_class_method "\AKlump\LiveDevPorter\Statistics::getDuration" "$stat_arguments")
-        call_php_class_method "\AKlump\LiveDevPorter\Statistics::start" "$stat_arguments"
+        call_php_class_method_echo_or_fail "\AKlump\LiveDevPorter\Statistics::start" "$stat_arguments"
         [[ "$time_estimate" ]] && echo_heading "Time estimate: $time_estimate"
         echo_time_heading
 
@@ -493,7 +454,7 @@ case $COMMAND in
       fi
       echo_time_heading
       has_failed && exit_with_failure "Failed to import database."
-      call_php_class_method "\AKlump\LiveDevPorter\Statistics::stop" "$stat_arguments"
+      call_php_class_method_echo_or_fail "\AKlump\LiveDevPorter\Statistics::stop" "$stat_arguments"
       exit_with_success_elapsed "$shortpath was imported to $DATABASE_ID"
     ;;
 
@@ -564,7 +525,7 @@ case $COMMAND in
           for DATABASE_ID in "${LOCAL_DATABASE_IDS[@]}"; do
             echo_heading "Database: $DATABASE_ID"
             stat_arguments="CACHE_DIR=$CACHE_DIR&COMMAND=$COMMAND&TYPE=1&ID=$DATABASE_ID&SOURCE=$REMOTE_ENV_ID"
-            call_php_class_method "\AKlump\LiveDevPorter\Statistics::start" "$stat_arguments"
+            call_php_class_method_echo_or_fail "\AKlump\LiveDevPorter\Statistics::start" "$stat_arguments"
 
             # This will create a quick link for the user to "open in Finder"
             save_dir=$(database_get_local_directory "$REMOTE_ENV_ID" "$DATABASE_ID")
@@ -580,7 +541,7 @@ case $COMMAND in
             echo
             eval $(get_config_as plugin "environments.$LOCAL_ENV_ID.databases.$DATABASE_ID.plugin")
             ! has_failed && call_plugin $plugin pull_db "$DATABASE_ID" || fail
-            ! has_failed && call_php_class_method "\AKlump\LiveDevPorter\Statistics::stop" "$stat_arguments"
+            ! has_failed && call_php_class_method_echo_or_fail "\AKlump\LiveDevPorter\Statistics::stop" "$stat_arguments"
           done
         fi
       fi
@@ -667,7 +628,7 @@ case $COMMAND in
           for DATABASE_ID in "${LOCAL_DATABASE_IDS[@]}"; do
             echo_heading "Database: $DATABASE_ID"
             stat_arguments="CACHE_DIR=$CACHE_DIR&COMMAND=$COMMAND&TYPE=1&ID=$DATABASE_ID&SOURCE=$REMOTE_ENV_ID"
-            call_php_class_method "\AKlump\LiveDevPorter\Statistics::start" "$stat_arguments"
+            call_php_class_method_echo_or_fail "\AKlump\LiveDevPorter\Statistics::start" "$stat_arguments"
 
             echo_red "Press CTRL-C at any time to abort."
 
@@ -675,7 +636,7 @@ case $COMMAND in
             echo
             eval $(get_config_as plugin "environments.$LOCAL_ENV_ID.databases.$DATABASE_ID.plugin")
             ! has_failed && call_plugin $plugin push_db "$DATABASE_ID" || fail
-            ! has_failed && call_php_class_method "\AKlump\LiveDevPorter\Statistics::stop" "$stat_arguments"
+            ! has_failed && call_php_class_method_echo_or_fail "\AKlump\LiveDevPorter\Statistics::stop" "$stat_arguments"
           done
         fi
       fi

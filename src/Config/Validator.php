@@ -8,7 +8,8 @@ final class Validator {
 
   private $jsonSchema;
 
-  public function __construct(array $config, array $cloudy_config) {
+  public function __construct(array $config, RuntimeConfigInterface $cloudy_config) {
+    $cloudy_config = $cloudy_config->all();
     $this->config = array_diff_key($cloudy_config, array_flip([
 
       // Remove known keys that are okay, but will invalidate the schema.
