@@ -459,8 +459,10 @@ case $COMMAND in
     ;;
 
     "pull")
-      ! WORKFLOW_ID=$(get_workflow_by_command 'pull') && fail_because "$WORKFLOW_ID" && exit_with_failure
-
+      WORKFLOW_ID="$(get_option 'workflow')"
+      if [[ ! "$WORKFLOW_ID" ]]; then
+        ! WORKFLOW_ID=$(get_workflow_by_command $COMMAND) && fail_because "$WORKFLOW_ID" && exit_with_failure
+      fi
       [[ ${#REMOTE_DATABASE_IDS[@]} -eq 0 ]] && has_db=false || has_db=true
 
       eval $(get_config_as -a file_groups "workflows.$WORKFLOW_ID.file_groups")

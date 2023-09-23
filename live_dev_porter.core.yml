@@ -45,6 +45,11 @@ commands:
       source:
         help: 'Optional. The source environment to pull from; defaults to the configured remote.'
     options:
+      workflow:
+        type: string
+        aliases:
+          - wf
+        help: 'A workflow to use for the pull; this will be used instead of the configured default.'
       verbose:
         type: boolean
         help: 'Output additional information.'
