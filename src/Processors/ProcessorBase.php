@@ -46,8 +46,12 @@ abstract class ProcessorBase {
    */
   private $config;
 
-  public function __construct($config) {
-    $this->config = $config;
+  /**
+   * @param $processor_config
+   *   This is not runtime config, but the processor args/config!
+   */
+  public function __construct($processor_config) {
+    $this->config = $processor_config;
     $this->command = $config['COMMAND'] ?? '';
     $this->databaseId = $config['DATABASE_ID'] ?? '';
     $this->databaseName = $config['DATABASE_NAME'] ?? '';

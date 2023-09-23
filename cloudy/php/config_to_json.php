@@ -59,13 +59,13 @@ try {
   $validate_data = json_decode(json_encode($config));
   try {
     if (!($schema = json_decode(file_get_contents($path_to_config_schema)))) {
-      throw new \RuntimeException("Invalid JSON in $path_to_config_schema");
+      throw new RuntimeException("Invalid JSON in $path_to_config_schema");
     }
     if (!$skip_config_validation) {
       $validator->validate($validate_data, $schema, Constraint::CHECK_MODE_EXCEPTIONS);
     }
   }
-  catch (\Exception $exception) {
+  catch (Exception $exception) {
     $class = get_class($exception);
     throw new $class("Configuration syntax error in \"" . basename($path_to_master_config) . '": ' . $exception->getMessage());
   }
@@ -73,7 +73,7 @@ try {
   echo json_encode($config, JSON_UNESCAPED_SLASHES);
   exit(0);
 }
-catch (\Exception $exception) {
+catch (Exception $exception) {
   echo $exception->getMessage();
 }
 exit(1);

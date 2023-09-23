@@ -259,10 +259,13 @@ function mysql_on_export_db() {
   local structure_tables
   local data_tables
 
-  ! db_name=$(database_get_name "$LOCAL_ENV_ID" "$database_id") && fail_because "$db_name" && return 1
+  # Ensure the ID points to a database.
+  db_name=$(call_php_class_method "\AKlump\LiveDevPorter\Database\DatabaseGetName::__invoke($LOCAL_ENV_ID,$database_id)")
+  [[ $? -ne 0 ]] && fail_because "$db_name" && return 1
 
   # This will write the table structure to the export file.
-  structure_tables=($(database_get_export_tables --structure "$LOCAL_ENV_ID" "$database_id" "$db_name" "$WORKFLOW_ID"))
+  declare -a structure_tables=($(call_php_class_method "\AKlump\LiveDevPorter\Database\GetExportTables::__invoke($LOCAL_ENV_ID,$database_id,$db_name,$WORKFLOW_ID,\AKlump\LiveDevPorter\Database\GetExportTables::STRUCTURE)"))
+  [[ $? -ne 0 ]] && fail_because "$structure_tables" && return 1;
   if [[ "$structure_tables" ]]; then
     options="$shared_options --add-drop-table --no-data "
     write_log_debug "mysqldump --defaults-file="$defaults_file"$options "$db_name" $structure_tables"
@@ -270,8 +273,8 @@ function mysql_on_export_db() {
     succeed_because "Structure for ${#structure_tables[@]} table(s) exported."
   fi
   # This will write the data to the export file.
-  data_tables=($(database_get_export_tables --data "$LOCAL_ENV_ID" "$database_id" "$db_name" "$WORKFLOW_ID"))
-
+  declare -a data_tables=($(call_php_class_method "\AKlump\LiveDevPorter\Database\GetExportTables::__invoke($LOCAL_ENV_ID,$database_id,$db_name,$WORKFLOW_ID,\AKlump\LiveDevPorter\Database\GetExportTables::DATA)"))
+  [[ $? -ne 0 ]] && fail_because "$data_tables" && return 1;
   if [[ "$data_tables" ]]; then
     options="$shared_options --skip-add-drop-table --no-create-info"
     write_log_debug "mysqldump --defaults-file="$defaults_file"$options "$db_name" $data_tables"
