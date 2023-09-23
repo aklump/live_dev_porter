@@ -1,6 +1,10 @@
 chapter_order:
   - general
+  - developers
 chapter_info:
   -
     id: general
     title: General
+  -
+    id: developers
+    title: Developers
