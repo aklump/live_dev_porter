@@ -4,7 +4,7 @@
  * Merge Cloudy's composer.json into Live Dev Porter's composer.json.
  */
 
-use function AKlump\WebPackage\BuildFailException;
+use AKlump\WebPackage\BuildFailException;
 
 $build
   ->loadFile($argv[7] . '/cloudy/composer.json', function ($json) use (&$require) {
@@ -18,7 +18,7 @@ $build
 
     foreach ($require as $package => $constraint) {
       if (isset($data['require'][$package]) && $data['require'][$package] !== $constraint) {
-        throw BuildFailException("Cloudy dependency conflict with app dependency: $package");
+        throw new BuildFailException("Cloudy dependency conflict with app dependency: $package");
       }
     }
 

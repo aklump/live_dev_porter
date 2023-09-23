@@ -1,0 +1,11 @@
+master: main
+develop: main
+remote: origin
+create_tags: patch
+push_tags: yes
+push_master: yes
+push_develop: no
+patch_prefix: .
+preserve_patch_zero: true
+git_root: .
+version_file: live_dev_porter.core.yml
