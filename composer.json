@@ -1,27 +1,27 @@
 {
-  "name": "aklump/live-dev-porter",
-  "description": "Simplifies the management and transfer of assets between website environments.",
-  "license": "BSD-3-Clause",
-  "autoload": {
-    "psr-4": {
-      "AKlump\\LiveDevPorter\\": "src/",
-      "AKlump\\LiveDevPorter\\Tests\\": "tests_phpunit/"
+    "name": "aklump/live-dev-porter",
+    "description": "Simplifies the management and transfer of assets between website environments.",
+    "license": "BSD-3-Clause",
+    "autoload": {
+        "psr-4": {
+            "AKlump\\LiveDevPorter\\": "src/",
+            "AKlump\\LiveDevPorter\\Tests\\": "tests_phpunit/"
+        }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.5"
+    },
+    "bin": [
+        "bin/ldp"
+    ],
+    "require": {
+        "php": "^7.3",
+        "jasny/dotkey": "^1.0",
+        "ckr/arraymerger": "^2.0",
+        "nikic/php-parser": "^4.15",
+        "ext-json": "*",
+        "symfony/yaml": "^3.4|^4|^5",
+        "justinrainbow/json-schema": "^5.2",
+        "aklump/loft-lib": ">=1"
     }
-  },
-  "require-dev": {
-    "phpunit/phpunit": "^9.5"
-  },
-  "bin": [
-    "bin/ldp"
-  ],
-  "require": {
-    "php": "^7.3",
-    "jasny/dotkey": "^1.0",
-    "ckr/arraymerger": "^2.0",
-    "nikic/php-parser": "^4.15",
-    "ext-json": "*",
-    "symfony/yaml": "^3.4|^4|^5",
-    "justinrainbow/json-schema": "^5.2",
-    "aklump/loft-lib": ">=1"
-  }
 }
