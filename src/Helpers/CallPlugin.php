@@ -35,6 +35,7 @@ class CallPlugin {
     $this->functionTail = array_shift($plugin_args);
 
     $command = [];
+    $command[] = sprintf('export APP_ROOT="%s"', $this->config->get('APP_ROOT'));
     $command[] = sprintf('export CACHE_DIR="%s"', $this->config->get('CACHE_DIR'));
     $command[] = sprintf('export ROOT="%s"', $this->config->get('__cloudy.ROOT'));
     $command[] = sprintf('export SOURCE_DIR="%s"', $this->config->get('SOURCE_DIR'));
