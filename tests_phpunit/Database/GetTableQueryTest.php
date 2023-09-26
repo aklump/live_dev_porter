@@ -3,14 +3,20 @@
 namespace Database;
 
 use AKlump\LiveDevPorter\Database\GetTableQuery;
+use PHPUnit\Framework\TestCase;
 
 /**
  * @covers \AKlump\LiveDevPorter\Database\GetTableQuery
  */
-class GetTableQueryTest extends \PHPUnit\Framework\TestCase {
+class GetTableQueryTest extends TestCase {
 
   public function dataFortestInvokeProvider() {
     $tests = [];
+    $tests[] = [
+      [],
+      "",
+      "table_name != ''",
+    ];
     $tests[] = [
       ['do', 're'],
       "table_name IN ('do','re')",

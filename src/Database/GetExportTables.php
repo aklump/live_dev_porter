@@ -51,6 +51,7 @@ class GetExportTables {
 
     $provider = $this->provider ?? new MySqlTableListProvider($this->config, $environment_id, $database_id);
 
+    $tables = [];
     if (GetTableQuery::INCLUSIVE === $type) {
       $tables = $include_table_data;
       if ($options & self::STRUCTURE) {
@@ -72,10 +73,8 @@ class GetExportTables {
       }
     }
 
-    if ($tables) {
-      $query = (new GetTableQuery())($tables, $type);
-      $tables = $provider->get($query);
-    }
+    $query = (new GetTableQuery())($tables, $type);
+    $tables = $provider->get($query);
 
     return self::format($tables ?? []);
   }

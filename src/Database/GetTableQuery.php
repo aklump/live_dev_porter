@@ -33,8 +33,14 @@ class GetTableQuery {
    */
   public function __invoke(array $tables, int $type): string {
 
+    // This means we need all the tables, because we're excluding none.
+    if (empty($tables) && self::EXCLUSIVE === $type) {
+      return "table_name != ''";
+    }
+
     // Normalize glob-syntax to SQL wildcards.
     $tables = array_map(fn($table) => str_replace(self::WILDCARD_ALIAS, self::WILDCARD, $table), $tables);
+
 
     // Normalize order.
     sort($tables);
@@ -52,7 +58,7 @@ class GetTableQuery {
     }
 
     if ($in_tables) {
-      $in_tables = array_map(fn(string $table) => "'$table'" , $in_tables);
+      $in_tables = array_map(fn(string $table) => "'$table'", $in_tables);
       $conditions[] = sprintf("table_name %sIN (%s)", $qualifier, implode(',', $in_tables));
     }
 

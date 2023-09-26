@@ -42,6 +42,12 @@ class MySqlTableListProvider implements TableListProviderInterface {
   public function get(string $conditions): array {
     $query = "SET group_concat_max_len = 40960;";
     $database_name = (new DatabaseGetName($this->config))($this->env, $this->db);
+    if ($conditions) {
+      $query .= sprintf("SELECT GROUP_CONCAT(table_name separator '%s') FROM information_schema.tables WHERE table_schema='%s' AND (%s)", self::SEP, $database_name, $conditions);
+    }
+    else {
+      $query .= sprintf("SELECT GROUP_CONCAT(table_name separator '%s') FROM information_schema.tables WHERE table_schema='%s'", self::SEP, $database_name);
+    }
     $query .= sprintf("SELECT GROUP_CONCAT(table_name separator '%s') FROM information_schema.tables WHERE table_schema='%s' AND (%s)", self::SEP, $database_name, $conditions);
     $defaults_file = (new DatabaseGetDefaultsFile($this->config))($this->env, $this->db);
     $query = (new EscapeDoubleQuotes())($query);

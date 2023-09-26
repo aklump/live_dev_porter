@@ -15,9 +15,48 @@ class GetExportTablesTest extends TestCase {
 
   use TestWithConfigTrait;
 
-  // TODO Exclusive structure
-  // TODO Exclusive data
-  // TODO Exclusive glob
+  public function testInvokeWithExclusiveDataNoExcludeTables() {
+    $config = $this->getConfig('database', 'workflow', [
+      'exclude_table_data' => ['cache_default', 'views_data'],
+    ]);
+    $provider = $this->getTableListProvider();
+
+    $result = (new GetExportTables($config, $provider))(
+      'dev',
+      'database',
+      'database',
+      'workflow',
+      GetExportTables::DATA
+    );
+    $this->assertSame([
+      'cache_views',
+      'node',
+      'watchdog',
+    ], $result);
+  }
+
+  public function testInvokeWithExclusiveStructureNoExcludeTables() {
+    $config = $this->getConfig('database', 'workflow', [
+      'exclude_table_data' => ['cache_default', 'views_data'],
+    ]);
+    $provider = $this->getTableListProvider();
+
+    $result = (new GetExportTables($config, $provider))(
+      'dev',
+      'database',
+      'database',
+      'workflow',
+      GetExportTables::STRUCTURE
+    );
+    $this->assertSame([
+      'cache_default',
+      'cache_views',
+      'node',
+      'views_data',
+      'watchdog',
+    ], $result);
+  }
+
 
   public function testExclusiveGlobData() {
     $config = $this->getConfig('database', 'workflow', [
@@ -102,33 +141,45 @@ class GetExportTablesTest extends TestCase {
     ], $result);
   }
 
-  public function testInvokeWithNoConfigDataReturnsEmpty() {
+  public function testInvokeWithNoConfigDataReturnsAllTables() {
     $config = $this->getConfig('database', 'workflow');
-    $result = (new GetExportTables($config))(
+    $result = (new GetExportTables($config, $this->getTableListProvider()))(
       'dev',
       'database',
       'database',
       'workflow',
       GetExportTables::DATA
     );
-    $this->assertSame([], $result);
+    $this->assertSame([
+      "cache_default",
+      "cache_views",
+      "node",
+      "views_data",
+      "watchdog",
+    ], $result);
   }
 
-  public function testInvokeWithNoConfigStructureReturnsEmpty() {
+  public function testInvokeWithNoConfigStructureReturnsAllTables() {
     $config = $this->getConfig('database', 'workflow');
-    $result = (new GetExportTables($config))(
+    $result = (new GetExportTables($config, $this->getTableListProvider()))(
       'dev',
       'database',
       'database',
       'workflow',
       GetExportTables::STRUCTURE
     );
-    $this->assertSame([], $result);
+    $this->assertSame([
+      "cache_default",
+      "cache_views",
+      "node",
+      "views_data",
+      "watchdog",
+    ], $result);
   }
 
   public function testInvokeWithInclusiveData() {
     $config = $this->getConfig('database', 'workflow', [
-      'include_table_data' => ['cache_default', 'views'],
+      'include_table_data' => ['cache_default', 'views_data'],
       'include_tables' => ['watchdog', 'node'],
     ]);
     $provider = $this->createMock(TableListProviderInterface::class);
@@ -145,7 +196,7 @@ class GetExportTablesTest extends TestCase {
     );
     $this->assertSame([
       'cache_default',
-      'views',
+      'views_data',
     ], $result);
   }
 
@@ -210,6 +261,18 @@ class GetExportTablesTest extends TestCase {
         // - views_data
         // - watchdog
         switch ($query) {
+          case "table_name != ''":
+            return [
+              'cache_default',
+              'cache_views',
+              'node',
+              'views_data',
+              'watchdog',
+            ];
+
+          case "table_name NOT IN ('cache_default','views_data')":
+            return ['cache_views', 'node', 'watchdog'];
+
           case "table_name NOT LIKE 'cache%' AND table_name NOT IN ('watchdog')":
             return ['node', 'views_data'];
 
