@@ -55,7 +55,7 @@ class GetExportTables {
     if (GetTableQuery::INCLUSIVE === $type) {
       $tables = $include_table_data;
       if ($options & self::STRUCTURE) {
-        $tables = array_unique(array_merge($tables, $include_tables));
+        $tables = array_merge($tables, $include_tables);
       }
       if ($tables && !self::hasWildcard($tables)) {
         // An early return because the db needn't be queried for any table
@@ -76,7 +76,7 @@ class GetExportTables {
     $query = (new GetTableQuery())($tables, $type);
     $tables = $provider->get($query);
 
-    return self::format($tables ?? []);
+    return self::format($tables);
   }
 
   private static function hasWildcard(array $tables) {
@@ -93,6 +93,7 @@ class GetExportTables {
   }
 
   private static function format(array $tables) {
+    $tables = array_unique($tables);
     sort($tables);
 
     return $tables;

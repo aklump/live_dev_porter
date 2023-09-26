@@ -177,6 +177,42 @@ class GetExportTablesTest extends TestCase {
     ], $result);
   }
 
+  public function testInvokeWithInclusiveDataAndNoIncludeTablesKeyForStructureReturnsAllDataTables() {
+    $config = $this->getConfig('database', 'workflow', [
+      'include_table_data' => [
+        'block_custom',
+        'field_data_body',
+        'field_data_field_xml_receive',
+        'field_revision_body',
+        'system',
+        'variable',
+        'queue',
+        'registry',
+        'registry_file',
+      ],
+    ]);
+    $provider = $this->getTableListProvider();
+
+    $result = (new GetExportTables($config, $provider))(
+      'dev',
+      'database',
+      'database',
+      'workflow',
+      GetExportTables::STRUCTURE
+    );
+    $this->assertSame([
+      'block_custom',
+      'field_data_body',
+      'field_data_field_xml_receive',
+      'field_revision_body',
+      'queue',
+      'registry',
+      'registry_file',
+      'system',
+      'variable',
+    ], $result);
+  }
+
   public function testInvokeWithInclusiveData() {
     $config = $this->getConfig('database', 'workflow', [
       'include_table_data' => ['cache_default', 'views_data'],
