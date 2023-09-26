@@ -28,21 +28,25 @@ class ClassMethodCaller {
    *
    * @return void
    */
-  public function __invoke(string $class, string $method, array $args) {
+  public function __invoke(string $class, string $method, array $args, array $method_arguments) {
     // For various legacy reasons, the routing of config and arguments is
     // different in different situations.  Is the method static? Is the method
     // __invoke(), etc.  This next bit routes things appropriately.
     $method_reflection = new \ReflectionMethod("$class::$method");
     if ($method_reflection->isStatic()) {
-      $result = call_user_func_array([$class, $method], [$args, $this->config]);
+      // Static methods do not receive any configuration.
+      $result = call_user_func_array([$class, $method], $method_arguments);
     }
     elseif ('__invoke' === $method) {
       $instance = new $class($this->config);
-      $result = call_user_func_array([$instance, $method], $args);
+      $result = call_user_func_array([
+        $instance,
+        $method,
+      ], array_merge($args, $method_arguments));
     }
     else {
       $args[] = $this->config;
-      $result = (new $class(...$args))->$method();
+      $result = (new $class(...$args))->$method($method_arguments);
     }
 
     return $result;

@@ -12,6 +12,7 @@
  *
  * 1. The first argument is expected to be a class::method string, e.g. "Foo::bar"
  * 1. The second argument is a query string e.g., "1=foo&2=bar" or CSV "foo,bar", which will be deserialized as arguments.
+ * 1. Any additional arguments will be sent to the method...
  * 1. Arguments may contain PHP constants, as they will be value-replaced, e.g. "foo,bar,\AKlump\LiveDevPorter\Database\GetExportTables::STRUCTURE"
  * 1. The exit code will be 0 if successful.
  * 1. On error, the method must throw an exception.  The exit code will be 1 or the exception code if > 0.
@@ -29,7 +30,6 @@ if ('' === $serialized_args && preg_match('/(.+)\((.+)\)/', $callback, $matches)
   $callback = $matches[1];
   $serialized_args = $matches[2];
 }
-
 
 function get_cloudy_config(): RuntimeConfigInterface {
   // This is only available because we export it in call_php_class_method() in
@@ -81,7 +81,8 @@ try {
   $class_args = ClassMethodCaller::expressConstants($class_args);
 
   $caller = new ClassMethodCaller($cloudy_config);
-  $result = $caller($class, $method, $class_args);
+  $method_arguments = array_slice($argv, 3);
+  $result = $caller($class, $method, $class_args, $method_arguments);
 
   // TODO This may prove fragile, however it should be a short-term fix so I don't want to overcomplicate things.
   if (is_array($result)) {
