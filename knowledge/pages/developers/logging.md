@@ -7,8 +7,13 @@ tags: ''
 
 Export the variable `LOGFILE` with an absolute path to enable logging.
 
-`export LOGFILE=/som/path/to/app.log;ldp export`
+```shell
+$ export LOGFILE=/some/path/to/app.log
+$ ldp export`
+```
 
 Disable logging by setting that same variable to an empty string:
 
-`export LOGFILE=''`
+```shell
+$ export LOGFILE=''
+```
