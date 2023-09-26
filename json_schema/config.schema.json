@@ -48,6 +48,9 @@
         }
       }
     },
+    "drop_tables": {
+      "type": "boolean"
+    },
     "workflow__databases": {
       "type": "object",
       "propertyNames": {
@@ -64,6 +67,9 @@
             {
               "additionalProperties": false,
               "properties": {
+                "drop_tables": {
+                  "$ref": "#/$defs/drop_tables"
+                },
                 "include_tables": {
                   "$ref": "#/$defs/database_tablenames"
                 },
@@ -75,6 +81,9 @@
             {
               "additionalProperties": false,
               "properties": {
+                "drop_tables": {
+                  "$ref": "#/$defs/drop_tables"
+                },
                 "exclude_tables": {
                   "$ref": "#/$defs/database_tablenames"
                 },

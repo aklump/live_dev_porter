@@ -317,7 +317,13 @@ function mysql_on_import_db() {
   local defaults_file
   defaults_file=$(database_get_defaults_file "$LOCAL_ENV_ID" "$database_id")
   ! db_name=$(database_get_name "$LOCAL_ENV_ID" "$database_id") && fail_because "$db_name" && return 1
-  mysql_drop_all_tables "$DATABASE_ID" || return 1
+
+  # The workflow may elect to not drop the tables.
+  eval $(get_config_as drop_tables "workflows.$WORKFLOW_ID.databases.$database_id.drop_tables" true)
+  if [[ "$drop_tables" == true ]]; then
+    mysql_drop_all_tables "$DATABASE_ID" || return 1
+  fi
+
   if [[ "$(path_extension "$filepath")" == 'gz' ]]; then
     echo_task "Decompress file."
     ! gunzip -f "$filepath" && echo_task_failed && return 1
@@ -498,6 +504,7 @@ function mysql_on_pull_db() {
   local remote_dumpfile_path
   local remote_ldp_options
   local result_status
+  local do_backup
 
   echo_task "Export remote database: $DATABASE_ID"
   [[ "$WORKFLOW_ID" ]] && remote_ldp_options="$remote_ldp_options --workflow=\"$WORKFLOW_ID\""
@@ -575,8 +582,16 @@ function mysql_on_pull_db() {
   echo_task_completed
 
   # Do the rollback and import.
-  has_option "skip-local-backup" && ! confirm --caution "Skipping local backup, are you sure?" && fail_because "You stopped the operation, remove --skip-local-backup and try again." && return 1
-  mysql_create_local_rollback_file "$DATABASE_ID" || return 1
+
+  do_backup=true
+  if has_option 'skip-local-backup'; then
+    do_backup=false
+    ! confirm --caution "Skipping local backup, are you sure?" && fail_because "You stopped the operation, remove --skip-local-backup and try again." && return 1
+  fi
+  if [[ "$do_backup" == true ]]; then
+    mysql_create_local_rollback_file "$DATABASE_ID" || return 1
+  fi
+
   mysql_on_import_db "$DATABASE_ID" "$save_as" || return 1
   echo_time_heading
   eval $(get_config_as total_files_to_keep max_database_rollbacks_to_keep 5)
