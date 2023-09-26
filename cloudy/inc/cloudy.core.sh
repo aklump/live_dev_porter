@@ -8,7 +8,8 @@
 export CONFIG="$(cd $(dirname "$r/$CONFIG") && pwd)/$(basename $CONFIG)"
 
 if [[ "$LOGFILE" ]]; then
-  log_dir="$(dirname $r/$LOGFILE)"
+  LOGFILE="$(path_resolve "$r" "$LOGFILE")"
+  log_dir="$(dirname "$LOGFILE")"
   mkdir -p "$log_dir" || exit_with_failure "Please manually create \"$log_dir\" and ensure it is writeable."
   export LOGFILE="$(cd $log_dir && pwd)/$(basename $LOGFILE)"
 fi
