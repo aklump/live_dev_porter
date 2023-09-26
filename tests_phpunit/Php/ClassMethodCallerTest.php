@@ -66,6 +66,7 @@ class ClassMethodCallerTest extends TestCase {
       Testable::class,
       'bravo',
       [['autoload' => '/path/foo', 'name' => 'lorem']],
+      []
     );
     $this->assertCount(2, $result['constructor']);
 
@@ -81,7 +82,8 @@ class ClassMethodCallerTest extends TestCase {
     $result = (new ClassMethodCaller($cloudy_config))(
       Testable::class,
       'bravo',
-      ['do', 're', 'mi']
+      ['do', 're', 'mi'],
+      []
     );
     $this->assertCount(4, $result['constructor']);
 
@@ -98,7 +100,8 @@ class ClassMethodCallerTest extends TestCase {
     $result = (new ClassMethodCaller($cloudy_config))(
       Testable::class,
       '__invoke',
-      ['do', 're', 'mi']
+      ['do', 're', 'mi'],
+      []
     );
     $this->assertSame($cloudy_config, $result['constructor'][0]);
     $this->assertCount(3, $result['method']);
@@ -116,24 +119,21 @@ class ClassMethodCallerTest extends TestCase {
    *
    * @return void
    */
-  public function testInvokeWithStaticSendsAllToTheMethod() {
+  public function testInvokeWithStaticSendsOnlyToTheMethod() {
     $cloudy_config = new RuntimeConfig(['squirrel' => 'scared']);
     $result = (new ClassMethodCaller($cloudy_config))(
       Testable::class,
       'alpha',
-      ['do', 're', 'mi']
+      ['do', 're', 'mi'],
+      ['foo', 'bar']
     );
 
     $this->assertNull($result['constructor']);
 
-    $this->assertIsArray($result['method'][0]);
-    $this->assertCount(3, $result['method'][0]);
-    $this->assertSame('do', $result['method'][0][0]);
-    $this->assertSame('re', $result['method'][0][1]);
-    $this->assertSame('mi', $result['method'][0][2]);
-
-    $this->assertInstanceOf(RuntimeConfigInterface::class, $result['method'][1]);
-    $this->assertSame($cloudy_config, $result['method'][1]);
+    $this->assertIsArray($result['method']);
+    $this->assertCount(2, $result['method']);
+    $this->assertSame('foo', $result['method'][0]);
+    $this->assertSame('bar', $result['method'][1]);
   }
 
 }
