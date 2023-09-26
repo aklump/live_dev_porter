@@ -575,6 +575,7 @@ function mysql_on_pull_db() {
   echo_task_completed
 
   # Do the rollback and import.
+  has_option "skip-local-backup" && ! confirm --caution "Skipping local backup, are you sure?" && fail_because "You stopped the operation, remove --skip-local-backup and try again." && return 1
   mysql_create_local_rollback_file "$DATABASE_ID" || return 1
   mysql_on_import_db "$DATABASE_ID" "$save_as" || return 1
   echo_time_heading

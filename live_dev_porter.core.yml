@@ -45,6 +45,9 @@ commands:
       source:
         help: 'Optional. The source environment to pull from; defaults to the configured remote.'
     options:
+      skip-local-backup:
+        type: boolean
+        help: Use with caution; the local database backup will be skipped.  The local db will be overwritten.
       workflow:
         type: string
         aliases:
