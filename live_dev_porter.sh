@@ -386,6 +386,7 @@ case $COMMAND in
       fi
 
       if [[ "$JSON_RESPONSE" == true ]]; then
+        write_log_info "JSON Response is: $(json_get)"
         has_failed && exit_with_failure_code_only
         json_get
         exit_with_success_code_only

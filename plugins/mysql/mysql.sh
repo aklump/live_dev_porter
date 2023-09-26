@@ -409,7 +409,13 @@ function mysql_on_push_db() {
     if json_set "$result_json"; then
       write_log_info "JSON received: $result_json"
     else
-      fail_because "Invalid JSON received: $result_json"
+      if [[ "" == "$result_json" ]]; then
+        write_log_error "No JSON response."
+        fail_because "Missing JSON response."
+      else
+        write_log_error "Invalid JSON received: $result_json"
+        fail_because "Invalid JSON received: $result_json"
+      fi
     fi
 
     # Handle any failure up to this point.
@@ -547,7 +553,11 @@ function mysql_on_pull_db() {
   if json_set "$result_json"; then
     write_log_info "JSON received: $result_json"
   else
-    fail_because "Invalid JSON received: $result_json"
+    if [[ "" == "$result_json" ]]; then
+      fail_because "Missing JSON response."
+    else
+      fail_because "Invalid JSON received: $result_json"
+    fi
   fi
   remote_dumpfile_path="$(json_get_value "filepath")"
   [[ ! "$remote_dumpfile_path" ]] && fail_because "Remote db export filepath is empty."
