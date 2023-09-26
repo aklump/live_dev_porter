@@ -4,9 +4,9 @@
   <!-- Required meta tags -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-      <link rel="stylesheet" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/node_modules/bootstrap/dist/css/bootstrap.css?ver=0.0.127">
-      <link rel="stylesheet" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/style.css?ver=0.0.127">
-      <link rel="stylesheet" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/node_modules/bootstrap-icons/font/bootstrap-icons.min.css?ver=0.0.127">
+      <link rel="stylesheet" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/node_modules/bootstrap/dist/css/bootstrap.css?ver=0.0.130">
+      <link rel="stylesheet" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/style.css?ver=0.0.130">
+      <link rel="stylesheet" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/node_modules/bootstrap-icons/font/bootstrap-icons.min.css?ver=0.0.130">
     <title>Enable Logging | Book</title>
 </head>
 <body class="my-5">
@@ -42,13 +42,10 @@
   <div class="row mb-5 pt-5">
     <article class="col">
       <h1 class="mb-4 text-primary">Enable Logging</h1>
-      <p>In order to troubleshoot, you may want to enable file logging. Follow these steps:</p>
-<ol>
-<li>In the vendor directory, find the controller file, e.g. _vendor/aklump/live-dev-porter/live_dev<em>porter.sh</em></li>
-<li>Uncomment the line containing <code>#LOGFILE="live_dev_porter.core.log"</code></li>
-<li>Execute any commands and review the logfile. The file will be written to the same directory as the controller file, e.g. <em>vendor/aklump/live-dev-porter/</em></li>
-<li>To disable logging, just re-comment that same line, or, it will be disabled if the composer package is updated as the controller file will be overwritten.</li>
-</ol>
+      <p>Export the variable <code>LOGFILE</code> with an absolute path to enable logging.</p>
+<p><code>export LOGFILE=/som/path/to/app.log;ldp export</code></p>
+<p>Disable logging by setting that same variable to an empty string:</p>
+<p><code>export LOGFILE=''</code></p>
     </article>
   </div>
 </main>
@@ -56,7 +53,7 @@
   <footer class="footer d-flex justify-content-center">
     <div class="flex-column justify-content-center">
                   Version:
-          <strong>0.0.127</strong>
+          <strong>0.0.130</strong>
           &bull;
                 Last Update: <strong>9/26/2023</strong>
     </div>
@@ -455,9 +452,9 @@
   </div>
 </div>
 
-  <script src="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/node_modules/bootstrap/dist/js/bootstrap.min.js?ver=0.0.127"></script>
-  <script src="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/dist/lunr.js?ver=0.0.127"></script>
-  <script src="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/knowledge.min.js?ver=0.0.127"></script>
+  <script src="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/node_modules/bootstrap/dist/js/bootstrap.min.js?ver=0.0.130"></script>
+  <script src="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/dist/lunr.js?ver=0.0.130"></script>
+  <script src="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/knowledge.min.js?ver=0.0.130"></script>
 
 </body>
 </html>
