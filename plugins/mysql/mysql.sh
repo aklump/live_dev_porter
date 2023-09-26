@@ -265,6 +265,7 @@ function mysql_on_export_db() {
 
   # This will write the table structure to the export file.
   declare -a structure_tables=($(call_php_class_method "\AKlump\LiveDevPorter\Database\GetExportTables::__invoke($LOCAL_ENV_ID,$database_id,$db_name,$WORKFLOW_ID,\AKlump\LiveDevPorter\Database\GetExportTables::STRUCTURE)"))
+  write_log_debug "Structure tables: ${structure_tables[*]}"
   [[ $? -ne 0 ]] && fail_because "$structure_tables" && return 1;
   if [[ "$structure_tables" ]]; then
     options="$shared_options --add-drop-table --no-data "
@@ -274,6 +275,7 @@ function mysql_on_export_db() {
   fi
   # This will write the data to the export file.
   declare -a data_tables=($(call_php_class_method "\AKlump\LiveDevPorter\Database\GetExportTables::__invoke($LOCAL_ENV_ID,$database_id,$db_name,$WORKFLOW_ID,\AKlump\LiveDevPorter\Database\GetExportTables::DATA)"))
+  write_log_debug "Data tables: ${structure_tables[*]}"
   [[ $? -ne 0 ]] && fail_because "$data_tables" && return 1;
   if [[ "$data_tables" ]]; then
     options="$shared_options --skip-add-drop-table --no-create-info"
