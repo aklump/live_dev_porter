@@ -43,10 +43,13 @@ function get_cloudy_config(): RuntimeConfigInterface {
 
     return $value;
   };
+  $config['APP_ROOT'] = $getenv('APP_ROOT');
   $config['CACHE_DIR'] = $getenv('CACHE_DIR');
+  $config['CLOUDY_PHP'] = $getenv('CLOUDY_PHP');
+  $config['COMPOSER_VENDOR'] = $getenv('COMPOSER_VENDOR');
+  $config['PLUGINS_DIR'] = $getenv('PLUGINS_DIR');
   $config['SOURCE_DIR'] = $getenv('SOURCE_DIR');
   $config['TEMP_DIR'] = $getenv('TEMP_DIR');
-  $config['PLUGINS_DIR'] = $getenv('PLUGINS_DIR');
   $cloudy_config = json_decode($getenv('CLOUDY_CONFIG_JSON'), TRUE) ?? [];
   if ($cloudy_config) {
     $config = array_merge($config, $cloudy_config);

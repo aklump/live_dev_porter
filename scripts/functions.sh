@@ -9,11 +9,14 @@ function call_php_class_method() {
   local callback="$1"
   local serialized_args="$2"
 
-  export CLOUDY_CONFIG_JSON
+  export APP_ROOT
   export CACHE_DIR
+  export CLOUDY_CONFIG_JSON
+  export CLOUDY_PHP
+  export COMPOSER_VENDOR
+  export PLUGINS_DIR
   export SOURCE_DIR
   export TEMP_DIR
-  export PLUGINS_DIR
   $CLOUDY_PHP "$ROOT/php/class_method_caller.php" "$callback" "$serialized_args"
 }
 
@@ -77,10 +80,10 @@ function sandbox_directory() {
   [[ -d "$dir" ]] && dir="$(cd $1 && pwd)"
 
   ! [[ "$APP_ROOT" ]] && fail_because '$APP_ROOT was empty'
-  ! [[ -d "$APP_ROOT" ]] && fail_because "$APP_ROOT does not exist"
+  ! [[ -d "$APP_ROOT" ]] && fail_because "\$APP_ROOT does not exist"
   ! [[ "$dir" ]] && fail_because "The directory is an empty value."
   local unresolved="$(path_unresolve "$APP_ROOT" "$dir")"
-  [[ "$dir" == "$unresolved" ]] && fail_because "The directory $dir must be within $APP_ROOT"
+  [[ "$dir" == "$unresolved" ]] && fail_because "The directory \"$dir\" must be within \$APP_ROOT"
   has_failed && exit_with_failure
 }
 
