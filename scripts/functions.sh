@@ -12,6 +12,8 @@ function call_php_class_method() {
   export APP_ROOT
   export CACHE_DIR
   export CLOUDY_CONFIG_JSON
+  export CLOUDY_PHP
+  export COMPOSER_VENDOR
   export PLUGINS_DIR
   export SOURCE_DIR
   export TEMP_DIR

@@ -45,6 +45,8 @@ function get_cloudy_config(): RuntimeConfigInterface {
   };
   $config['APP_ROOT'] = $getenv('APP_ROOT');
   $config['CACHE_DIR'] = $getenv('CACHE_DIR');
+  $config['CLOUDY_PHP'] = $getenv('CLOUDY_PHP');
+  $config['COMPOSER_VENDOR'] = $getenv('COMPOSER_VENDOR');
   $config['PLUGINS_DIR'] = $getenv('PLUGINS_DIR');
   $config['SOURCE_DIR'] = $getenv('SOURCE_DIR');
   $config['TEMP_DIR'] = $getenv('TEMP_DIR');
