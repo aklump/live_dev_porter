@@ -193,8 +193,3 @@ commands:
         help: 'Edit the environment variables sent to the processor.'
         aliases:
           - c
-      verbose:
-        type: boolean
-        help: 'Display the environment variables sent to the processor.'
-        aliases:
-          - v

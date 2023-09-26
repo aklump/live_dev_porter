@@ -260,24 +260,22 @@ case $COMMAND in
       fi
       source "$env"
 
-      if has_option "verbose"; then
-        list_clear
-        echo_heading "ENV vars:"
-        list_add_item "COMMAND=\"$COMMAND\""
-        list_add_item "LOCAL_ENV_ID=\"$LOCAL_ENV_ID\""
-        list_add_item "REMOTE_ENV_ID=\"$REMOTE_ENV_ID\""
-        list_add_item "DATABASE_ID=\"$DATABASE_ID\""
-        list_add_item "FILES_GROUP_ID=\"$FILES_GROUP_ID\""
-        list_add_item "FILEPATH=\"$FILEPATH\""
-        list_add_item "SHORTPATH=\"$SHORTPATH\""
-        list_add_item "WORKFLOW_ID=\"$WORKFLOW_ID\""
-        echo_list
-        echo
-        echo "Use \"--config\" to change these values."
-      else
-        echo "Use --verbose (-v) to see ENV vars."
-      fi
+      table_clear
+      echo_heading "Processor Variables:"
+      echo
+      table_add_row "COMMAND" "$COMMAND"
+      table_add_row "LOCAL_ENV_ID" "$LOCAL_ENV_ID"
+      table_add_row "REMOTE_ENV_ID" "$REMOTE_ENV_ID"
+      table_add_row "DATABASE_ID" "$DATABASE_ID"
+      table_add_row "FILES_GROUP_ID" "$FILES_GROUP_ID"
+      table_add_row "FILEPATH" "$FILEPATH"
+      table_add_row "SHORTPATH" "$SHORTPATH"
+      table_add_row "WORKFLOW_ID" "$WORKFLOW_ID"
+      echo_slim_table
+      echo "Use \"--config\" to change these values."
+      echo
 
+      echo_heading "Choose a processor to run:"
       processor=$(get_command_arg 0)
       if [[ ! "$processor" ]]; then
         choose__array=($($CLOUDY_PHP "$ROOT/php/get_processors.php" "$CONFIG_DIR"))
