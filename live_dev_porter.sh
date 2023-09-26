@@ -229,6 +229,13 @@ implement_route_access
 
 write_log_info "Executing command: $COMMAND"
 
+WORKFLOW_ID="$(get_option 'workflow')"
+[[ "$WORKFLOW_ID" ]] || WORKFLOW_ID=$(get_workflow_by_command $COMMAND)
+if [[ "$WORKFLOW_ID" ]]; then
+  write_log_debug "WORKFLOW_ID=$WORKFLOW_ID"
+  ! WORKFLOW_ID=$(validate_workflow "$WORKFLOW_ID") && fail_because "$WORKFLOW_ID" && exit_with_failure
+fi
+
 # Handle other commands.
 case $COMMAND in
     "config-test")
@@ -331,11 +338,6 @@ case $COMMAND in
       ;;
 
     "export")
-      WORKFLOW_ID="$(get_option 'workflow')"
-      if [[ ! "$WORKFLOW_ID" ]]; then
-        ! WORKFLOW_ID=$(get_workflow_by_command $COMMAND) && fail_because "$WORKFLOW_ID" && exit_with_failure
-      fi
-
       process_in_the_background
       filename=$(get_command_arg 0)
       DATABASE_ID=$(get_option 'id' $LOCAL_DATABASE_ID)
@@ -458,10 +460,6 @@ case $COMMAND in
     ;;
 
     "pull")
-      WORKFLOW_ID="$(get_option 'workflow')"
-      if [[ ! "$WORKFLOW_ID" ]]; then
-        ! WORKFLOW_ID=$(get_workflow_by_command $COMMAND) && fail_because "$WORKFLOW_ID" && exit_with_failure
-      fi
       [[ ${#REMOTE_DATABASE_IDS[@]} -eq 0 ]] && has_db=false || has_db=true
 
       eval $(get_config_as -a file_groups "workflows.$WORKFLOW_ID.file_groups")
