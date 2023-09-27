@@ -4,9 +4,9 @@
   <!-- Required meta tags -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-      <link rel="stylesheet" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/node_modules/bootstrap/dist/css/bootstrap.css?ver=0.0.133">
-      <link rel="stylesheet" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/style.css?ver=0.0.133">
-      <link rel="stylesheet" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/node_modules/bootstrap-icons/font/bootstrap-icons.min.css?ver=0.0.133">
+      <link rel="stylesheet" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/node_modules/bootstrap/dist/css/bootstrap.css?ver=0.0.134">
+      <link rel="stylesheet" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/style.css?ver=0.0.134">
+      <link rel="stylesheet" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/node_modules/bootstrap-icons/font/bootstrap-icons.min.css?ver=0.0.134">
     <title>Pulling Remote to Local | Book</title>
 </head>
 <body class="my-5">
@@ -45,11 +45,34 @@
       <h2><code>ldp pull</code></h2>
 <p>This is like <code>git pull</code>, it will copy the remote database and files, depending on your configuration, to your local environment.</p>
 <h2>Is There Something Like <code>git reset</code> for the Database?</h2>
-<p>By default the dumpfile, which is downloaded, is deleted upon successful import into the local database.  This behavior can be changed by adding the following to your configuration:</p>
+<p>By default the dumpfile, which is downloaded, is deleted upon successful import into the local database. This behavior can be changed by adding the following to your configuration:</p>
 <pre><code class="yaml">delete_pull_dumpfiles: false
 </code></pre>
-<p>You might want to do this to give you a way to reset to the remote database without having to go back to the server.  When <code>false</code>,  the dumpfile remains in _.live_dev<em>porter/data/*</em> after you pull it down. It will show up as <em>pull.sql</em> in the list when you call <code>ldp import</code>.</p>
-<p><strong>However, if you are using a workflow to sanitize your database, then keeping these "unsanitized" database dumps is a security concern.  It is better to leave <code>delete_pull_dumpfiles: true</code> and export your sanitized local database in your pull workflow.  This will still give you the "reset" ability, but without the security concern.</strong></p>
+<p>You might want to do this to give you a way to reset to the remote database without having to go back to the server. When <code>false</code>, the dumpfile remains in _.live_dev<em>porter/data/*</em> after you pull it down. It will show up as <em>pull.sql</em> in the list when you call <code>ldp import</code>.</p>
+<p><strong>However, if you are using a workflow to sanitize your database, then keeping these "unsanitized" database dumps is a security concern. It is better to leave <code>delete_pull_dumpfiles: true</code> and export your sanitized local database in your pull workflow. This will still give you the "reset" ability, but without the security concern.</strong></p>
+<h2>Cherry Picking Some Tables</h2>
+<p>Let's say you're working on a feature that affects the data in only two tables. Rather than waiting for the entire live database to export and download, with a local backup, you can do something like the following. It will only pull the tables you list and is therefore much faster. For further speeding up of things, you can choose to omit the local backup using <code>--skip-local-backup</code>.</p>
+<ol>
+<li>Create a workflow with inclusive tables using <code>include_table_data</code>, e.g.</li>
+</ol>
+<pre><code class="yaml">workflows:
+  cherry_pick_wf:
+    processors:
+      - dev_module_handler.sh
+    databases:
+      drupal:
+        drop_tables: false
+        include_table_data:
+          - registry
+          - registry_file
+</code></pre>
+<ol>
+<li>Be sure to add <code>drop_tables: false</code> to the workflow as shown. This will prevent your local database from loosing the tables and data that are not listed in <code>include_table_data</code>. By default, all tables in your local database are dropped during a <code>pull</code> command. That is not what you want in this scenario!</li>
+<li>Ensure that the configuration for this workflow exists in both environments (local and remote) and that it is also identical on both. Remember when you pull with a workflow, the configuration in both environments must match.</li>
+<li>Now <code>pull</code> and specify this particular workflow as shown:</li>
+</ol>
+<pre><code class="php">ldp pull --wf=cherry_pick_wf --no-local-backup
+</code></pre>
     </article>
   </div>
 </main>
@@ -57,9 +80,9 @@
   <footer class="footer d-flex justify-content-center">
     <div class="flex-column justify-content-center">
                   Version:
-          <strong>0.0.133</strong>
+          <strong>0.0.134</strong>
           &bull;
-                Last Update: <strong>9/26/2023</strong>
+                Last Update: <strong>9/27/2023</strong>
     </div>
   </footer>
 
@@ -456,9 +479,9 @@
   </div>
 </div>
 
-  <script src="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/node_modules/bootstrap/dist/js/bootstrap.min.js?ver=0.0.133"></script>
-  <script src="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/dist/lunr.js?ver=0.0.133"></script>
-  <script src="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/knowledge.min.js?ver=0.0.133"></script>
+  <script src="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/node_modules/bootstrap/dist/js/bootstrap.min.js?ver=0.0.134"></script>
+  <script src="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/dist/lunr.js?ver=0.0.134"></script>
+  <script src="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/knowledge.min.js?ver=0.0.134"></script>
 
 </body>
 </html>
