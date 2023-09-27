@@ -3,16 +3,20 @@
 /**
  * @file
  * Echo a BASH array of the processor choices.
+ *
+ * @see _bootstrap.php for class autoloading.
  */
-require_once __DIR__ . '/../cloudy/php/bootstrap.php';
+require_once __DIR__ . '/_bootstrap.php';
 $config_dir = $argv[1];
 
 $items = [];
-
 $php_class_filepaths = glob("$config_dir/processors/*.php");
 foreach ($php_class_filepaths as $php_class_filepath) {
-  require_once $php_class_filepath;
   $classname = pathinfo($php_class_filepath, PATHINFO_FILENAME);
+  if (!class_exists($classname)) {
+    // If not in the global, then see if it's namespaced.
+    $classname = "AKlump\LiveDevPorter\Processors\\$classname";
+  }
   try {
     $ref = new ReflectionClass($classname);
   }
@@ -25,7 +29,7 @@ foreach ($php_class_filepaths as $php_class_filepath) {
     if ('__construct' === $method) {
       continue;
     }
-    $items[] = $classname . '::' . $method;
+    $items[] = $ref->getShortName() . '::' . $method;
   }
 }
 

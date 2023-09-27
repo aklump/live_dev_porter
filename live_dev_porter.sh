@@ -239,6 +239,11 @@ fi
 implement_cloudy_basic
 implement_route_access
 
+# Export some environment variables that will be available to any PHP class that
+# needs them.
+export APP_ROOT
+export CLOUDY_CONFIG_JSON
+
 [[ "$(get_option format)" == "json" ]] && JSON_RESPONSE=true
 
 write_log_info "Executing command: $COMMAND"
@@ -315,7 +320,7 @@ case $COMMAND in
       else
         php_query="autoload=$CONFIG_DIR/processors/&COMMAND=$COMMAND&LOCAL_ENV_ID=$LOCAL_ENV_ID&REMOTE_ENV_ID=$REMOTE_ENV_ID&DATABASE_ID=$DATABASE_ID&DATABASE_NAME=$DATABASE_NAME&FILES_GROUP_ID=$FILES_GROUP_ID&FILEPATH=$FILEPATH&SHORTPATH=$SHORTPATH&IS_WRITEABLE_ENVIRONMENT=$IS_WRITEABLE_ENVIRONMENT"
         echo_title "$(path_unresolve "$CONFIG_DIR" "$processor_path")"
-        processor_output=$(cd "$APP_ROOT"; export CLOUDY_CONFIG_JSON; $CLOUDY_PHP "$ROOT/php/class_method_caller.php" "$processor" "$php_query")
+        processor_output=$(cd "$APP_ROOT";$CLOUDY_PHP "$ROOT/php/class_method_caller.php" "$processor" "$php_query")
         processor_result=$?
       fi
 

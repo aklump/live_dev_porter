@@ -7,7 +7,7 @@
 
 use AKlump\LiveDevPorter\LocalTimezone;
 
-require_once __DIR__ . '/../cloudy/php/bootstrap.php';
+require_once __DIR__ . '/_bootstrap.php';
 
 $directories = $argv;
 array_shift($directories);

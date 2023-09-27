@@ -8,7 +8,7 @@
 use AKlump\LiveDevPorter\Migrators\LoftDeployMigrator;
 use Symfony\Component\Yaml\Yaml;
 
-require_once __DIR__ . '/../cloudy/php/bootstrap.php';
+require_once __DIR__ . '/_bootstrap.php';
 
 /**
  * The path to the loft deploy configuration file.

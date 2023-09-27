@@ -63,16 +63,15 @@ fi
 echo "Contents approved in $SHORTPATH"
 ```
 
-When creating PHP processors, you should make all methods private, except those that are to be considered callable as a processor.  The processor indexing method will expose all public methods in the options menu.
+When creating PHP processors, you should **make all methods private, except those that are to be considered callable as a processor**. The processor indexing method will expose all public methods in the options menu.
+
+**Use the namespace `AKlump\LiveDevPorter\Processors\`.**
 
 _Here is an example in PHP:_
 
 ```php
 <?php
-
-use AKlump\LiveDevPorter\Processors\EnvTrait;
-use AKlump\LiveDevPorter\Processors\ProcessorBase;
-use AKlump\LiveDevPorter\Processors\ProcessorSkippedException;
+namespace AKlump\LiveDevPorter\Processors;
 
 /**
  * Remove secrets and passwords from install files.

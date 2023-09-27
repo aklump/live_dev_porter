@@ -22,7 +22,7 @@ use AKlump\LiveDevPorter\Config\RuntimeConfig;
 use AKlump\LiveDevPorter\Config\RuntimeConfigInterface;
 use AKlump\LiveDevPorter\Php\ClassMethodCaller;
 
-require_once __DIR__ . '/../cloudy/php/bootstrap.php';
+require_once __DIR__ . '/_bootstrap.php';
 
 $callback = $argv[1] ?? NULL;
 $serialized_args = $argv[2] ?? '';
@@ -58,18 +58,6 @@ function get_cloudy_config(): RuntimeConfigInterface {
   return new RuntimeConfig($config);
 }
 
-function ensure_class_exists(string $class, string $base_dir): void {
-  if (!class_exists($class)
-    && $base_dir
-    && ($basename = $base_dir . '/' . ltrim($class, '\\') . '.php')
-    && file_exists($basename)) {
-    require_once $basename;
-  }
-  if (!class_exists($class)) {
-    throw new \RuntimeException(sprintf('Failed to load PHP class: %s', $class));
-  }
-}
-
 try {
   $class_args = ClassMethodCaller::decodeClassArgs($serialized_args);
   $cloudy_config = get_cloudy_config();
@@ -77,7 +65,6 @@ try {
     throw new \RuntimeException(sprintf('Missing CLOUDY_CONFIG_JSON; did you `export CLOUDY_CONFIG_JSON` before executing %s', __FILE__));
   }
   list($class, $method) = explode('::', $callback);
-  ensure_class_exists($class, $class_args['autoload'] ?? '');
   $class_args = ClassMethodCaller::expressConstants($class_args);
 
   $caller = new ClassMethodCaller($cloudy_config);

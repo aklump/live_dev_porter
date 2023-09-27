@@ -9,9 +9,7 @@ function call_php_class_method() {
   local callback="$1"
   local serialized_args="$2"
 
-  export APP_ROOT
   export CACHE_DIR
-  export CLOUDY_CONFIG_JSON
   export CLOUDY_PHP
   export COMPOSER_VENDOR
   export PLUGINS_DIR
@@ -30,9 +28,6 @@ function call_php_class_method_echo_or_fail() {
   local callback="$1"
   local serialized_args="$2"
 
-  export CLOUDY_CONFIG_JSON
-
-  # TODO Do we really need the third arg?  I don't see it used in code.
   message="$($CLOUDY_PHP "$ROOT/php/class_method_caller.php" "$callback" "$serialized_args" "${@:3}")"
   status=$?
   if [[ $status -ne 0 ]]; then
@@ -55,7 +50,6 @@ function echo_php_class_method() {
   local callback="$1"
   local query_string="$2"
 
-  export CLOUDY_CONFIG_JSON
   $CLOUDY_PHP "$ROOT/php/class_method_caller.php" "$callback" "$query_string" "${@:3}"
 }
 
@@ -228,7 +222,7 @@ function execute_workflow_processors() {
     else
       php_query="autoload=$CONFIG_DIR/processors/&COMMAND=$COMMAND&LOCAL_ENV_ID=$LOCAL_ENV_ID&REMOTE_ENV_ID=$REMOTE_ENV_ID&DATABASE_ID=$DATABASE_ID&DATABASE_NAME=$DATABASE_NAME&FILES_GROUP_ID=$FILES_GROUP_ID&FILEPATH=$FILEPATH&SHORTPATH=$SHORTPATH&IS_WRITEABLE_ENVIRONMENT=$IS_WRITEABLE_ENVIRONMENT"
       [[ "$JSON_RESPONSE" != true ]] && echo_task "$(path_unresolve "$CONFIG_DIR" "$processor_path")"
-      processor_output=$(cd "$APP_ROOT"; export CLOUDY_CONFIG_JSON; $CLOUDY_PHP "$ROOT/php/class_method_caller.php" "$basename" "$php_query")
+      processor_output=$(cd "$APP_ROOT"; $CLOUDY_PHP "$ROOT/php/class_method_caller.php" "$basename" "$php_query")
       processor_result=$?
     fi
 
