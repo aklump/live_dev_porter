@@ -544,6 +544,8 @@ function mysql_on_pull_db() {
   result_status=$?
   if [[ $result_status -ne 0 ]]; then
     write_log_error "Remote exited with: $result_status"
+    error_message=$(json_get_value 'error')
+    [[ "$error_message" ]] && fail_because "$error_message"
   fi
   [[ $result_status -eq 1 ]] && fail_because "$remote_base_path does not exist."
   [[ $result_status -eq 2 ]] && fail_because "$remote_base_path/vendor/bin/ldp is missing or does not have execute permissions."
