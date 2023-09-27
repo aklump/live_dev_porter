@@ -84,7 +84,13 @@ final class SchemaBuilder {
   }
 
   private function getPluginIds(): array {
-    $directory = $this->config["__cloudy"]["ROOT"] . '/plugins';
+    if (empty($this->config["APP_ROOT"])) {
+      return [];
+    }
+    $directory = $this->config["APP_ROOT"] . '/plugins';
+    if (!file_exists($directory) || !is_dir($directory)) {
+      return [];
+    }
 
     return array_values(array_filter(scandir($directory), function ($path) {
       return substr($path, 0, 1) !== '.';
@@ -96,6 +102,9 @@ final class SchemaBuilder {
   }
 
   private function getDatabaseIds(): array {
+    if (empty($this->config['environments'])) {
+      return [];
+    }
     $ids = [];
     foreach ($this->config['environments'] as $environment) {
       $ids = array_merge($ids, array_keys($environment['databases'] ?? []));
