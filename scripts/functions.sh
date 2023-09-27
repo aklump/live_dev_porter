@@ -221,9 +221,16 @@ function execute_workflow_processors() {
       processor_result=$?
     else
       php_query="autoload=$CONFIG_DIR/processors/&COMMAND=$COMMAND&LOCAL_ENV_ID=$LOCAL_ENV_ID&REMOTE_ENV_ID=$REMOTE_ENV_ID&DATABASE_ID=$DATABASE_ID&DATABASE_NAME=$DATABASE_NAME&FILES_GROUP_ID=$FILES_GROUP_ID&FILEPATH=$FILEPATH&SHORTPATH=$SHORTPATH&IS_WRITEABLE_ENVIRONMENT=$IS_WRITEABLE_ENVIRONMENT"
-      [[ "$JSON_RESPONSE" != true ]] && echo_task "$(path_unresolve "$CONFIG_DIR" "$processor_path")"
-      processor_output=$(cd "$APP_ROOT"; $CLOUDY_PHP "$ROOT/php/class_method_caller.php" "$basename" "$php_query")
+      local processor_class
+      processor_class=$(call_php_class_method "\AKlump\LiveDevPorter\Helpers\ResolveClassShortname::__invoke($basename,'\AKlump\LiveDevPorter\Processors')")
       processor_result=$?
+      if [[ $processor_result -ne 0 ]]; then
+        processor_output="$processor_class"
+      else
+        [[ "$JSON_RESPONSE" != true ]] && echo_task "$(path_unresolve "$CONFIG_DIR" "$processor_path")"
+        processor_output=$(cd "$APP_ROOT"; $CLOUDY_PHP "$ROOT/php/class_method_caller.php" "$processor_class" "$php_query")
+        processor_result=$?
+      fi
     fi
 
     if [[ $processor_result -eq 255 ]]; then

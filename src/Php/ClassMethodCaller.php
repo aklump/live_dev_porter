@@ -69,7 +69,9 @@ class ClassMethodCaller {
       parse_str($serialized, $config);
     }
     else {
-      $config = array_map('trim', explode(',', $serialized));
+      $config = array_map(function($value){
+        return trim($value, '"\' ');
+      }, explode(',', $serialized));
     }
 
     // Determine if we have an indexed array, that needs be typecase.

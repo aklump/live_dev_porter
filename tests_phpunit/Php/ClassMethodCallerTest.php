@@ -30,6 +30,26 @@ class ClassMethodCallerTest extends TestCase {
   public function dataFordecodeClassArgsProvider() {
     $tests = [];
     $tests[] = [
+      '  foo  ,  bar  ',
+      ['foo', 'bar'],
+    ];
+    $tests[] = [
+      '"foo", "bar"',
+      ['foo', 'bar'],
+    ];
+    $tests[] = [
+      '"foo","bar"',
+      ['foo', 'bar'],
+    ];
+    $tests[] = [
+      "'foo', 'bar'",
+      ['foo', 'bar'],
+    ];
+    $tests[] = [
+      "'foo','bar'",
+      ['foo', 'bar'],
+    ];
+    $tests[] = [
       'do=1',
       [['do' => '1']],
     ];
