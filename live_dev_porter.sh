@@ -241,9 +241,6 @@ implement_route_access
 
 [[ "$(get_option format)" == "json" ]] && JSON_RESPONSE=true
 
-# Uncomment this to add additional developer commands.
-#source "$SOURCE_DIR/developer_commands.sh"
-
 write_log_info "Executing command: $COMMAND"
 
 WORKFLOW_ID="$(get_option 'workflow')"
