@@ -45,6 +45,23 @@ function on_clear_cache() {
   done
 }
 
+function on_exit_with_success() {
+  [[ "$JSON_RESPONSE" == true ]] || return 0
+  [[ "" == "$(json_get)" ]] && json_set "{}"
+  json_get
+  _cloudy_exit
+}
+
+function on_exit_with_failure() {
+  [[ "$JSON_RESPONSE" == true ]] || return 0
+  [[ "" == "$(json_get)" ]] && json_set "{}"
+  if [ ${#CLOUDY_FAILURES[@]} -gt 0 ]; then
+    json_set_error "${CLOUDY_FAILURES[*]}"
+  fi
+  json_get
+  _cloudy_exit
+}
+
 function on_boot() {
   CONFIG_DIR="$APP_ROOT/.live_dev_porter"
   CACHE_DIR="$CONFIG_DIR/.cache"
@@ -386,10 +403,8 @@ case $COMMAND in
       fi
 
       if [[ "$JSON_RESPONSE" == true ]]; then
-        write_log_info "JSON Response is: $(json_get)"
-        has_failed && exit_with_failure_code_only
-        json_get
-        exit_with_success_code_only
+        write_log_info "$(json_get)"
+        ! has_failed && exit_with_success
       fi
       has_failed && exit_with_failure "Failed to export database."
       echo_time_heading

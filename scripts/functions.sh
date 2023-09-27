@@ -478,3 +478,15 @@ function process_in_the_background {
   ionice -c 2 -n 7 -p $BASHPID >/dev/null
   renice  +10 -p  $BASHPID >/dev/null
 }
+
+# Sets an error message as a JSON object
+#
+# $1 - The error message
+#
+# Returns nothing.
+function json_set_error() {
+  local message="$1"
+
+  message=${message//\"/}
+  json_set "{\"error\":\"$message\"}"
+}
