@@ -487,6 +487,10 @@ function process_in_the_background {
 function json_set_error() {
   local message="$1"
 
-  message=${message//\"/}
+  message=${message//\"/\'}
+  message=${message//\\n/ }
+  message=${message%% }
+  message=${message## }
+
   json_set "{\"error\":\"$message\"}"
 }
