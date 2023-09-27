@@ -1279,6 +1279,11 @@ function exit_with_help() {
 # Returns 0.
 function exit_with_success() {
     local message=$1
+
+    # At this point the output can be hijacked by an event handler, for example
+    # if the event handler wants to output JSON or some other encoding.
+    event_dispatch "exit_with_success"
+
     _cloudy_exit_with_success "$(_cloudy_message "$message" "$CLOUDY_SUCCESS")"
 }
 
@@ -1472,6 +1477,10 @@ function exit_with_failure() {
 
     [[ $CLOUDY_EXIT_STATUS -lt 2 ]] && CLOUDY_EXIT_STATUS=1
     CLOUDY_EXIT_STATUS=${parse_args__options__status:-$CLOUDY_EXIT_STATUS}
+
+    # At this point the output can be hijacked by an event handler, for example
+    # if the event handler wants to output JSON or some other encoding.
+    event_dispatch "exit_with_failure"
 
     echo && echo_error "🔥  $(_cloudy_message "${parse_args__args[@]}" "$CLOUDY_FAILED")"
 
