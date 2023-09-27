@@ -276,6 +276,9 @@ case $COMMAND in
       ;;
 
     "process")
+      if [[ "$WORKFLOW_ID" ]]; then
+        WORKFLOW_ID_ARG="$WORKFLOW_ID"
+      fi
       env="$CONFIG_DIR/processors/.env"
       if [[ ! -f "$env" ]]; then
         touch "$env"
@@ -286,9 +289,11 @@ case $COMMAND in
       fi
       source "$env"
 
+      # If provided in the CLI arguments, env must be overwritten.
+      [[ "$WORKFLOW_ID_ARG" ]] && WORKFLOW_ID="$WORKFLOW_ID_ARG"
+
       table_clear
-      echo_heading "Processor Variables:"
-      echo
+      echo_title "Processor Variables:"
       table_add_row "COMMAND" "$COMMAND"
       table_add_row "LOCAL_ENV_ID" "$LOCAL_ENV_ID"
       table_add_row "REMOTE_ENV_ID" "$REMOTE_ENV_ID"
@@ -299,42 +304,78 @@ case $COMMAND in
       table_add_row "WORKFLOW_ID" "$WORKFLOW_ID"
       echo_slim_table
       echo "Use \"--config\" to change these values."
-      echo
 
-      echo_heading "Choose a processor to run:"
+      if  [[ "$WORKFLOW_ID_ARG" ]]; then
+        echo_title "Workflow \"$WORKFLOW_ID\" Uses the Following:"
+      else
+        echo_title "Select from (Pre)Processors"
+      fi
+
+      processor_list=()
       processor=$(get_command_arg 0)
       if [[ ! "$processor" ]]; then
-        choose__array=($($CLOUDY_PHP "$ROOT/php/get_processors.php" "$CONFIG_DIR"))
-        processor=$(choose "Which processor?")
-        [ $? -ne 0 ] && succeed_because "Cancelled." && exit_with_success
-      fi
-
-      if [[ "$(path_extension "$processor")" == "sh" ]]; then
-        # We can only check for .sh files because the php argument will be
-        # "class::method", not the basepath.
-        processor_path="$CONFIG_DIR/processors/$processor"
-        [[ ! -f "$processor_path" ]] && fail_because "Missing file processor: $processor" && exit_with_failure
-        echo_title "$(path_unresolve "$CONFIG_DIR" "$processor_path")"
-        processor_output=$(cd "$APP_ROOT"; source "$SOURCE_DIR/processor_support.sh"; . "$processor_path")
-        processor_result=$?
-      else
-        php_query="autoload=$CONFIG_DIR/processors/&COMMAND=$COMMAND&LOCAL_ENV_ID=$LOCAL_ENV_ID&REMOTE_ENV_ID=$REMOTE_ENV_ID&DATABASE_ID=$DATABASE_ID&DATABASE_NAME=$DATABASE_NAME&FILES_GROUP_ID=$FILES_GROUP_ID&FILEPATH=$FILEPATH&SHORTPATH=$SHORTPATH&IS_WRITEABLE_ENVIRONMENT=$IS_WRITEABLE_ENVIRONMENT"
-        echo_title "$(path_unresolve "$CONFIG_DIR" "$processor_path")"
-        processor_output=$(cd "$APP_ROOT";$CLOUDY_PHP "$ROOT/php/class_method_caller.php" "$processor" "$php_query")
-        processor_result=$?
-      fi
-
-      if [[ $processor_result -eq 255 ]]; then
-        warn_because "Processor not applied."
-        if [[ ! "$processor_output" ]]; then
-          exit_message="Nothing done."
+        if [[ "$WORKFLOW_ID_ARG" ]]; then
+          eval $(get_config_as -a workflow_preprocessors "workflows.$WORKFLOW_ID.preprocessors")
+          eval $(get_config_as -a workflow_processors "workflows.$WORKFLOW_ID.processors")
+          processor_list=("${workflow_preprocessors[@]}" "${workflow_processors[@]}")
+          choose__array=("${processor_list[@]}" "ALL")
+        else
+          processor_list=($($CLOUDY_PHP "$ROOT/php/get_processors.php" "$CONFIG_DIR"))
+          choose__array=("${processor_list[@]}")
         fi
-      elif [[ $processor_result -ne 0 ]]; then
-        fail_because "Processor failed.";
+        processor=$(choose "Please choose" "CANCEL")
+        [ $? -ne 0 ] && succeed_because "You chose to cancel this operation." && exit_with_success
+        if [[ "ALL" != "$processor" ]]; then
+          processor_list=("$processor")
+        fi
       fi
 
-      has_failed && fail_because "$processor_output" && exit_with_failure
-      succeed_because "$processor_output"
+      echo_title "Results"
+      for processor in "${processor_list[@]}"; do
+        processor_result=''
+        processor_output=''
+        if [[ "$(path_extension "$processor")" == "sh" ]]; then
+          # We can only check for .sh files because the php argument will be
+          # "class::method", not the basepath.
+          processor_path="$CONFIG_DIR/processors/$processor"
+          echo_task "$(path_unresolve "$CONFIG_DIR" "$processor_path")"
+          if [[ ! -f "$processor_path" ]]; then
+            processor_output="\"$(path_unresolve "$PWD" "$processor_path")\" is not there."
+            processor_result=128
+          else
+            processor_output=$(cd "$APP_ROOT"; source "$SOURCE_DIR/processor_support.sh"; . "$processor_path")
+            processor_result=$?
+          fi
+        else
+          echo_task "$processor"
+          php_query="autoload=$CONFIG_DIR/processors/&COMMAND=$COMMAND&LOCAL_ENV_ID=$LOCAL_ENV_ID&REMOTE_ENV_ID=$REMOTE_ENV_ID&DATABASE_ID=$DATABASE_ID&DATABASE_NAME=$DATABASE_NAME&FILES_GROUP_ID=$FILES_GROUP_ID&FILEPATH=$FILEPATH&SHORTPATH=$SHORTPATH&IS_WRITEABLE_ENVIRONMENT=$IS_WRITEABLE_ENVIRONMENT"
+          processor_class=$(call_php_class_method "\AKlump\LiveDevPorter\Helpers\ResolveClassShortname::__invoke($processor,'\AKlump\LiveDevPorter\Processors')")
+          processor_output=$(cd "$APP_ROOT";$CLOUDY_PHP "$ROOT/php/class_method_caller.php" "$processor_class" "$php_query")
+          processor_result=$?
+        fi
+
+        if [[ "$processor_result" ]]; then
+          if [[ $processor_result -eq 255 ]]; then
+            echo_task_completed
+            succeed_because "$processor exited with 255 -- NOT APPLICABLE."
+          elif [[ $processor_result -eq 128 ]]; then
+            echo_task_failed
+            fail_because "Invalid processor $processor -- NOT FOUND."
+          elif [[ $processor_result -ne 0 ]]; then
+            echo_task_failed
+            fail_because "$processor exited with $processor_result -- FAILED."
+          else
+            echo_task_completed
+          fi
+        fi
+
+        if [[ "$processor_output" ]]; then
+          echo
+          echo "$processor_output"
+          echo
+        fi
+      done
+      has_failed && exit_with_failure
       exit_with_success "$exit_message"
       ;;
 

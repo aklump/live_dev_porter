@@ -193,3 +193,8 @@ commands:
         help: 'Edit the environment variables sent to the processor.'
         aliases:
           - c
+      workflow:
+        type: string
+        aliases:
+          - wf
+        help: 'Limit processor selection to this workflow.'

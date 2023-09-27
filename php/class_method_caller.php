@@ -9,6 +9,7 @@
  *
  * @see call_php_class_method
  * @see call_php_class_method_echo_or_fail
+ * @see ClassMethodCaller::CLASS_NOT_EXISTS
  *
  * 1. The first argument is expected to be a class::method string, e.g. "Foo::bar"
  * 1. The second argument is a query string e.g., "1=foo&2=bar" or CSV "foo,bar", which will be deserialized as arguments.
@@ -64,7 +65,8 @@ try {
   if (!$cloudy_config->all()) {
     throw new \RuntimeException(sprintf('Missing CLOUDY_CONFIG_JSON; did you `export CLOUDY_CONFIG_JSON` before executing %s', __FILE__));
   }
-  list($class, $method) = explode('::', $callback);
+  list($class, $method) = explode('::', "$callback::");
+  $method = (string) $method;
   $class_args = ClassMethodCaller::expressConstants($class_args);
 
   $caller = new ClassMethodCaller($cloudy_config);
@@ -77,10 +79,8 @@ try {
   }
 }
 catch (\Exception $exception) {
-  echo PHP_EOL;
-  echo $exception->getMessage();
+  $result = $exception->getMessage();
   $code = $exception->getCode() ?: 1;
-  exit($code);
 }
-echo $result;
-exit(0);
+echo trim($result);
+exit($code ?? 0);

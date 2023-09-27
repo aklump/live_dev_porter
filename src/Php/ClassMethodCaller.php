@@ -6,6 +6,8 @@ use AKlump\LiveDevPorter\Config\RuntimeConfig;
 
 class ClassMethodCaller {
 
+  const CLASS_NOT_EXISTS = 128;
+
   /**
    * @var \AKlump\LiveDevPorter\Config\RuntimeConfig
    */
@@ -32,7 +34,12 @@ class ClassMethodCaller {
     // For various legacy reasons, the routing of config and arguments is
     // different in different situations.  Is the method static? Is the method
     // __invoke(), etc.  This next bit routes things appropriately.
-    $method_reflection = new \ReflectionMethod("$class::$method");
+    try {
+      $method_reflection = new \ReflectionMethod("$class::$method");
+    }
+    catch (\ReflectionException $exception) {
+      throw new \Exception($exception->getMessage(), self::CLASS_NOT_EXISTS, $exception);
+    }
     if ($method_reflection->isStatic()) {
       // Static methods do not receive any configuration.
       $result = call_user_func_array([$class, $method], $method_arguments);
@@ -69,7 +76,7 @@ class ClassMethodCaller {
       parse_str($serialized, $config);
     }
     else {
-      $config = array_map(function($value){
+      $config = array_map(function ($value) {
         return trim($value, '"\' ');
       }, explode(',', $serialized));
     }
