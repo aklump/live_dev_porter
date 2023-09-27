@@ -53,7 +53,7 @@
 <h2>Cherry Picking Some Tables</h2>
 <p>Let's say you're working on a feature that affects the data in only two tables. Rather than waiting for the entire live database to export and download, with a local backup, you can do something like the following. It will only pull the tables you list and is therefore much faster. For further speeding up of things, you can choose to omit the local backup using <code>--skip-local-backup</code>.</p>
 <ol>
-<li>Create a workflow with inclusive tables using <code>include_table_data</code>, e.g.</li>
+<li>Create a workflow with inclusive tables using <code>include_table_structure_and_data</code>, e.g.</li>
 </ol>
 <pre><code class="yaml">workflows:
   cherry_pick_wf:
@@ -62,12 +62,12 @@
     databases:
       drupal:
         drop_tables: false
-        include_table_data:
+        include_tables_and_data:
           - registry
           - registry_file
 </code></pre>
 <ol>
-<li>Be sure to add <code>drop_tables: false</code> to the workflow as shown. This will prevent your local database from loosing the tables and data that are not listed in <code>include_table_data</code>. By default, all tables in your local database are dropped during a <code>pull</code> command. That is not what you want in this scenario!</li>
+<li>Be sure to add <code>drop_tables: false</code> to the workflow as shown. This will prevent your local database from loosing the tables and data that are not listed in <code>include_tables_and_data</code>. By default, all tables in your local database are dropped during a <code>pull</code> command. That is not what you want in this scenario!</li>
 <li>Ensure that the configuration for this workflow exists in both environments (local and remote) and that it is also identical on both. Remember when you pull with a workflow, the configuration in both environments must match.</li>
 <li>Now <code>pull</code> and specify this particular workflow as shown:</li>
 </ol>
