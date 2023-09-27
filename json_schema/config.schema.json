@@ -70,10 +70,10 @@
                 "drop_tables": {
                   "$ref": "#/$defs/drop_tables"
                 },
-                "include_tables": {
+                "include_tables_and_data": {
                   "$ref": "#/$defs/database_tablenames"
                 },
-                "include_table_data": {
+                "include_table_structure": {
                   "$ref": "#/$defs/database_tablenames"
                 }
               }

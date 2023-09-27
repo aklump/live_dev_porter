@@ -41,8 +41,8 @@ class GetExportTables {
     $prefix = "workflows.$workflow_id.databases.$database_id";
 
     // Determine if in/ex-clusive.
-    $include_table_data = $this->config->get("$prefix.include_table_data") ?? [];
-    $include_tables = $this->config->get("$prefix.include_tables") ?? [];
+    $include_table_data = $this->config->get("$prefix.include_tables_and_data") ?? [];
+    $include_tables = $this->config->get("$prefix.include_table_structure") ?? [];
 
     $type = GetTableQuery::EXCLUSIVE;
     if (!empty($include_table_data) || !empty($include_tables)) {

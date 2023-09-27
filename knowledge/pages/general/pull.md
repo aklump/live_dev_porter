@@ -25,7 +25,7 @@ You might want to do this to give you a way to reset to the remote database with
 
 Let's say you're working on a feature that affects the data in only two tables. Rather than waiting for the entire live database to export and download, with a local backup, you can do something like the following. It will only pull the tables you list and is therefore much faster. For further speeding up of things, you can choose to omit the local backup using `--skip-local-backup`.
 
-1. Create a workflow with inclusive tables using `include_table_data`, e.g.
+1. Create a workflow with inclusive tables using `include_table_structure_and_data`, e.g.
 
 ```yaml
 workflows:
@@ -35,12 +35,12 @@ workflows:
     databases:
       drupal:
         drop_tables: false
-        include_table_data:
+        include_tables_and_data:
           - registry
           - registry_file
 ```
 
-1. Be sure to add `drop_tables: false` to the workflow as shown. This will prevent your local database from loosing the tables and data that are not listed in `include_table_data`. By default, all tables in your local database are dropped during a `pull` command. That is not what you want in this scenario!
+1. Be sure to add `drop_tables: false` to the workflow as shown. This will prevent your local database from loosing the tables and data that are not listed in `include_tables_and_data`. By default, all tables in your local database are dropped during a `pull` command. That is not what you want in this scenario!
 3. Ensure that the configuration for this workflow exists in both environments (local and remote) and that it is also identical on both. Remember when you pull with a workflow, the configuration in both environments must match.
 4. Now `pull` and specify this particular workflow as shown:
 

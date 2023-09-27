@@ -100,8 +100,8 @@ class GetExportTablesTest extends TestCase {
 
   public function testInclusiveGlobData() {
     $config = $this->getConfig('database', 'workflow', [
-      'include_table_data' => ['watchdog', 'cache*'],
-      'include_tables' => ['views_data'],
+      'include_tables_and_data' => ['watchdog', 'cache*'],
+      'include_table_structure' => ['views_data'],
     ]);
 
     $list_provider = $this->getTableListProvider();
@@ -121,8 +121,8 @@ class GetExportTablesTest extends TestCase {
 
   public function testInclusiveGlobStructure() {
     $config = $this->getConfig('database', 'workflow', [
-      'include_table_data' => ['watchdog'],
-      'include_tables' => ['cache%', 'views_data'],
+      'include_tables_and_data' => ['watchdog'],
+      'include_table_structure' => ['cache%', 'views_data'],
     ]);
 
     $list_provider = $this->getTableListProvider();
@@ -179,7 +179,7 @@ class GetExportTablesTest extends TestCase {
 
   public function testInvokeWithInclusiveDataAndNoIncludeTablesKeyForStructureReturnsAllDataTables() {
     $config = $this->getConfig('database', 'workflow', [
-      'include_table_data' => [
+      'include_tables_and_data' => [
         'block_custom',
         'field_data_body',
         'field_data_field_xml_receive',
@@ -215,8 +215,8 @@ class GetExportTablesTest extends TestCase {
 
   public function testInvokeWithInclusiveData() {
     $config = $this->getConfig('database', 'workflow', [
-      'include_table_data' => ['cache_default', 'views_data'],
-      'include_tables' => ['watchdog', 'node'],
+      'include_tables_and_data' => ['cache_default', 'views_data'],
+      'include_table_structure' => ['watchdog', 'node'],
     ]);
     $provider = $this->createMock(TableListProviderInterface::class);
     $provider
@@ -241,7 +241,7 @@ class GetExportTablesTest extends TestCase {
     $tests = [];
     $tests[] = [
       [
-        'include_table_data' => ['node', 'views_data'],
+        'include_tables_and_data' => ['node', 'views_data'],
       ],
       [
         'node',
@@ -250,8 +250,8 @@ class GetExportTablesTest extends TestCase {
     ];
     $tests[] = [
       [
-        'include_table_data' => ['node', 'views_data'],
-        'include_tables' => ['cache_default', 'cache_views'],
+        'include_tables_and_data' => ['node', 'views_data'],
+        'include_table_structure' => ['cache_default', 'cache_views'],
       ],
       [
         'cache_default',
