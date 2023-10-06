@@ -85,6 +85,7 @@ function mysql_on_configtest() {
     defaults_file=$(database_get_defaults_file "$LOCAL_ENV_ID" "$database_id")
     ! db_name=$(database_get_name "$LOCAL_ENV_ID" "$database_id") && echo_fail "$db_name" && fail
     echo_task "Able to connect to $LOCAL_ENV_ID database: $database_id."
+    write_log_debug "mysql --defaults-file=\"$defaults_file\" \"$db_name\" -e \";\""
     if mysql --defaults-file="$defaults_file" "$db_name" -e ";" 2> /dev/null ; then
       echo_task_completed
     else
@@ -137,6 +138,7 @@ function mysql_on_db_shell() {
   local db_name
   ! db_name=$(database_get_name "$LOCAL_ENV_ID" "$database_id") && fail_because "$db_name" && return 1
   defaults_file=$(database_get_defaults_file "$LOCAL_ENV_ID" "$database_id")
+  write_log_debug "mysql --defaults-file=\"$defaults_file\" \"$db_name\""
   mysql --defaults-file="$defaults_file" "$db_name"
 }
 
