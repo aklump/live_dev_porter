@@ -52,12 +52,12 @@ abstract class ProcessorBase {
    */
   public function __construct($processor_config) {
     $this->config = $processor_config;
-    $this->command = $config['COMMAND'] ?? '';
-    $this->databaseId = $config['DATABASE_ID'] ?? '';
-    $this->databaseName = $config['DATABASE_NAME'] ?? '';
-    $this->filesGroupId = $config['FILES_GROUP_ID'] ?? '';
-    $this->config['FILEPATH'] = $config['FILEPATH'] ?? '';
-    $this->shortpath = $config['SHORTPATH'] ?? '';
+    $this->command = $processor_config['COMMAND'] ?? '';
+    $this->databaseId = $processor_config['DATABASE_ID'] ?? '';
+    $this->databaseName = $processor_config['DATABASE_NAME'] ?? '';
+    $this->filesGroupId = $processor_config['FILES_GROUP_ID'] ?? '';
+    $this->config['FILEPATH'] = $processor_config['FILEPATH'] ?? '';
+    $this->shortpath = $processor_config['SHORTPATH'] ?? '';
   }
 
   /**
