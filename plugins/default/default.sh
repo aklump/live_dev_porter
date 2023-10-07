@@ -319,15 +319,16 @@ function default_on_pull_files() {
       rsync_options="$base_rsync_options"
       source_path=$(path_resolve "$source_base" "$source")
       destination_path=$(path_resolve "$destination_base" "$destination")
+
       ruleset="$CACHE_DIR/rsync_ruleset.$FILES_GROUP_ID.txt"
-      if [[ -f "$ruleset" ]]; then
-        # I picked --include-from and not --exclude-from, but that is arbitrary.
-        # Given my choice, there is no need for us to use --exclude-from because
-        # our rulesets are compiled using the +/- prefixes which controls take
-        # over such control. It's confusing, see this link:
-        # https://stackoverflow.com/q/60584163/3177610
-        rsync_options="$rsync_options --include-from="$ruleset""
-      fi
+      [[ -f "$ruleset" ]] || fail_because "Missing ruleset $ruleset; try clearing caches." || return 1
+
+      # I picked --include-from and not --exclude-from, but that is arbitrary.
+      # Given my choice, there is no need for us to use --exclude-from because
+      # our rulesets are compiled using the +/- prefixes which controls take
+      # over such control. It's confusing, see this link:
+      # https://stackoverflow.com/q/60584163/3177610
+      rsync_options="$rsync_options --include-from="$ruleset""
       sandbox_directory "$destination_path"
       if [[ ! -d "$destination_path" ]]; then
         mkdir -p "$destination_path" || fail_because "Could not create directory: $destination_path"

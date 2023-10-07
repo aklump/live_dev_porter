@@ -84,12 +84,9 @@ final class SchemaBuilder {
   }
 
   private function getPluginIds(): array {
-    if (empty($this->config["APP_ROOT"])) {
-      return [];
-    }
-    $directory = $this->config["APP_ROOT"] . '/plugins';
-    if (!file_exists($directory) || !is_dir($directory)) {
-      return [];
+    $directory = $this->config["PLUGINS_DIR"] ?? '';
+    if (empty($directory) || !is_dir($directory)) {
+      throw new \RuntimeException(sprintf('Missing value for PLUGINS_DIR'));
     }
 
     return array_values(array_filter(scandir($directory), function ($path) {

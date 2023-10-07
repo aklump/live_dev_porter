@@ -1,6 +1,6 @@
 <?php
 
-namespace Helpers;
+namespace AKlump\LiveDevPorter\Tests\Helpers;
 
 use PHPUnit\Framework\TestCase;
 

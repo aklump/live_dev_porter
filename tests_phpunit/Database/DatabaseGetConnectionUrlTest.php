@@ -1,6 +1,6 @@
 <?php
 
-namespace Database;
+namespace AKlump\LiveDevPorter\Tests\Database;
 
 use AKlump\LiveDevPorter\Database\DatabaseGetConnectionUrl;
 use AKlump\LiveDevPorter\Tests\TestHelpers\TestWithConfigTrait;

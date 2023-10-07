@@ -37,7 +37,6 @@ class RsyncHelper {
 
       $ruleset = [];
       if (!empty($group_data[$filter_type])) {
-        $path = sprintf('%s/rsync_ruleset.%s.txt', $this->dist, $group_id);
         foreach ($group_data[$filter_type] as $rule) {
           $rules = $this->inflateRule($rule, $filter_type);
           $rules = array_map(function ($item) use ($filter_type) {
@@ -47,8 +46,11 @@ class RsyncHelper {
         }
       }
       $ruleset[] = ($filter_type === self::TYPE_INCLUDE ? '- *' : '+ *');
-      $result = file_put_contents($path, implode(PHP_EOL, $ruleset));
-      if (!$result) {
+
+      $path = sprintf('%s/rsync_ruleset.%s.txt', $this->dist, $group_id);
+      $file_contents = implode(PHP_EOL, $ruleset);
+      $save_result = file_put_contents($path, $file_contents);
+      if (FALSE === $save_result) {
         throw new \RuntimeException(sprintf('Failed to save %s', $path));
       }
     }

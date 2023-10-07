@@ -1,6 +1,7 @@
 <?php
 
-use AKlump\LiveDevPorter\Config\RsyncHelper;
+namespace AKlump\LiveDevPorter\Config;
+
 use PHPUnit\Framework\TestCase;
 
 /**

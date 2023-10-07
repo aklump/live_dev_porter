@@ -142,6 +142,12 @@ case $COMMAND in
 
 esac
 
+# Export some environment variables that will be available to any PHP class that
+# needs them.
+export APP_ROOT
+export CLOUDY_CONFIG_JSON
+export PLUGINS_DIR
+
 eval $(get_config_as LOCAL_ENV_ID 'local')
 exit_with_failure_if_empty_config 'LOCAL_ENV_ID' 'local'
 
@@ -238,11 +244,6 @@ fi
 # keep this after has changed or the help route will not build
 implement_cloudy_basic
 implement_route_access
-
-# Export some environment variables that will be available to any PHP class that
-# needs them.
-export APP_ROOT
-export CLOUDY_CONFIG_JSON
 
 [[ "$(get_option format)" == "json" ]] && JSON_RESPONSE=true
 

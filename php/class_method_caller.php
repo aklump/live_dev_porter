@@ -52,9 +52,10 @@ function get_cloudy_config(): RuntimeConfigInterface {
   $config['SOURCE_DIR'] = $getenv('SOURCE_DIR');
   $config['TEMP_DIR'] = $getenv('TEMP_DIR');
   $cloudy_config = json_decode($getenv('CLOUDY_CONFIG_JSON'), TRUE) ?? [];
-  if ($cloudy_config) {
-    $config = array_merge($config, $cloudy_config);
+  if (!$cloudy_config) {
+    throw new \RuntimeException(sprintf('Missing value for CLOUDY_CONFIG_JSON.'));
   }
+  $config = array_merge($config, $cloudy_config);
 
   return new RuntimeConfig($config);
 }
