@@ -567,10 +567,6 @@ case $COMMAND in
         [[ "$time_estimate" ]] && echo_heading "Time estimate: $time_estimate"
       fi
 
-      if ! has_option "dry-run" && ! confirm --caution "Proceed?"; then
-        fail_because "You cancelled this action."
-      fi
-
       process_in_the_background
       if ! has_failed && [[ "$do_database" == true ]]; then
         if [[ "$has_db" == false ]]; then
