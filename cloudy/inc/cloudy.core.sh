@@ -101,13 +101,8 @@ if [[ ! -f "$CACHED_CONFIG_FILEPATH" ]]; then
   # Convert the JSON to bash config.
   php "$CLOUDY_ROOT/php/json_to_bash.php" "$ROOT" "cloudy_config" "$CLOUDY_CONFIG_JSON" >"$CACHED_CONFIG_FILEPATH"
   if [[ $? -ne 0 ]]; then
-    compiled=$(cat "$CACHED_CONFIG_FILEPATH")
-    fail_because "$(
-      IFS="|"
-      read file reason <<<"$compiled"
-      echo "$reason"
-    )"
-    exit_with_failure "Cannot create cached config filepath."
+    fail_because "$(cat "$CACHED_CONFIG_FILEPATH"|tr -d '\n')"
+    exit_with_failure "Cannot cache config to: $CACHED_CONFIG_FILEPATH."
   else
     source "$CACHED_CONFIG_FILEPATH" || exit_with_failure "Cannot load cached configuration."
     eval $(get_config_path -a "additional_config")
