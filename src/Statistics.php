@@ -30,6 +30,13 @@ final class Statistics {
    */
   private $source;
 
+  /**
+   * @var string
+   */
+  private $filepath;
+
+  private $data = [];
+
   public function __construct(array $config) {
     $this->filepath = $config['CACHE_DIR'] . '/statistics.json';
     $this->command = $config['COMMAND'];
@@ -123,10 +130,10 @@ final class Statistics {
     if ($hours) {
       $formatted[] = "$hours " . ($hours != 1 ? 'hours' : 'hour');
     }
-    if ($hours && $minutes || $minutes) {
+    if ($minutes) {
       $formatted[] = "$minutes " . ($minutes != 1 ? 'minutes' : 'minute');
     }
-    if ($minutes && $seconds || $seconds) {
+    if ($seconds) {
       $formatted[] = "$seconds " . ($seconds != 1 ? 'seconds' : 'second');
     }
 
@@ -202,6 +209,5 @@ final class Statistics {
   private function save() {
     return file_put_contents($this->filepath, json_encode($this->data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
   }
-
 
 }

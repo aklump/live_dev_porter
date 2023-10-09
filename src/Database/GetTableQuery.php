@@ -39,7 +39,9 @@ class GetTableQuery {
     }
 
     // Normalize glob-syntax to SQL wildcards.
-    $tables = array_map(fn($table) => str_replace(self::WILDCARD_ALIAS, self::WILDCARD, $table), $tables);
+    $tables = array_map(function ($table) {
+      return str_replace(self::WILDCARD_ALIAS, self::WILDCARD, $table);
+    }, $tables);
 
 
     // Normalize order.
@@ -58,7 +60,9 @@ class GetTableQuery {
     }
 
     if ($in_tables) {
-      $in_tables = array_map(fn(string $table) => "'$table'", $in_tables);
+      $in_tables = array_map(function (string $table) {
+        return "'$table'";
+      }, $in_tables);
       $conditions[] = sprintf("table_name %sIN (%s)", $qualifier, implode(',', $in_tables));
     }
 

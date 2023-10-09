@@ -8,8 +8,11 @@
             "AKlump\\LiveDevPorter\\Tests\\": "tests_phpunit/"
         }
     },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
     "require-dev": {
-        "phpunit/phpunit": "^9.5"
+        "phpunit/phpunit": "^9.5",
+        "aklump/phpswap": "^0.0.6"
     },
     "bin": [
         "bin/ldp"

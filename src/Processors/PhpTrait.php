@@ -23,7 +23,7 @@ trait PhpTrait {
     if (empty($this->loadedFile['contents'])) {
       return;
     }
-    $value_to_replace = $this->getValueByVariableDeclaration($variable_name);
+    $value_to_replace = (string) $this->getValueByVariableDeclaration($variable_name);
     $total_replacements = 0;
     $this->loadedFile['contents'] = str_replace($value_to_replace, $replace_with, $this->loadedFile['contents'], $total_replacements);
     if ($total_replacements < 1) {
