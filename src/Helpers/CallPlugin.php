@@ -59,10 +59,7 @@ class CallPlugin {
    *   The name of all plugins that should be included.
    */
   private function getPlugins(): array {
-    return array_filter(scandir($this->config->get('PLUGINS_DIR')), fn($path) => !in_array($path, [
-      '.',
-      '..',
-    ]));
+    return array_diff(scandir($this->config->get('PLUGINS_DIR')), ['.', '..']);
   }
 
   /**
