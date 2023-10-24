@@ -83,5 +83,7 @@ catch (\Exception $exception) {
   $result = $exception->getMessage();
   $code = $exception->getCode() ?: 1;
 }
-echo trim($result);
+if ($result) {
+  echo trim($result);
+}
 exit($code ?? 0);
