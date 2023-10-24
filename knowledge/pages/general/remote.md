@@ -45,3 +45,6 @@ The app tries to connect as a login shell, but in some cases this may not be pos
 
 See the function `default_on_remote_shell` for more details.
 
+## Wrong PHP version
+
+- Make sure .bashrc on the remote sets the correct version.
