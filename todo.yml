@@ -1,3 +1,4 @@
+- ldp config test against DH servers hits a threshold and gets locked out, so need a way to reduce calls or throttle, or something like that.
 -
   bug: init fails
   steps:
