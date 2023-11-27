@@ -151,6 +151,8 @@ function mysql_on_db_shell() {
 function mysql_prune_rollback_files() {
   local database_id="$1"
   local keep_files_count=$2
+
+  write_log_debug "mysql_prune_rollback_files() called."
   [[ "$2" ]] || return 1
   filename="rollback_$(date8601 -c).sql"
   dumpfiles_dir="$(database_get_local_directory "$LOCAL_ENV_ID" "$database_id")"
@@ -164,9 +166,10 @@ function mysql_prune_rollback_files() {
 
   stop_at_index=$((${#rollback_files[@]}-$keep_files_count))
   echo_task "Delete all but $keep_files_count most recent backups."
+  write_log_debug "Delete all but $keep_files_count most recent backups."
   for (( i = 0; i < $stop_at_index; i++ )); do
     sandbox_directory "$(dirname "${rollback_files[i]}")"
-    ! rm "${rollback_files[i]}" && echo_task_failed && return 1
+    ! rm "${rollback_files[i]}" && fail_because "Could not delete ${rollback_files[i]}" && echo_task_failed && return 1
   done
   echo_task_completed
   return 0
@@ -180,6 +183,7 @@ function mysql_prune_rollback_files() {
 function mysql_create_local_rollback_file() {
   local database_id="$1"
 
+  write_log_debug "mysql_create_local_rollback_file() called."
   local filename
   local db_name
   local defaults_file
@@ -317,6 +321,7 @@ function mysql_on_import_db() {
   local database_id="$1"
   local filepath="$2"
 
+  write_log_debug "mysql_on_import_db() called."
   local db_name
   local defaults_file
   defaults_file=$(database_get_defaults_file "$LOCAL_ENV_ID" "$database_id")
@@ -351,6 +356,7 @@ function mysql_on_import_db() {
 function mysql_drop_all_tables() {
   local database_id="$1"
 
+  write_log_debug "mysql_drop_all_tables() called."
   local db_name
   local tables
   local sql
@@ -367,7 +373,11 @@ function mysql_drop_all_tables() {
   sql="${sql%,}"
 
   write_log_debug "mysql --defaults-file="REDACTED" $db_name -e "$sql""
-  ! mysql --defaults-file="$defaults_file" $db_name -e "$sql" && echo_task_failed && return 1
+  if ! mysql --defaults-file="$defaults_file" $db_name -e "$sql"; then
+    write_log_error "SQL failed: $sql"
+    echo_task_failed
+    return 1
+  fi
   echo_task_completed
   return 0
 }
@@ -509,6 +519,7 @@ function mysql_on_push_db() {
 function mysql_on_pull_db() {
   local DATABASE_ID="$1"
 
+  write_log_debug "mysql_on_pull_db() called."
   local remote_base_path
   local result_json
   local remote_dumpfile_path

@@ -510,7 +510,7 @@ case $COMMAND in
         mysql_prune_rollback_files "$DATABASE_ID" "$total_files_to_keep"
       fi
       if ! has_failed && [[ "$WORKFLOW_ID" ]]; then
-        execute_workflow_processors "$WORKFLOW_ID" || fail
+        execute_workflow_processors "$WORKFLOW_ID" || fail_because "$WORKFLOW_ID failed to process"
       fi
       echo_time_heading
       has_failed && exit_with_failure "Failed to import database."

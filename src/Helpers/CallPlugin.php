@@ -48,7 +48,9 @@ class CallPlugin {
     $command[] = sprintf('export PLUGINS="%s"', implode(' ', $this->getPlugins()));
     $command[] = sprintf('export FUNCTION="%s"', $this->getFunctionName());
 
-    $command[] = $this->config->get('SOURCE_DIR') . '/call_plugin_php_helper.sh ' . implode(' ', $plugin_args);
+    $path_to_helper = $this->config->get('SOURCE_DIR') . '/call_plugin_php_helper.sh';
+    (new TryEnsureExecutePermissions())($path_to_helper);
+    $command[] = "$path_to_helper " . implode(' ', $plugin_args);
     $command = implode(PHP_EOL, $command);
 
     return $this->exec($command);
