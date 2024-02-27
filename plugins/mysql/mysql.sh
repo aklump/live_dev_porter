@@ -392,7 +392,7 @@ function mysql_on_push_db() {
   local result_status
   [[ "$WORKFLOW_ID" ]] && remote_ldp_options="$remote_ldp_options --workflow=\"$WORKFLOW_ID\""
   remote_base_path="$(environment_path_resolve $REMOTE_ENV_ID)"
-
+  eval $(get_config_as scp shell_commands.scp)
 
   if [[ "$WORKFLOW_ID" ]]; then
     execute_workflow_processors "$WORKFLOW_ID" "preprocessors" || fail
@@ -470,7 +470,7 @@ function mysql_on_push_db() {
   # Create the remote directory if not already there to receive the dumpfile.
   ! default_mkdir "$REMOTE_ENV_ID" "$remote_dir"  && echo_task_failed && return 1
 
-  ! scp "$local_dumpfile_path" "${REMOTE_ENV_AUTH}$remote_dumpfile_path"  &> /dev/null && echo_task_failed && return 1
+  ! $scp "$local_dumpfile_path" "${REMOTE_ENV_AUTH}$remote_dumpfile_path"  &> /dev/null && echo_task_failed && return 1
   ! rm "$local_dumpfile_path" && echo_task_failed && return 1
   echo_task_completed
   has_option v && echo "$LIL $remote_dumpfile_path"
@@ -526,6 +526,7 @@ function mysql_on_pull_db() {
   local remote_ldp_options
   local result_status
   local do_backup
+  eval $(get_config_as scp shell_commands.scp)
 
   echo_task "Export remote database: $DATABASE_ID"
   [[ "$WORKFLOW_ID" ]] && remote_ldp_options="$remote_ldp_options --workflow=\"$WORKFLOW_ID\""
@@ -591,10 +592,10 @@ function mysql_on_pull_db() {
   local save_as="$dumpfiles_dir/$(basename "$remote_dumpfile_path")"
   echo_task "Download as $(basename "$save_as")"
   if has_option "verbose"; then
-    echo "scp "${REMOTE_ENV_AUTH}$remote_dumpfile_path" "$save_as""
-    ! scp "${REMOTE_ENV_AUTH}$remote_dumpfile_path" "$save_as" && echo_task_failed && return 1
+    echo "$scp "${REMOTE_ENV_AUTH}$remote_dumpfile_path" "$save_as""
+    ! $scp "${REMOTE_ENV_AUTH}$remote_dumpfile_path" "$save_as" && echo_task_failed && return 1
   else
-    ! scp "${REMOTE_ENV_AUTH}$remote_dumpfile_path" "$save_as" &> /dev/null && echo_task_failed && return 1
+    ! $scp "${REMOTE_ENV_AUTH}$remote_dumpfile_path" "$save_as" &> /dev/null && echo_task_failed && return 1
   fi
   echo_task_completed
   echo_time_heading

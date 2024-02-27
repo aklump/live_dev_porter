@@ -4,3 +4,5 @@
   steps:
     - ./vendor/bin/ldp init
     - 'cp: /Users/aklump/Code/Projects/ChapterAndVerse/Numerica/site/app/vendor/aklump/live-dev-porter/init/processors is a directory (not copied).'
+
+- ldp cc did not remove .live_dev_porter/.cache/test/databases/drupal/db.cnf; should createDefaultsFile always remove it? do we remove it on cc hook; we should.

@@ -14,6 +14,9 @@ max_database_rollbacks_to_keep: 5
 backup_remote_db_on_push: true
 delete_pull_dumpfiles: true
 compress_dumpfiles: true
+# https://aboutnetworks.net/scp-macos13/
+shell_commands:
+  scp: 'scp -O'
 plugins:
   mysql:
     mysqldump_base_options:
