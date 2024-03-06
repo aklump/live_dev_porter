@@ -61,7 +61,10 @@ function database_get_defaults_file() {
 
   local defaults_file
   defaults_file=$(call_php_class_method "\AKlump\LiveDevPorter\Database\DatabaseGetDefaultsFile::__invoke($environment_id,$database_id)")
-  [[ $? -ne 0 ]] && fail_because "$defaults_file" && return 1
+  if [[ $? -ne 0 ]]; then
+    write_log_error "'${FUNCNAME[0]}' failed: $defaults_file"
+    fail_because "$defaults_file" && return 1
+  fi
   echo "$defaults_file"
 }
 
@@ -79,7 +82,10 @@ function database_get_connection_url() {
 
   local connection_url
   connection_url=$(call_php_class_method "\AKlump\LiveDevPorter\Database\DatabaseGetConnectionUrl::__invoke($environment_id, $database_id)")
-  [[ $? -ne 0 ]] && fail_because "$connection_url" && return 1
+  if [[ $? -ne 0 ]]; then
+    write_log_error "'${FUNCNAME[0]}' failed: $connection_url"
+    fail_because "$connection_url" && return 1
+  fi
   echo "$connection_url"
 }
 
@@ -135,7 +141,10 @@ function database_get_name() {
 
   local name
   name=$(call_php_class_method "\AKlump\LiveDevPorter\Database\DatabaseGetName::__invoke($environment_id,$database_id)")
-  [[ $? -ne 0 ]] && fail_because "$name" && return 1
+  if [[ $? -ne 0 ]]; then
+    write_log_error "'${FUNCNAME[0]}' failed: $name"
+    fail_because "$name" && return 1
+  fi
   echo "$name"
 }
 
@@ -145,6 +154,9 @@ function database_get_cached_name_filepath() {
 
   local filepath
   filepath=$(call_php_class_method "\AKlump\LiveDevPorter\Database\DatabaseGetDefaultsFile::__invoke($environment_id,$database_id)")
-  [[ $? -ne 0 ]] && fail_because "$filepath" && return 1
+  if [[ $? -ne 0 ]]; then
+    write_log_error "'${FUNCNAME[0]}' failed: $filepath"
+    fail_because "$filepath" && return 1
+  fi
   echo "$(dirname $filepath)/db_name.txt"
 }

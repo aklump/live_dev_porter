@@ -35,18 +35,18 @@ class CallPlugin {
     $this->functionTail = array_shift($plugin_args);
 
     $command = [];
-    $command[] = sprintf('export APP_ROOT="%s"', $this->config->get('APP_ROOT'));
-    $command[] = sprintf('export CACHE_DIR="%s"', $this->config->get('CACHE_DIR'));
-    $command[] = sprintf('export CLOUDY_PHP="%s"', $this->config->get('CLOUDY_PHP'));
-    $command[] = sprintf('export COMPOSER_VENDOR="%s"', $this->config->get('COMPOSER_VENDOR'));
-    $command[] = sprintf('export ROOT="%s"', $this->config->get('__cloudy.ROOT'));
-    $command[] = sprintf('export SOURCE_DIR="%s"', $this->config->get('SOURCE_DIR'));
-    $command[] = sprintf('export PLUGIN_DIR="%s"', $this->config->get('PLUGINS_DIR'));
+    $command[] = sprintf('export APP_ROOT="%s";', $this->config->get('APP_ROOT'));
+    $command[] = sprintf('export CACHE_DIR="%s";', $this->config->get('CACHE_DIR'));
+    $command[] = sprintf('export CLOUDY_PHP="%s";', $this->config->get('CLOUDY_PHP'));
+    $command[] = sprintf('export COMPOSER_VENDOR="%s";', $this->config->get('COMPOSER_VENDOR'));
+    $command[] = sprintf('export ROOT="%s";', $this->config->get('__cloudy.ROOT'));
+    $command[] = sprintf('export SOURCE_DIR="%s";', $this->config->get('SOURCE_DIR'));
+    $command[] = sprintf('export PLUGIN_DIR="%s";', $this->config->get('PLUGINS_DIR'));
 
     // We have to include all plugins because it's possible there are
     // dependencies, this is easier than computing those dependencies.
-    $command[] = sprintf('export PLUGINS="%s"', implode(' ', $this->getPlugins()));
-    $command[] = sprintf('export FUNCTION="%s"', $this->getFunctionName());
+    $command[] = sprintf('export PLUGINS="%s";', implode(' ', $this->getPlugins()));
+    $command[] = sprintf('export FUNCTION="%s";', $this->getFunctionName());
 
     $path_to_helper = $this->config->get('SOURCE_DIR') . '/call_plugin_php_helper.sh';
     (new TryEnsureExecutePermissions())($path_to_helper);

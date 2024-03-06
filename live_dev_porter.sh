@@ -390,9 +390,11 @@ case $COMMAND in
 
     "db")
       DATABASE_ID=$(get_command_arg 0 "$LOCAL_DATABASE_ID")
+      write_log_debug "Connecting to database \"$DATABASE_ID\""
       ! DATABASE_ID=$(validate_local_database_id "$DATABASE_ID") && fail_because "$DATABASE_ID" && exit_with_failure
       eval $(get_config_as plugin "environments.$LOCAL_ENV_ID.databases.$DATABASE_ID.plugin")
       echo_title "Enter $LOCAL_ENV_ID database \"$DATABASE_ID\""
+      write_log_debug "With plugin: \"$plugin\""
       call_plugin $plugin db_shell "$DATABASE_ID" || fail
       has_failed && exit_with_failure
       exit_with_success_elapsed
