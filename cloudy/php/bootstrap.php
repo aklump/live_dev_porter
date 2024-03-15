@@ -68,8 +68,48 @@ function yaml_to_json($yaml) {
  */
 function json_get_value($path, $json) {
   $subject = json_decode($json);
+  if (json_last_error() !== JSON_ERROR_NONE) {
+    throw new \RuntimeException('Invalid JSON string: ' . json_last_error_msg());
+  }
 
   return DotKey::on($subject)->get($path);
+}
+
+/**
+ * Loads a JSON file to be used with json_get.
+ *
+ * Always use this function instead of $(cat foo.json) as json validation and
+ * escaping is handled for you.
+ *
+ * @param string $path
+ *
+ * @return string
+ *   The compressed JSON if file is valid, with single quotes escaped.
+ * @throws \InvalidArgumentException If the file does not exist or the file is invalid.
+ */
+function json_load_file(string $path): string {
+  if (!file_exists($path)) {
+    throw new \RuntimeException("Missing JSON file: " . $path);
+  }
+  $contents = file_get_contents($path);
+
+  return json_bash_filter($contents);
+}
+
+/**
+ * @param string $json
+ *   A JSON string to be used by cloudy.
+ *
+ * @return string
+ *   The compressed and escaped as appropriate JSON string.
+ */
+function json_bash_filter(string $json): string {
+  $data = json_decode($json);
+  if (json_last_error() !== JSON_ERROR_NONE) {
+    throw new \RuntimeException('Invalid JSON string: ' . json_last_error_msg());
+  }
+
+  return json_encode($data, JSON_UNESCAPED_SLASHES);
 }
 
 /**

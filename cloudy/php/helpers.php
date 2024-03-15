@@ -39,10 +39,10 @@ try {
     exit(0);
   }
 }
-catch (\Exception $exception) {
-  exit(1);
+catch (Exception $exception) {
+  echo $exception->getMessage();
 }
-
-
-
-
+catch (Throwable $throwable) {
+  echo $throwable->getMessage();
+}
+exit(1);
