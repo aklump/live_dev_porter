@@ -113,8 +113,6 @@ function _cloudy_auto_purge_config() {
 # Detect if cached config is stale against $CONFIG.
 #
 function _cloudy_has_config_changed() {
-  local cache_mtime_filepath="${CACHED_CONFIG_FILEPATH/.sh/.modified.txt}"
-
   # When configuration gets cached, this file gets created with a line for
   # every config file that was used to generate the cached config.  Each line
   # is the absolute filepath and the modified timestamp of that file.  We will
@@ -125,7 +123,7 @@ function _cloudy_has_config_changed() {
 
     # If we discover a newer file in this step, then the config has changed.
     [[ $(_cloudy_get_file_mtime $path) -gt "$cached_mtime" ]] && _cloudy_has_config_changed__file="$path" && return 0
-  done <$cache_mtime_filepath
+  done < "$CACHED_CONFIG_MTIME_FILEPATH"
   return 1
 }
 

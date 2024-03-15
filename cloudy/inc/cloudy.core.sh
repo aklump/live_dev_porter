@@ -100,8 +100,10 @@ if [[ ! -f "$CACHED_CONFIG_FILEPATH" ]]; then
 
   # Convert the JSON to bash config.
   php "$CLOUDY_ROOT/php/json_to_bash.php" "$ROOT" "cloudy_config" "$CLOUDY_CONFIG_JSON" >"$CACHED_CONFIG_FILEPATH"
-  if [[ $? -ne 0 ]]; then
+  json_to_bash_result=$?
+  if [[ $json_to_bash_result -ne 0 ]]; then
     fail_because "$(cat "$CACHED_CONFIG_FILEPATH"|tr -d '\n')"
+    rm "$CACHED_CONFIG_FILEPATH"
     exit_with_failure "Cannot cache config to: $CACHED_CONFIG_FILEPATH."
   else
     source "$CACHED_CONFIG_FILEPATH" || exit_with_failure "Cannot load cached configuration."

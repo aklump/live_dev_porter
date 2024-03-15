@@ -70,6 +70,13 @@ try {
     throw new $class("Configuration syntax error in \"" . basename($path_to_master_config) . '": ' . $exception->getMessage());
   }
 
+  if (!empty(error_get_last())) {
+    // If there are any errors then we have to exit with 1 so that the JSON will
+    // not be printed to the cache file; otherwise the cache breaks the cloudy
+    // will not be able to load next run due to error messages in the cached.sh
+    // file.
+    exit(1);
+  }
   echo json_encode($config, JSON_UNESCAPED_SLASHES);
   exit(0);
 }
