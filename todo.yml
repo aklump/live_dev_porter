@@ -1,3 +1,4 @@
+- need a way to be able to write "Deny from all" to web/.htaccess at the start of ldp pull, then reverse when complete to prevent the Drupal bug that breaks if site is visited during import.
 - ldp config test against DH servers hits a threshold and gets locked out, so need a way to reduce calls or throttle, or something like that.
 -
   bug: init fails
