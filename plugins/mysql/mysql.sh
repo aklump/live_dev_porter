@@ -622,7 +622,7 @@ function mysql_on_pull_db() {
 
   mysql_on_import_db "$DATABASE_ID" "$save_as" || return 1
   echo_time_heading
-  eval $(get_config_as total_files_to_keep max_database_rollbacks_to_keep 5)
+  eval $(get_config_as total_files_to_keep max_database_rollbacks_to_keep 15)
   mysql_prune_rollback_files "$DATABASE_ID" "$total_files_to_keep" || return 1
 
   # Handle deleting the dumpfile if configured so.
