@@ -1,6 +1,6 @@
 <?php
 
-namespace AKlump\LiveDevPorter\Tests;
+namespace AKlump\LiveDevPorter\Tests\Php;
 
 use AKlump\LiveDevPorter\Config\RuntimeConfig;
 use AKlump\LiveDevPorter\Config\RuntimeConfigInterface;
@@ -17,8 +17,8 @@ class ClassMethodCallerTest extends TestCase {
       'FOO',
       'BAR',
       'BAZ',
-      '\AKlump\LiveDevPorter\Tests\Testable::MONTH',
-      '\AKlump\LiveDevPorter\Tests\Testable::YEAR',
+      '\AKlump\LiveDevPorter\Tests\Php\Testable::MONTH',
+      '\AKlump\LiveDevPorter\Tests\Php\Testable::YEAR',
     ];
     define('FOO', 1);
     define('BAR', 2);
