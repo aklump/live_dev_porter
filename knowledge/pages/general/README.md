@@ -16,13 +16,13 @@ Simplifies the management and transfer of assets between website environments.
 
 ## Quick Start
 
-1. Require in your project using `composer require aklump/live-dev-porter`
+1. Require in your project using `composer require {{ composer.require }}`
 2. Ensure execute permissions: `chmod u+x ./vendor/bin/ldp`
 3. Initialize your project using `./vendor/bin/ldp init`
 4. (To migrate from Loft Deploy jump below...)
-5. Open _.live_dev_porter/config.yml_ and modify as needed.
-6. **Ensure _config.local.yml_ is ignored by your SCM!**
-7. Open _.live_dev_porter/config.local.yml_ and define the correct `local` and `remote` environment IDs as defined in _config.yml_.
+5. Open _.live\_dev\_porter/config.yml_ and modify as needed.
+6. **Ensure _.live\_dev\_porter/config.local.yml_ is ignored by your SCM!**
+7. Open _.live\_dev\_porter/config.local.yml_ and define the correct `local` and `remote` environment IDs as defined in _config.yml_.
 8. Run `./vendor/bin/ldp configtest` and work through any failed tests.
 
 ### Migrating from Loft Deploy?
@@ -85,8 +85,8 @@ Refer to the file(s) for documentation about configuration options.
 
 | Filename | Description | VCS |
 |----------|----------|---|
-| _.live_dev_porter/config.yml_ | Configuration shared across all server environments: prod, staging, dev  | yes |
-| _.live_dev_porter/config.local.yml_ | Configuration overrides for a single environment; not version controlled. | no |
+| _.live\_dev\_porter/config.yml_ | Configuration shared across all server environments: prod, staging, dev  | yes |
+| _.live\_dev\_porter/config.local.yml_ | Configuration overrides for a single environment; not version controlled. | no |
 
 ## Usage
 
