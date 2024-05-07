@@ -74,6 +74,7 @@ function default_on_configtest() {
       echo_task "$(string_ucfirst "$environment_id") has \"$tool\" installed."
       command="which $tool"
       if [[ "$is_remote" ]]; then
+        # TODO Compress these into one SSH?
         remote_ssh "$environment_id" "$command" &> /dev/null
       else
         $command &> /dev/null
