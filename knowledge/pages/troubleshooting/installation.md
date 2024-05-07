@@ -1,3 +1,8 @@
+<!--
+id: installation
+tags: ''
+-->
+
 # Troubleshooting Installation
 
 ## Failed due to missing configuration; please add "local"

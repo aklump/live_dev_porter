@@ -7,7 +7,7 @@
       <link rel="stylesheet" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/node_modules/bootstrap/dist/css/bootstrap.css?ver=0.0.153">
       <link rel="stylesheet" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/style.css?ver=0.0.153">
       <link rel="stylesheet" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/node_modules/bootstrap-icons/font/bootstrap-icons.min.css?ver=0.0.153">
-    <title>Databases | Book</title>
+    <title>Troubleshooting Installation | Book</title>
 </head>
 <body class="my-5">
 
@@ -26,13 +26,13 @@
          aria-controls="table-of-contents">TOC</a>
     </li>
     <li class="breadcrumb-item">
-      <a href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/readme.html">General</a></li>
+      <a href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/troubleshooting/installation.html">Troubleshooting</a></li>
   </ol>
 </nav>
 
       </div>
       <div class="header__tags me-3">  </div>
-      <div class="header__page-numbers flex-shrink-1">4
+      <div class="header__page-numbers flex-shrink-1">25
         / 25</div>
     </div>
   </div>
@@ -41,54 +41,9 @@
 <main class="container-md flex-column">
   <div class="row mb-5 pt-5">
     <article class="col">
-      <h1 class="mb-4 text-primary">Databases</h1>
-      <p>If a project uses at least one database, it must be defined in configuration. You must give it an ID. Using that ID, it can be referenced in other parts of the configuration. You may define multiple databases if that applies to your situation.</p>
-<p>You must also define which plugin is used to access your database, along with the plugin-specifiy configuation. Example plugins are: <em>mysql</em>, <em>env</em>, <em>lando</em>, _lando<em>git</em>.</p>
-<p>If you have more than one database defined, the first listed in the configuration will be assumed unless you specify otherwise with <code>--database=ID</code>. In the following configuration example, <code>primary</code> will be assumed the default database.</p>
-<pre><code class="yaml">environments:
-  -
-    id: local
-    databases:
-      primary:
-        plugin: lando
-        service: database
-      secondary:
-        plugin: lando
-        service: alt_database
-</code></pre>
-<h2>Excluding Tables or Data for Different Commands</h2>
-<p>You can omit entire tables using <code>exclude_tables</code>.</p>
-<p>You may want to omit data from certain tables, such as in the case of cache tables. This is the reason for <code>exclude_table_data</code>. List one or more tables (astrix globbing allowed), whose <em>structure only</em> should be copied.</p>
-<p>Create one or more workflows with your table/data exclusion rules. Then use those workflows as command arguments.</p>
-<pre><code class="yaml">workflows:
-  development:
-    -
-      database: drupal
-      exclude_table_data:
-        - cache*
-        - batch
-</code></pre>
-<p>To export only table structure and no data from any table, do like this:</p>
-<pre><code class="yaml">workflows:
-  development:
-    -
-      database: drupal
-      exclude_table_data:
-        - "*"
-</code></pre>
-<p>If you wish to omit entire tables--data AND structure--you will list those tables in <code>exclude_tables</code>.</p>
-<pre><code class="yaml">workflows:
-  development:
-    -
-      database: drupal
-      exclude_tables:
-        - foo
-        - bar
-</code></pre>
-<h2>Explicitly Including Tables</h2>
-<p>The counterpoint keys are also available: <code>include_table_structure</code>, and <code>include_tables_and_data</code>. They cannot, however be used at the same time as their <code>exclude_</code> counterparts.</p>
-<p>To cherry pick only tables and data use <code>include_tables_and_data</code>.
-To cherry pick table structure only use <code>include_table_structure</code>.</p>
+      <h1 class="mb-4 text-primary">Troubleshooting Installation</h1>
+      <h2>Failed due to missing configuration; please add "local"</h2>
+<p>Update to the newest version of Live Dev Porter.</p>
     </article>
   </div>
 </main>
@@ -106,11 +61,11 @@ To cherry pick table structure only use <code>include_table_structure</code>.</p
 <nav class="nav d-flex justify-content-center align-items-center
   fixed-bottom">
   <div class="btn-group flex-fill">
-              <a href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/readme.html" class="btn nav__prev-chapter btn-secondary"><i class="bi
-      bi-caret-left-fill"></i> Live Dev Porter</a>
+              <a href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/troubleshooting/installation.html" class="btn nav__prev-chapter btn-secondary"><i class="bi
+      bi-caret-left-fill"></i> Troubleshooting Installation</a>
   
     
-              <a href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/connection_problems.html" class="btn nav__prev-page js-nav__prev-page
+              <a href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/developers/php.html" class="btn nav__prev-page js-nav__prev-page
     btn-primary"><i class="bi
       bi-caret-left-fill"></i></a>
   
@@ -121,9 +76,8 @@ To cherry pick table structure only use <code>include_table_structure</code>.</p
        aria-controls="table-of-contents"><i class="bi
            bi-list-ol"></i></a>
     
-              <a href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/environment_roles.html" class="btn nav__next-page js-nav__next-page
-    btn-primary"><i class="bi bi-file-earmark"></i> Environment Roles <i class="bi
-       bi-caret-right-fill"></i></a>
+              <span class="btn nav__next-page js-nav__next-page
+    btn-primary"></span>
   
     
               <span class="btn nav__next-chapter btn-secondary "></span>
