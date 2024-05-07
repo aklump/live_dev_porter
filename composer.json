@@ -22,7 +22,7 @@
         "bin/ldp"
     ],
     "require": {
-        "php": "^7.3|^8",
+        "php": "^7.3 || ^8",
         "jasny/dotkey": "^1.0",
         "ckr/arraymerger": "^2.0",
         "nikic/php-parser": "^4.15",
