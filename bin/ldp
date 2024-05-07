@@ -9,7 +9,14 @@
 
 function find_live_dev_porter() {
   test / == "$PWD" && return 1
-  test -e "./vendor/aklump/live-dev-porter/live_dev_porter.sh" && echo "${PWD}/vendor/aklump/live-dev-porter/live_dev_porter.sh" && return 0 || cd .. && find_live_dev_porter
+
+  # Installation using Composer
+  test -e "./vendor/aklump/live-dev-porter/live_dev_porter.sh" && echo "${PWD}/vendor/aklump/live-dev-porter/live_dev_porter.sh" && return 0
+
+  # Installation using git clone.
+  test -e "./live_dev_porter.sh" && echo "${PWD}/live_dev_porter.sh" && return 0
+
+  cd .. && find_live_dev_porter
 }
 
 LIVE_DEV_PORTER=$(find_live_dev_porter)
