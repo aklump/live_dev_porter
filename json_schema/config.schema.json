@@ -44,7 +44,13 @@
           "const": "mysql"
         },
         "protocol": {
-          "type": "number"
+          "type": "string",
+          "description": "https://dev.mysql.com/doc/refman/8.0/en/connection-options.html#option_general_protocol",
+          "enum": [
+            "MEMORY",
+            "PIPE",
+            "SOCKET",
+            "TCP"
         }
       }
     },

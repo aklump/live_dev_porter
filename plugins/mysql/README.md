@@ -4,6 +4,7 @@
 
 * Provide hard-coded database credentials
 * Be careful with the password, notice it gets added to _config.local.yml_!
+* [About protocols](https://dev.mysql.com/doc/refman/8.0/en/connection-options.html#option_general_protocol)
 
 ## Database Configuration
 
@@ -15,7 +16,7 @@ environments:
     databases:
       bar:
         plugin: mysql
-        protocol: tcp
+        protocol: TCP
         host: <HOST>
         port: <PORT>
         database: <NAME>
@@ -51,7 +52,7 @@ environments:
   foo:
     databases:
       bar:
-        protocol: tcp
+        protocol: TCP
         host: <HOST>
         port: <PORT>
         database: <NAME>
