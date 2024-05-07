@@ -26,3 +26,5 @@ page_order:
   - php
   - standalone
   - installation
+  - remote_install_alt
+  - remote_environment
