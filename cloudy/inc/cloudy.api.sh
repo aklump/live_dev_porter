@@ -1199,23 +1199,51 @@ function handle_init() {
     [[ "$init_config_dir" ]] || fail_because "Missing default initialization directory; should be defined in: $(basename $path_to_files_map)."
 
     if ! has_failed; then
-        for file in $(ls $init_source_dir); do
-            [[ "$file" == cloudypm* ]] && continue
-            destination=$(path_relative_to_root "$init_config_dir/$file")
+        for basename in $(ls $init_source_dir); do
+            [[ "$basename" == cloudypm* ]] && continue
+            source_path="$init_source_dir/$basename"
+            destination_path=$(path_relative_to_root "$init_config_dir/$basename")
+            if [[ "$basename" == 'gitignore' ]]; then
+              $destination_path = "$(realpath "$ROOT/../../../opt/.gitignore")"
+            fi
+
             local i=0
             for special_file in "${from_map[@]}"; do
-               if [[ "$special_file" == "$file" ]];then
-                    destination=$(path_relative_to_root ${to_map[$i]})
+               if [[ "$special_file" == "$basename" ]];then
+                 debug "$basename;\$basename"
+                 debug "$destination_path;\$destination_path"
+                    destination_path="$(path_relative_to_root ${to_map[$i]})"
+                 debug "$destination_path;\$destination_path"
                fi
                let i++
             done
-            if [[ "$file" == "gitignore" ]]; then
-                destination=$(realpath "$ROOT/../../../opt/.gitignore")
-                [ -d $(dirname "$destination") ] || mkdir -p $(dirname $destination)
-                touch "$destination" && cat "$init_source_dir/$file" >> "$destination" && sort -u "$destination" -o "$destination" && succeed_because "$destination merged."
-            elif ! [ -e "$destination" ]; then
-                [ -d $(dirname "$destination") ] || mkdir -p $(dirname $destination)
-                cp "$init_source_dir/$file" "$destination" && succeed_because "$(realpath $destination) created." || fail_because "Could not copy $file."
+
+            #
+            # Handle files already existing; do not install.
+            #
+            if [ -e "$destination_path" ]; then
+              fail_because "Path exists: $destination_path"
+              fail_because "Could not install \"$basename\""
+
+            #
+            # Handle cloudy PM gitignore
+            #
+            elif [[ "$basename" == 'gitignore' ]]; then
+                [ -d $(dirname "$destination_path") ] || mkdir -p $(dirname $destination_path)
+                touch "$destination_path" && cat "$source_path" >> "$destination_path" && sort -u "$destination_path" -o "$destination_path" && succeed_because "$destination_path merged."
+
+            #
+            # Handle directories.
+            #
+            elif [ -d "$source_path" ]; then
+                cp -R "$source_path" "$destination_path" && succeed_because "$(realpath $destination_path) installed." || fail_because "Could not copy $basename."
+
+            #
+            # Handle files.
+            #
+            elif [ -f "$source_path" ]; then
+                mkdir -p $(dirname $destination_path)
+                cp "$source_path" "$destination_path" && succeed_because "$(realpath $destination_path) created." || fail_because "Could not copy $basename."
             fi
         done
     fi
