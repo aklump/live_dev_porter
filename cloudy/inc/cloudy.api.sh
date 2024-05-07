@@ -1210,10 +1210,7 @@ function handle_init() {
             local i=0
             for special_file in "${from_map[@]}"; do
                if [[ "$special_file" == "$basename" ]];then
-                 debug "$basename;\$basename"
-                 debug "$destination_path;\$destination_path"
-                    destination_path="$(path_relative_to_root ${to_map[$i]})"
-                 debug "$destination_path;\$destination_path"
+                 destination_path="$(path_relative_to_root ${to_map[$i]})"
                fi
                let i++
             done

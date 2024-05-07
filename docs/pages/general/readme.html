@@ -4,9 +4,9 @@
   <!-- Required meta tags -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-      <link rel="stylesheet" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/node_modules/bootstrap/dist/css/bootstrap.css?ver=0.0.153">
-      <link rel="stylesheet" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/style.css?ver=0.0.153">
-      <link rel="stylesheet" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/node_modules/bootstrap-icons/font/bootstrap-icons.min.css?ver=0.0.153">
+      <link rel="stylesheet" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/node_modules/bootstrap/dist/css/bootstrap.css?ver=0.0.154">
+      <link rel="stylesheet" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/style.css?ver=0.0.154">
+      <link rel="stylesheet" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/node_modules/bootstrap-icons/font/bootstrap-icons.min.css?ver=0.0.154">
     <title>Live Dev Porter | Book</title>
 </head>
 <body class="my-5">
@@ -48,13 +48,13 @@
 <p><strong>Visit <a href="https://aklump.github.io/live_dev_porter">https://aklump.github.io/live_dev_porter</a> for full documentation.</strong></p>
 <h2>Quick Start</h2>
 <ol>
-<li>Require in your project using <code>composer require aklump/live-dev-porter</code></li>
+<li>Require in your project using <code>composer require aklump/live-dev-porter:^0.0</code></li>
 <li>Ensure execute permissions: <code>chmod u+x ./vendor/bin/ldp</code></li>
 <li>Initialize your project using <code>./vendor/bin/ldp init</code></li>
 <li>(To migrate from Loft Deploy jump below...)</li>
-<li>Open _.live_dev<em>porter/config.yml</em> and modify as needed.</li>
-<li><strong>Ensure <em>config.local.yml</em> is ignored by your SCM!</strong></li>
-<li>Open _.live_dev<em>porter/config.local.yml</em> and define the correct <code>local</code> and <code>remote</code> environment IDs as defined in <em>config.yml</em>.</li>
+<li>Open <em>.live_dev_porter/config.yml</em> and modify as needed.</li>
+<li><strong>Ensure <em>.live_dev_porter/config.local.yml</em> is ignored by your SCM!</strong></li>
+<li>Open <em>.live_dev_porter/config.local.yml</em> and define the correct <code>local</code> and <code>remote</code> environment IDs as defined in <em>config.yml</em>.</li>
 <li>Run <code>./vendor/bin/ldp configtest</code> and work through any failed tests.</li>
 </ol>
 <h3>Migrating from Loft Deploy?</h3>
@@ -107,8 +107,8 @@
 <tr><th>Filename</th><th>Description</th><th>VCS</th></tr>
 </thead>
 <tbody>
-<tr><td>_.live_dev<em>porter/config.yml</em></td><td>Configuration shared across all server environments: prod, staging, dev</td><td>yes</td></tr>
-<tr><td>_.live_dev<em>porter/config.local.yml</em></td><td>Configuration overrides for a single environment; not version controlled.</td><td>no</td></tr>
+<tr><td><em>.live_dev_porter/config.yml</em></td><td>Configuration shared across all server environments: prod, staging, dev</td><td>yes</td></tr>
+<tr><td><em>.live_dev_porter/config.local.yml</em></td><td>Configuration overrides for a single environment; not version controlled.</td><td>no</td></tr>
 </tbody>
 </table>
 <h2>Usage</h2>
@@ -124,7 +124,7 @@
   <footer class="footer d-flex justify-content-center">
     <div class="flex-column justify-content-center">
                   Version:
-          <strong>0.0.153</strong>
+          <strong>0.0.154</strong>
           &bull;
                 Last Update: <strong>5/7/2024</strong>
     </div>
@@ -538,9 +538,9 @@
   </div>
 </div>
 
-  <script src="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/node_modules/bootstrap/dist/js/bootstrap.min.js?ver=0.0.153"></script>
-  <script src="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/lunr.js?ver=0.0.153"></script>
-  <script src="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/knowledge.min.js?ver=0.0.153"></script>
+  <script src="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/node_modules/bootstrap/dist/js/bootstrap.min.js?ver=0.0.154"></script>
+  <script src="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/lunr.js?ver=0.0.154"></script>
+  <script src="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/knowledge.min.js?ver=0.0.154"></script>
 
 </body>
 </html>
