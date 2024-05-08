@@ -4,9 +4,9 @@
   <!-- Required meta tags -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-      <link rel="stylesheet" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/node_modules/bootstrap/dist/css/bootstrap.css?ver=0.0.157">
-      <link rel="stylesheet" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/style.css?ver=0.0.157">
-      <link rel="stylesheet" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/node_modules/bootstrap-icons/font/bootstrap-icons.min.css?ver=0.0.157">
+      <link rel="stylesheet" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/node_modules/bootstrap/dist/css/bootstrap.css?ver=0.0.158">
+      <link rel="stylesheet" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/style.css?ver=0.0.158">
+      <link rel="stylesheet" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/node_modules/bootstrap-icons/font/bootstrap-icons.min.css?ver=0.0.158">
     <title>Alternative Remote Installations | Book</title>
 </head>
 <body class="my-5">
@@ -43,6 +43,16 @@
     <article class="col">
       <h1 class="mb-4 text-primary">Alternative Remote Installations</h1>
       <h2>Install with Composer in Isolated Directory</h2>
+<p>In some cases you must install Live Dev Porter as a standalone app on the remote server in order to connect from your development server. These alternative instructions show you how.</p>
+<ol>
+<li><code>composer create-project aklump/live-dev-porter ldp</code></li>
+<li>Open _ldp/live_dev<em>porter.core.yml</em>   </li>
+<li>Change <code>config_path_base: ../../..</code> to <code>config_path_base: .</code></li>
+<li><code>./ldp/live_dev_porter.sh init</code></li>
+<li><code>./ldp/live_dev_porter.sh cc</code> ?</li>
+<li><code>./ldp/live_dev_porter.sh config</code> ... proceed with configuration</li>
+</ol>
+<hr />
 <p>To install Live Dev Porter on a remote server without using source control do the following.</p>
 <ol>
 <li>On the remote server create a folder _live_dev<em>porter</em> as a sibling to your webroot.</li>
@@ -67,7 +77,7 @@
 <li>Open _live_dev<em>porter.core.yml</em> and change <code>config_path_base</code> to:<pre><code class="shell"> config_path_base: .
 </code></pre>
 </li>
-<li><code>cd .. &amp;&amp; ln -s live_dev_porter/live_dev_porter.sh .</code>   </li>
+<li><code>cd .. &amp;&amp; ln -s live_dev_porter/live_dev_porter.sh .</code></li>
 <li><code>cd vendor/bin</code></li>
 <li><code>ln ../../live_dev_porter/bin/ldp ldp</code></li>
 <li><code>ldp cc</code></li>
@@ -80,7 +90,7 @@
   <footer class="footer d-flex justify-content-center">
     <div class="flex-column justify-content-center">
                   Version:
-          <strong>0.0.157</strong>
+          <strong>0.0.158</strong>
           &bull;
                 Last Update: <strong>5/8/2024</strong>
     </div>
@@ -521,9 +531,9 @@
   </div>
 </div>
 
-  <script src="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/node_modules/bootstrap/dist/js/bootstrap.min.js?ver=0.0.157"></script>
-  <script src="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/lunr.js?ver=0.0.157"></script>
-  <script src="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/knowledge.min.js?ver=0.0.157"></script>
+  <script src="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/node_modules/bootstrap/dist/js/bootstrap.min.js?ver=0.0.158"></script>
+  <script src="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/lunr.js?ver=0.0.158"></script>
+  <script src="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/knowledge.min.js?ver=0.0.158"></script>
 
 </body>
 </html>
