@@ -19,6 +19,7 @@ function query() {
   local defaults_file
   local db_name
   local feedback
+  eval $(get_config_as mysql shell_commands.mysql mysql)
 
   [[ "$LOCAL_ENV_ID" ]] || throw "Missing $LOCAL_ENV_ID;$0;in function ${FUNCNAME}();$LINENO"
   [[ "$DATABASE_ID" ]] || throw "Missing $DATABASE_ID;$0;in function ${FUNCNAME}();$LINENO"
@@ -33,7 +34,7 @@ function query() {
 
   query_result="$CACHE_DIR/database_result.sql"
   defaults_file=$(database_get_defaults_file "$LOCAL_ENV_ID" "$DATABASE_ID")
-  ! mysql --defaults-file="$defaults_file" "$db_name" -e "$query" > "$query_result" && echo "Failed query: $query" && return 1
+  ! $mysql --defaults-file="$defaults_file" "$db_name" -e "$query" > "$query_result" && echo "Failed query: $query" && return 1
   # This removes the header row
   tail -n +2 "$query_result" > "$query_result.tmp" && mv "$query_result.tmp" "$query_result"
   echo "$query" && return 0

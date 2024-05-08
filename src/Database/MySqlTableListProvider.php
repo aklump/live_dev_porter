@@ -50,7 +50,8 @@ class MySqlTableListProvider implements TableListProviderInterface {
     }
     $defaults_file = (new DatabaseGetDefaultsFile($this->config))($this->env, $this->db);
     $query = (new EscapeDoubleQuotes())($query);
-    $command = sprintf('mysql --defaults-file="%s" -AN -e "%s"', $defaults_file, $query);
+    $mysql = $this->config->get('shell_commands.mysql') ?? 'mysql';
+    $command = sprintf('%s --defaults-file="%s" -AN -e "%s"', $mysql, $defaults_file, $query);
 
     return explode(self::SEP, $this->exec($command));
   }
