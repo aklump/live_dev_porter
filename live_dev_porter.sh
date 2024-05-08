@@ -13,6 +13,8 @@ COMPOSER_VENDOR=""
 #LOGFILE="live_dev_porter.core.log"
 
 function on_pre_config() {
+  source "$CLOUDY_ROOT/inc/cloudy.read_local_config.sh"
+
   if [[ "$(get_command)" == "init" ]]; then
     handle_init || exit_with_failure "${CLOUDY_FAILED:-Initialization failed.}"
   fi
