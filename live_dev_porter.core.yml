@@ -17,6 +17,9 @@ compress_dumpfiles: true
 # https://aboutnetworks.net/scp-macos13/
 shell_commands:
   scp: 'scp -O'
+  gzip: gzip
+  mysql: mysql
+  mysqldump: mysqldump
 plugins:
   mysql:
     mysqldump_base_options:

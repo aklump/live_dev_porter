@@ -1,4 +1,8 @@
 local: dev
 remote: live
-other:
-  - local
+#other:
+#  - local
+#shell_commands:
+#  mysqldump: /usr/local/bin/mysqldump
+#  mysql: /usr/local/bin/mysql
+#  php: /usr/local/bin/php

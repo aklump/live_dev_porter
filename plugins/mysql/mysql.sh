@@ -80,13 +80,14 @@ function mysql_on_configtest() {
   local message
   local test_command
   local test_command_result
+  eval $(get_config_as mysql shell_commands.mysql mysql)
 
   for database_id in "${LOCAL_DATABASE_IDS[@]}"; do
     defaults_file=$(database_get_defaults_file "$LOCAL_ENV_ID" "$database_id")
     ! db_name=$(database_get_name "$LOCAL_ENV_ID" "$database_id") && echo_fail "$db_name" && fail
     echo_task "Able to connect to $LOCAL_ENV_ID database: $database_id."
-    write_log_debug "mysql --defaults-file=\"REDACTED\" \"$db_name\" -e \";\""
-    if mysql --defaults-file="$defaults_file" "$db_name" -e ";" 2> /dev/null ; then
+    write_log_debug "$mysql --defaults-file=\"REDACTED\" \"$db_name\" -e \";\""
+    if $mysql --defaults-file="$defaults_file" "$db_name" -e ";" 2> /dev/null ; then
       echo_task_completed
     else
       echo_task_failed
@@ -136,10 +137,11 @@ function mysql_on_db_shell() {
 
   local defaults_file
   local db_name
+  eval $(get_config_as mysql shell_commands.mysql mysql)
   ! db_name=$(database_get_name "$LOCAL_ENV_ID" "$database_id") && fail_because "$db_name" && return 1
   defaults_file=$(database_get_defaults_file "$LOCAL_ENV_ID" "$database_id")
-  write_log_debug "mysql --defaults-file=\"REDACTED\" \"$db_name\""
-  mysql --defaults-file="$defaults_file" "$db_name"
+  write_log_debug "$mysql --defaults-file=\"REDACTED\" \"$db_name\""
+  $mysql --defaults-file="$defaults_file" "$db_name"
 }
 
 # Delete the oldest files up to a count.
@@ -191,6 +193,7 @@ function mysql_create_local_rollback_file() {
   local options
   local save_as
 
+  eval $(get_config_as mysqldump shell_commands.mysqldump mysqldump)
   filename="rollback_$(date8601 -c).sql"
   dumpfiles_dir="$(database_get_local_directory "$LOCAL_ENV_ID" "$database_id")"
   sandbox_directory "$dumpfiles_dir"
@@ -207,9 +210,9 @@ function mysql_create_local_rollback_file() {
 
   defaults_file=$(database_get_defaults_file "$LOCAL_ENV_ID" "$database_id")
   ! db_name=$(database_get_name "$LOCAL_ENV_ID" "$database_id") && fail_because "$db_name" && return 1
-  write_log_debug "mysqldump --defaults-file="REDACTED"$options "$db_name""
+  write_log_debug "$mysqldump --defaults-file="REDACTED"$options "$db_name""
   echo_task "Backup local database to: $filename"
-  if ! mysqldump --defaults-file="$defaults_file"$options "$db_name"  > "${dumpfiles_dir%/}/$filename"; then
+  if ! $mysqldump --defaults-file="$defaults_file"$options "$db_name"  > "${dumpfiles_dir%/}/$filename"; then
     echo_task_failed && fail_because "mysqldump failed." && return 1
   fi
   echo_task_completed
@@ -264,6 +267,7 @@ function mysql_on_export_db() {
   local db_name
   local structure_tables
   local data_tables
+  eval $(get_config_as mysqldump shell_commands.mysqldump mysqldump)
 
   # Ensure the ID points to a database.
   db_name=$(call_php_class_method "\AKlump\LiveDevPorter\Database\DatabaseGetName::__invoke($LOCAL_ENV_ID,$database_id)")
@@ -275,8 +279,8 @@ function mysql_on_export_db() {
   write_log_debug "Structure tables: ${structure_tables[*]}"
   if [[ "$structure_tables" ]]; then
     options="$shared_options --add-drop-table --no-data "
-    write_log_debug "mysqldump --defaults-file="REDACTED"$options "$db_name" $structure_tables"
-    ! mysqldump --defaults-file="$defaults_file"$options "$db_name" ${structure_tables[*]} >> "$save_as" && fail_because "mysqldump failed to write table structure." && rm "$save_as" && return 1
+    write_log_debug "$mysqldump --defaults-file="REDACTED"$options "$db_name" $structure_tables"
+    ! $mysqldump --defaults-file="$defaults_file"$options "$db_name" ${structure_tables[*]} >> "$save_as" && fail_because "mysqldump failed to write table structure." && rm "$save_as" && return 1
     succeed_because "Structure for ${#structure_tables[@]} table(s) exported."
   fi
   # This will write the data to the export file.
@@ -285,8 +289,8 @@ function mysql_on_export_db() {
   write_log_debug "Data tables: ${structure_tables[*]}"
   if [[ "$data_tables" ]]; then
     options="$shared_options --skip-add-drop-table --no-create-info"
-    write_log_debug "mysqldump --defaults-file="REDACTED"$options "$db_name" $data_tables"
-    ! mysqldump --defaults-file="$defaults_file"$options "$db_name" ${data_tables[*]} >> "$save_as" && fail_because "mysqldump failed to write table data." && rm "$save_as" && return 1
+    write_log_debug "$mysqldump --defaults-file="REDACTED"$options "$db_name" $data_tables"
+    ! $mysqldump --defaults-file="$defaults_file"$options "$db_name" ${data_tables[*]} >> "$save_as" && fail_because "mysqldump failed to write table data." && rm "$save_as" && return 1
     succeed_because "Data for ${#data_tables[@]} table(s) exported."
   else
     succeed_because "No table data has been exported."
@@ -321,6 +325,7 @@ function mysql_on_import_db() {
   local database_id="$1"
   local filepath="$2"
 
+  eval $(get_config_as mysql shell_commands.mysql mysql)
   write_log_debug "mysql_on_import_db() called."
   local db_name
   local defaults_file
@@ -341,8 +346,8 @@ function mysql_on_import_db() {
   fi
 
   echo_task "Import data from $(basename "$filepath")"
-  write_log_debug "mysql --defaults-file="REDACTED" $db_name < $filepath"
-  ! mysql --defaults-file="$defaults_file" $db_name < $filepath && echo_task_failed && return 1
+  write_log_debug "$mysql --defaults-file="REDACTED" $db_name < $filepath"
+  ! $mysql --defaults-file="$defaults_file" $db_name < $filepath && echo_task_failed && return 1
   echo_task_completed
 
   return 0;
@@ -360,10 +365,11 @@ function mysql_drop_all_tables() {
   local db_name
   local tables
   local sql
+  eval $(get_config_as mysql shell_commands.mysql mysql)
 
   echo_task "Drop all tables."
   ! db_name=$(database_get_name "$LOCAL_ENV_ID" "$database_id") && fail_because "$db_name" && return 1
-  tables=$(mysql --defaults-file="$defaults_file" $db_name -e 'SHOW TABLES' | awk '{ print $1}' | grep -v '^Tables')
+  tables=$($mysql --defaults-file="$defaults_file" $db_name -e 'SHOW TABLES' | awk '{ print $1}' | grep -v '^Tables')
   [[ ! "${tables[0]}" ]] && echo_task_completed && return 0
 
   sql="DROP TABLE "
@@ -372,8 +378,8 @@ function mysql_drop_all_tables() {
   done
   sql="${sql%,}"
 
-  write_log_debug "mysql --defaults-file="REDACTED" $db_name -e "$sql""
-  if ! mysql --defaults-file="$defaults_file" $db_name -e "$sql"; then
+  write_log_debug "$mysql --defaults-file="REDACTED" $db_name -e "$sql""
+  if ! $mysql --defaults-file="$defaults_file" $db_name -e "$sql"; then
     write_log_error "SQL failed: $sql"
     echo_task_failed
     return 1

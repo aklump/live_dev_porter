@@ -74,13 +74,14 @@ function default_on_configtest() {
       echo_task "$(string_ucfirst "$environment_id") has \"$tool\" installed."
       command="which $tool"
       if [[ "$is_remote" ]]; then
-        # TODO Compress these into one SSH?
         remote_ssh "$environment_id" "$command" &> /dev/null
       else
         $command &> /dev/null
       fi
       if [[ $? -gt 0 ]]; then
-        echo_task_failed && fail_because "Is the directory containing $tool found in your \$PATH variable on $environment_id?"
+        echo_task_failed
+        fail_because "Is the directory containing $tool found in your \$PATH variable on $environment_id?"
+        fail_because "You may be able to correct by setting shell_commands.$tool in config.local.yml on $environment_id?"
       else
         echo_task_completed
       fi
