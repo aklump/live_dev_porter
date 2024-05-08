@@ -14,11 +14,6 @@ COMPOSER_VENDOR=""
 
 function on_pre_config() {
   source "$CLOUDY_ROOT/inc/cloudy.read_local_config.sh"
-
-  if [[ "$(get_command)" == "init" ]]; then
-    handle_init || exit_with_failure "${CLOUDY_FAILED:-Initialization failed.}"
-  fi
-
   SOURCE_DIR="$ROOT/scripts"
   TEMP_DIR=$(tempdir $CLOUDY_NAME)
   PLUGINS_DIR="$ROOT/plugins"
@@ -68,6 +63,9 @@ function on_boot() {
   CONFIG_DIR="$APP_ROOT/.live_dev_porter"
   CACHE_DIR="$CONFIG_DIR/.cache"
   [[ -d "$CACHE_DIR" ]] || mkdir -p "$CACHE_DIR"
+  if [[ "$(get_command)" == "init" ]]; then
+    handle_init || exit_with_failure "${CLOUDY_FAILED:-Initialization failed.}"
+  fi
 
   # Do not write code below this line.
   [[ "$(get_command)" == "tests" ]] || return 0

@@ -1,2 +1,2 @@
-* ../../../.live_dev_porter/*
-config.gitignore ../../../.live_dev_porter/.gitignore
+* {APP_ROOT}/.live_dev_porter/*
+config.gitignore {APP_ROOT}/.live_dev_porter/.gitignore

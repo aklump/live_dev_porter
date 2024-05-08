@@ -63,6 +63,8 @@ if [[ ! "$COMPOSER_VENDOR" ]]; then
   [[ ! -d "$COMPOSER_VENDOR" ]] && COMPOSER_VENDOR="$r/cloudy/vendor/"
   # Otherwise a Cloudy app will have it here:
   [[ ! -d "$COMPOSER_VENDOR" ]] && COMPOSER_VENDOR="$r/framework/cloudy/vendor/"
+  # If it's installed as a Composer create-project it will be here:
+  [[ ! -d "$COMPOSER_VENDOR" ]] && COMPOSER_VENDOR="$r/vendor/"
 fi
 event_dispatch "pre_config" || exit_with_failure "Non-zero returned by on_pre_config()."
 

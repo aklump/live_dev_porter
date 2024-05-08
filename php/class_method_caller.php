@@ -53,7 +53,7 @@ function get_cloudy_config(): RuntimeConfigInterface {
   $config['TEMP_DIR'] = $getenv('TEMP_DIR');
   $cloudy_config = json_decode($getenv('CLOUDY_CONFIG_JSON'), TRUE) ?? [];
   if (!$cloudy_config) {
-    throw new \RuntimeException(sprintf('Missing value for CLOUDY_CONFIG_JSON.'));
+    throw new \RuntimeException(sprintf('Missing or empty environment variable CLOUDY_CONFIG_JSON; try calling clear-cache.'));
   }
   $config = array_merge($config, $cloudy_config);
 

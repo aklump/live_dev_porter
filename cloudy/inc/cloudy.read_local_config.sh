@@ -73,13 +73,13 @@ if [[ ! "$CLOUDY_PHP" ]]; then
   # Search for an additional_config with the ".local.yml" suffix; this is where
   # the php override must be located for this to work.
   relative_path=$(_read_local_config_get_relative_path "$CONFIG")
-  [[ ! "$relative_path" ]] && exit 0
+  [[ ! "$relative_path" ]] && return 0
 
   absolute_path=$(cd "$ROOT" && _read_local_config_find_config "$relative_path")
-  [[ ! "$absolute_path" ]] && exit 0
+  [[ ! "$absolute_path" ]] && return 0
 
   CLOUDY_PHP=$(_read_local_config_read_shell_commands_php "$absolute_path")
-  [[ ! "$CLOUDY_PHP" ]] && exit 0
+  [[ ! "$CLOUDY_PHP" ]] && return 0
 
   write_log_info "\$CLOUDY_PHP set to: $CLOUDY_PHP"
   write_log_info "\$CLOUDY_PHP set by: $absolute_path"
