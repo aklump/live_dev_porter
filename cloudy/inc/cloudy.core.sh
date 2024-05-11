@@ -136,7 +136,8 @@ source "$CACHED_CONFIG_FILEPATH" || exit_with_failure "Cannot load cached config
 #
 
 eval $(get_config config_path_base)
-APP_ROOT="$(realpath $ROOT/$config_path_base)"
+APP_ROOT="$(dirname "$SCRIPT")/$config_path_base"
+APP_ROOT="$(cd "$APP_ROOT"; pwd -P)"
 
 eval $(get_config -a additional_bootstrap)
 if [[ "$additional_bootstrap" != null ]]; then
