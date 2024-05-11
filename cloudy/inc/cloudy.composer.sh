@@ -14,25 +14,24 @@ if [[ "$COMPOSER_VENDOR" ]]; then
   return 0
 fi
 
-
+function 00__is_installed_with_cloudy_core() {
+  [ -f "$r/composer.json" ] && [ -f "$r/cloudy/cloudy.sh" ] && return 0
+  return 1
+}
 function is_composer_installed() {
   [ -f "$r/../../../composer.json" ] && return 0
   return 1
 }
-function is_cloudy_pm_installed() {
-  [ -f "$r/../../cloudy/cloudy/composer.json" ] && return 0
+function 01__is_installed_with_cloudy_pm_install() {
+  [ -f "$r/../../cloudy/cloudy/composer.json" ] && [ -f "$r/../../../cloudypm.lock" ] && return 0
   return 1
 }
-function is_cloudy_app_installed() {
-  [ -f "$r/framework/cloudy/composer.json" ] && return 0
+function 04__is_cloudy_framework() {
+  [ -f "$r/framework/cloudy/composer.json" ] && [ -f "$r/cloudy_tools.sh" ] && return 0
   return 1
 }
-function is_standalone_installed() {
+function is_cloudy_core_only() {
   [ -f "$r/cloudy/composer.json" ] && return 0
-  return 1
-}
-function is_composer_create_project_installed() {
-  [ -f "$r/composer.json" ] && [ -d "$r/cloudy" ] && return 0
   return 1
 }
 
@@ -40,8 +39,9 @@ function is_composer_create_project_installed() {
 # vendor directory, then we will try to find it based on likely scenarios.
 # If it's installed as a Composer dependency it will be here:
 
-is_cloudy_pm_installed && COMPOSER_VENDOR="$r/../../cloudy/cloudy/vendor" && return 0
-is_cloudy_app_installed && COMPOSER_VENDOR="$r/framework/cloudy/vendor" && return 0
-is_standalone_installed && COMPOSER_VENDOR="$r/cloudy/vendor" && return 0
+# THE ORDER HERE IS VERY, VERY_IMPORTANT.  The first match will be used.
+00__is_installed_with_cloudy_core && COMPOSER_VENDOR="$r/vendor" && return 0
+01__is_installed_with_cloudy_pm_install && COMPOSER_VENDOR="$r/../../cloudy/cloudy/vendor" && return 0
 is_composer_installed && COMPOSER_VENDOR="$r/../../../vendor/" && return 0
-is_composer_create_project_installed && COMPOSER_VENDOR="$r/vendor" && return 0
+is_cloudy_core_only && COMPOSER_VENDOR="$r/cloudy/vendor" && return 0
+04__is_cloudy_framework && COMPOSER_VENDOR="$r/framework/cloudy/vendor" && return 0
