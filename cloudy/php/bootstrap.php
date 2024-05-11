@@ -7,192 +7,16 @@
 
 use Ckr\Util\ArrayMerger;
 use Symfony\Component\Yaml\Yaml;
-use Jasny\DotKey;
 
 /**
  * Root directory of the Cloudy instance script.
  */
 define('ROOT', getenv('ROOT'));
 
+require_once __DIR__ . '/error_handler.php';
+
 /** @var \Composer\Autoload\ClassLoader $class_loader */
 $class_loader = require_once getenv('COMPOSER_VENDOR') . '/autoload.php';
-
-/**
- * Sort an array by the length of it's values.
- *
- * @param string ...
- *   Any number of items to be taken as an array.
- *
- * @return array
- *   The sorted array
- */
-function array_sort_by_item_length() {
-  $stack = func_get_args();
-  uasort($stack, function ($a, $b) {
-    return strlen($a) - strlen($b);
-  });
-
-  return array_values($stack);
-}
-
-/**
- * Convert a YAML string to a JSON string.
- *
- * @return string
- *   The valid YAML string.
- *
- * @throws \RuntimeException
- *   If the YAML cannot be parsed.
- */
-function yaml_to_json($yaml) {
-  if (empty($yaml)) {
-    return '{}';
-  }
-  elseif (!($data = Yaml::parse($yaml))) {
-    throw new \RuntimeException("Unable to parse invalid YAML string.");
-  }
-
-  return json_encode($data);
-}
-
-/**
- * Get a value from a JSON string.
- *
- * @param string $path
- *   The dot path of the data to get.
- * @param string $json
- *   A valid JSON string.
- *
- * @return mixed
- *   The value at $path.
- */
-function json_get_value($path, $json) {
-  $subject = json_decode($json);
-  if (json_last_error() !== JSON_ERROR_NONE) {
-    throw new \RuntimeException('Invalid JSON string: ' . json_last_error_msg());
-  }
-
-  return DotKey::on($subject)->get($path);
-}
-
-/**
- * Loads a JSON file to be used with json_get.
- *
- * Always use this function instead of $(cat foo.json) as json validation and
- * escaping is handled for you.
- *
- * @param string $path
- *
- * @return string
- *   The compressed JSON if file is valid, with single quotes escaped.
- * @throws \InvalidArgumentException If the file does not exist or the file is invalid.
- */
-function json_load_file(string $path): string {
-  if (!file_exists($path)) {
-    throw new \RuntimeException("Missing JSON file: " . $path);
-  }
-  $contents = file_get_contents($path);
-
-  return json_bash_filter($contents);
-}
-
-/**
- * @param string $json
- *   A JSON string to be used by cloudy.
- *
- * @return string
- *   The compressed and escaped as appropriate JSON string.
- */
-function json_bash_filter(string $json): string {
-  $data = json_decode($json);
-  if (json_last_error() !== JSON_ERROR_NONE) {
-    throw new \RuntimeException('Invalid JSON string: ' . json_last_error_msg());
-  }
-
-  return json_encode($data, JSON_UNESCAPED_SLASHES);
-}
-
-/**
- * Load a configuration file into memory.
- *
- * @param $filepath
- *   The absolute filepath to a configuration file.
- *
- * @return array|mixed
- */
-function load_configuration_data($filepath, $exception_if_not_exists = TRUE) {
-  $data = [];
-  if (!file_exists($filepath)) {
-    if ($exception_if_not_exists) {
-      throw new \RuntimeException("Missing configuration file: " . $filepath);
-    }
-
-    return $data;
-  }
-  if (!($contents = file_get_contents($filepath))) {
-    // TODO Need a php method to write a log file, and then log this.
-    //    throw new \RuntimeException("Empty configuration file: " . realpath($filepath));
-  }
-  if ($contents) {
-    switch (($extension = pathinfo($filepath, PATHINFO_EXTENSION))) {
-      case 'yml':
-      case 'yaml':
-        try {
-          if ($yaml = Yaml::parse($contents)) {
-            $data += $yaml;
-          }
-        }
-        catch (\Exception $exception) {
-          $class = get_class($exception);
-          $message = sprintf("Syntax error in configuration file: %s: %s", $filepath, $exception->getMessage());
-          throw new $class($message, $exception->getCode());
-        }
-        break;
-
-      case 'json':
-        if ($json = json_decode($contents, TRUE)) {
-          $data += $json;
-        }
-        break;
-
-      default:
-        throw new \RuntimeException("Configuration files of type \"$extension\" are not supported.");
-
-    }
-  }
-
-  return $data;
-}
-
-/**
- * Merge an array of configuration arrays.
- *
- * @param... two or more arrays to merge.
- *
- * @return array|mixed
- *   The merged array.
- */
-function merge_config() {
-  $stack = func_get_args();
-  $merged = [];
-  while (($array = array_shift($stack))) {
-    $merged = ArrayMerger::doMerge($merged, $array);
-  }
-
-  return $merged;
-}
-
-/**
- * Create a hash of a string of filenames separated by \n.
- *
- * @return string
- *   The has of filenames.
- */
-function get_config_cache_id() {
-  $paths = func_get_arg(0);
-
-  return md5(str_replace("\n", ':', $paths));
-}
 
 /**
  * Expand a path based on $config_path_base.
@@ -230,3 +54,138 @@ function _cloudy_realpath($path) {
 
   return $paths;
 }
+
+/**
+ * Create a log entry if logging is enabled.
+ *
+ * @param string $level
+ *   The log level
+ * @param... string $message
+ *   Any number of string parameters, each will be a single log line entry.
+ *
+ * @return void
+ */
+function _cloudy_write_log($level) {
+  $logfile = getenv('LOGFILE');
+  if (empty($logfile)) {
+    return;
+  }
+  $args = func_get_args();
+  $level = array_shift($args);
+  $directory = dirname($logfile);
+  if (!is_dir($directory)) {
+    mkdir($directory, 0755, TRUE);
+  }
+
+  $date = date('D M d H:i:s T Y');
+  $lines = array_map(function ($message) use ($level, $date) {
+    return "[$date] [$level] $message";
+  }, $args);
+  $stream = fopen($logfile, 'a');
+  fwrite($stream, implode(PHP_EOL, $lines) . PHP_EOL);
+  fclose($stream);
+}
+
+/**
+ * Merge an array of configuration arrays.
+ *
+ * @param... two or more arrays to merge.
+ *
+ * @return array|mixed
+ *   The merged array.
+ */
+function _merge_config() {
+  $stack = func_get_args();
+  $merged = [];
+  while (($array = array_shift($stack))) {
+    $merged = ArrayMerger::doMerge($merged, $array);
+  }
+
+  return $merged;
+}
+
+/**
+ * Load a configuration file into memory.
+ *
+ * @param $filepath
+ *   The absolute filepath to a configuration file.
+ *
+ * @return array|mixed
+ */
+function _load_configuration_data($filepath, $exception_if_not_exists = TRUE) {
+  $data = [];
+  if (!file_exists($filepath)) {
+    if ($exception_if_not_exists) {
+      throw new \RuntimeException("Missing configuration file: " . $filepath);
+    }
+
+    return $data;
+  }
+  if (!($contents = file_get_contents($filepath))) {
+    // TODO Need a php method to write a log file, and then log this.
+    //    throw new \RuntimeException("Empty configuration file: " . realpath($filepath));
+  }
+  if ($contents) {
+    switch (($extension = pathinfo($filepath, PATHINFO_EXTENSION))) {
+      case 'yml':
+      case 'yaml':
+        try {
+          if ($yaml = Yaml::parse($contents)) {
+            $data += $yaml;
+          }
+        }
+        catch (\Exception $exception) {
+          write_log_exception($exception);
+          $message = sprintf("Syntax error in configuration file: %s: %s", $filepath, $exception->getMessage());
+          write_log_error($message);
+          $class = get_class($exception);
+          throw new $class($message, $exception->getCode());
+        }
+        break;
+
+      case 'json':
+        if ($json = json_decode($contents, TRUE)) {
+          $data += $json;
+        }
+        break;
+
+      default:
+        throw new \RuntimeException("Configuration files of type \"$extension\" are not supported.");
+
+    }
+  }
+
+  return $data;
+}
+
+/**
+ * Create a hash of a string of filenames separated by \n.
+ *
+ * @return string
+ *   The has of filenames.
+ */
+function get_config_cache_id() {
+  $paths = func_get_arg(0);
+
+  return md5(str_replace("\n", ':', $paths));
+}
+
+/**
+ * Sort an array by the length of it's values.
+ *
+ * @param string ...
+ *   Any number of items to be taken as an array.
+ *
+ * @return array
+ *   The sorted array
+ */
+function array_sort_by_item_length() {
+  $stack = func_get_args();
+  uasort($stack, function ($a, $b) {
+    return strlen($a) - strlen($b);
+  });
+
+  return array_values($stack);
+}
+
+require_once __DIR__ . '/cloudy.api.php';

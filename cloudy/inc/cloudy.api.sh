@@ -1562,6 +1562,12 @@ function exit_with_failure_if_empty_config() {
 function exit_with_failure() {
     parse_args "$@"
 
+    local exit_message
+    exit_message="$(_cloudy_message "${parse_args__args[@]}" "$CLOUDY_FAILED")"
+    if [[ "$exit_message" != "$CLOUDY_FAILED" ]]; then
+      write_log_emergency "$exit_message";
+    fi
+
     [[ $CLOUDY_EXIT_STATUS -lt 2 ]] && CLOUDY_EXIT_STATUS=1
     CLOUDY_EXIT_STATUS=${parse_args__options__status:-$CLOUDY_EXIT_STATUS}
 
@@ -1569,7 +1575,7 @@ function exit_with_failure() {
     # if the event handler wants to output JSON or some other encoding.
     event_dispatch "exit_with_failure"
 
-    echo && echo_error "🔥  $(_cloudy_message "${parse_args__args[@]}" "$CLOUDY_FAILED")"
+    echo && echo_error "🔥 $exit_message"
 
     ## Write out the failure messages if any.
     if [ ${#CLOUDY_FAILURES[@]} -gt 0 ]; then
@@ -2026,9 +2032,8 @@ function echo_see_log() {
  # You may include 1 or two arguments; when 2, the first is a log label
  #
 function write_log() {
-    local arbitrary_log_label=$1
-
     local args=("$@")
+
     if [ $# -eq 1 ]; then
         args=("log" "${args[@]}")
     fi

@@ -40,9 +40,11 @@ try {
   }
 }
 catch (Exception $exception) {
+  write_log_exception($exception);
   echo $exception->getMessage();
 }
 catch (Throwable $throwable) {
+  write_log_exception($throwable, 'emergency');
   echo $throwable->getMessage();
 }
 exit(1);

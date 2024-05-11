@@ -49,26 +49,21 @@ fi
 #
 # PHP Bootstrapping.
 #
-if [[ "$COMPOSER_VENDOR" ]]; then
-  # This will be used when this directory is defined at the top of the entry
-  # script as relative to that script.
-  COMPOSER_VENDOR="$(cd $(dirname "$r/$COMPOSER_VENDOR") && pwd)/$(basename $COMPOSER_VENDOR)"
-fi
-# If the application script did not explicitly define the path to the composer
-# vendor directory, then we will try to find it based on likely scenarios.
-if [[ ! "$COMPOSER_VENDOR" ]]; then
-  # If it's installed as a Composer dependency it will be here:
-  COMPOSER_VENDOR="$r/../../../vendor/"
-  # A stand-alone cloudy script will have it here, e.g. "cloudy new foo.sh".
-  [[ ! -d "$COMPOSER_VENDOR" ]] && COMPOSER_VENDOR="$r/cloudy/vendor/"
-  # Otherwise a Cloudy app will have it here:
-  [[ ! -d "$COMPOSER_VENDOR" ]] && COMPOSER_VENDOR="$r/framework/cloudy/vendor/"
-  # If it's installed as a Composer create-project it will be here:
-  [[ ! -d "$COMPOSER_VENDOR" ]] && COMPOSER_VENDOR="$r/vendor/"
-fi
+source "$CLOUDY_ROOT/inc/cloudy.composer.sh" || exit_with_failure "Cannot find Composer dependencies."
+
 event_dispatch "pre_config" || exit_with_failure "Non-zero returned by on_pre_config()."
 
-[[ -f "$COMPOSER_VENDOR/autoload.php" ]] || exit_with_failure "Composer autoloader not found in $COMPOSER_VENDOR"
+if [[ ! -f "$COMPOSER_VENDOR/autoload.php" ]]; then
+  # Attempt to install composer.
+  composer_json=$(dirname $COMPOSER_VENDOR)/composer.json
+  composer_lock=$(dirname $COMPOSER_VENDOR)/composer.lock
+  if [[ -f "$composer_json" && ! -f "$composer_lock" ]]; then
+    fail_because "You may need to install Composer dependencies."
+    fail_because "e.g., (cd "$(dirname "$composer_json")" && composer install)"
+  fi
+  exit_with_failure "Composer autoloader not found in $COMPOSER_VENDOR"
+fi
+
 export COMPOSER_VENDOR="$(cd $COMPOSER_VENDOR && pwd)"
 
 _cloudy_bootstrap_php || exit_with_failure "Invalid PHP"
@@ -80,20 +75,24 @@ config_cache_id=$("$CLOUDY_PHP" $CLOUDY_ROOT/php/helpers.php get_config_cache_id
 CLOUDY_CONFIG_HAS_CHANGED=false
 _cloudy_auto_purge_config
 
-# Generate the cached configuration file.
+# Normalize user configuration to JSON
 if [[ ! -f "$CACHED_CONFIG_JSON_FILEPATH" ]]; then
+  write_log_debug "$(basename $CACHED_CONFIG_JSON_FILEPATH) will be (re)built."
   CLOUDY_CONFIG_HAS_CHANGED=true
   # Normalize the config file to JSON.
   CLOUDY_CONFIG_JSON="$("$CLOUDY_PHP" "$CLOUDY_ROOT/php/config_to_json.php" "$CLOUDY_ROOT/cloudy_config.schema.json" "$CONFIG" "$cloudy_development_skip_config_validation" "$compile_config__runtime_files")"
   json_result=$?
-  [[ "$CLOUDY_CONFIG_JSON" ]] || exit_with_failure "\$CLOUDY_CONFIG_JSON cannot be empty in $(basename $BASH_SOURCE) $LINENO"
+  if [[ ! "$CLOUDY_CONFIG_JSON" ]]; then
+    fail_because "config_to_json.php returned empty JSON; exit code $json_result".
+    exit_with_failure "\$CLOUDY_CONFIG_JSON cannot be empty in $(basename $BASH_SOURCE) $LINENO"
+  fi
   [[ $json_result -ne 0 ]] && exit_with_failure "$CLOUDY_CONFIG_JSON"
   echo "$CLOUDY_CONFIG_JSON" >"$CACHED_CONFIG_JSON_FILEPATH"
 else
   CLOUDY_CONFIG_JSON="$(cat "$CACHED_CONFIG_JSON_FILEPATH")"
 fi
 
-# Generate the cached configuration file.
+# Generate the cached configuration file from JSON config.
 if [[ ! -f "$CACHED_CONFIG_FILEPATH" ]]; then
   CLOUDY_CONFIG_HAS_CHANGED=true
   touch "$CACHED_CONFIG_FILEPATH" || exit_with_failure "Unable to write cache file: $CACHED_CONFIG_FILEPATH"
@@ -104,6 +103,7 @@ if [[ ! -f "$CACHED_CONFIG_FILEPATH" ]]; then
   "$CLOUDY_PHP" "$CLOUDY_ROOT/php/json_to_bash.php" "$ROOT" "cloudy_config" "$CLOUDY_CONFIG_JSON" >"$CACHED_CONFIG_FILEPATH"
   json_to_bash_result=$?
   if [[ $json_to_bash_result -ne 0 ]]; then
+    fail_because "json_to_bash.php exited with code $json_result".
     fail_because "$(cat "$CACHED_CONFIG_FILEPATH"|tr -d '\n')"
     rm "$CACHED_CONFIG_FILEPATH"
     exit_with_failure "Cannot cache config to: $CACHED_CONFIG_FILEPATH."

@@ -38,7 +38,7 @@ try {
       'LOGFILE' => getenv('LOGFILE'),
     ],
   ];
-  $config = merge_config($config, load_configuration_data($path_to_master_config));
+  $config = _merge_config($config, _load_configuration_data($path_to_master_config));
 
   // This is a global so don't erase it. @see _cloudy_realpath().
   $_config_path_base = isset($config['config_path_base']) ? $config['config_path_base'] : '';
@@ -47,9 +47,9 @@ try {
   foreach ($extra_config_paths as $path_or_glob) {
     $paths = _cloudy_realpath($path_or_glob);
     foreach ($paths as $path) {
-      $new_data = load_configuration_data($path, FALSE);
+      $new_data = _load_configuration_data($path, FALSE);
       if ($new_data) {
-        $config = merge_config($config, $new_data);
+        $config = _merge_config($config, $new_data);
       }
     }
   }
@@ -70,7 +70,8 @@ try {
     throw new $class("Configuration syntax error in \"" . basename($path_to_master_config) . '": ' . $exception->getMessage());
   }
 
-  if (!empty(error_get_last())) {
+  $last_error = error_get_last();
+  if (!empty($last_error)) {
     // If there are any errors then we have to exit with 1 so that the JSON will
     // not be printed to the cache file; otherwise the cache breaks the cloudy
     // will not be able to load next run due to error messages in the cached.sh
@@ -78,9 +79,11 @@ try {
     exit(1);
   }
   echo json_encode($config, JSON_UNESCAPED_SLASHES);
-  exit(0);
 }
 catch (Exception $exception) {
+  write_log_exception($exception);
   echo $exception->getMessage();
+  exit(1);
 }
-exit(1);
+
+exit(0);
