@@ -27,6 +27,10 @@ plugins:
       - skip-lock-tables
       - no-tablespaces
 commands:
+  version:
+    require_remote_env: false
+    help: Display the installed version of Live Dev Porter
+
   remote:
     require_remote_env: true
     help: 'Enter the remote server shell.'

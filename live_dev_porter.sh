@@ -93,6 +93,13 @@ validate_input || exit_with_failure "Input validation failed."
 
 COMMAND=$(get_command)
 case $COMMAND in
+    "version")
+      eval $(get_config_as title 'title')
+      eval $(get_config_as version 'version')
+      echo "$title version $version"
+      exit_with_success
+      ;;
+
     "config-migrate")
       echo_title "Migrate from Loft Deploy"
       path_to_loft_deploy=$(get_command_arg 0 "$APP_ROOT/.loft_deploy")
