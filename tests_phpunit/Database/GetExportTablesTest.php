@@ -10,6 +10,8 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * @covers \AKlump\LiveDevPorter\Database\GetExportTables
+ * @uses \AKlump\LiveDevPorter\Config\RuntimeConfig
+ * @uses \AKlump\LiveDevPorter\Database\GetTableQuery
  */
 class GetExportTablesTest extends TestCase {
 

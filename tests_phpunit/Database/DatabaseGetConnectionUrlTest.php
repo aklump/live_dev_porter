@@ -9,6 +9,8 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * @covers \AKlump\LiveDevPorter\Database\DatabaseGetConnectionUrl
+ * @uses \AKlump\LiveDevPorter\Config\RuntimeConfig
+ * @uses \AKlump\LiveDevPorter\Database\DatabaseGetDefaultsFile
  */
 class DatabaseGetConnectionUrlTest extends TestCase {
 

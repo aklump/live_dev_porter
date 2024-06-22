@@ -9,6 +9,7 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * @covers \AKlump\LiveDevPorter\Php\ClassMethodCaller
+ * @uses \AKlump\LiveDevPorter\Config\RuntimeConfig
  */
 class ClassMethodCallerTest extends TestCase {
 

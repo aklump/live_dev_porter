@@ -5,7 +5,7 @@ namespace AKlump\LiveDevPorter\Tests\Helpers;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @covers \AKlump\LiveDevPorter\Helpers\EscapeQuery
+ * @covers \AKlump\LiveDevPorter\Helpers\EscapeDoubleQuotes
  */
 class EscapeDoubleQuotesTest extends TestCase {
 

@@ -7,6 +7,7 @@ use PHPUnit\Framework\TestCase;
 /**
  * @group default
  * @covers \AKlump\LiveDevPorter\Config\RsyncHelper
+ * @uses \AKlump\LiveDevPorter\Statistics
  */
 final class StatisticsTest extends TestCase {
 
