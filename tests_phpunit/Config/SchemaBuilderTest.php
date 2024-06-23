@@ -4,6 +4,7 @@ namespace AKlump\LiveDevPorter\Tests\Config;
 
 use AKlump\LiveDevPorter\Config\RuntimeConfigInterface;
 use AKlump\LiveDevPorter\Config\SchemaBuilder;
+use AKlump\LiveDevPorter\Tests\TestingTraits\TestWithFilesTrait;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -11,12 +12,12 @@ use PHPUnit\Framework\TestCase;
  */
 class SchemaBuilderTest extends TestCase {
 
-  use \AKlump\LiveDevPorter\Tests\TestHelpers\TestingFilesTrait;
+  use TestWithFilesTrait;
 
   public function testMissingEmptyPluginDirThrows() {
     $cloudy_config = $this->createMock(RuntimeConfigInterface::class);
     $builder = new SchemaBuilder([
-      'CACHE_DIR' => $this->getCacheDir(),
+      'CACHE_DIR' => $this->getTestFileFilepath('.cache/', true),
       'PLUGINS_DIR' => '',
     ], $cloudy_config);
     $this->expectException(\RuntimeException::class);
@@ -27,7 +28,7 @@ class SchemaBuilderTest extends TestCase {
   public function testMissingPluginsDirThrows() {
     $cloudy_config = $this->createMock(RuntimeConfigInterface::class);
     $builder = new SchemaBuilder([
-      'CACHE_DIR' => $this->getCacheDir(),
+      'CACHE_DIR' => $this->getTestFileFilepath('.cache/', true),
     ], $cloudy_config);
     $this->expectException(\RuntimeException::class);
     $this->expectExceptionMessageMatches('/PLUGINS_DIR/');

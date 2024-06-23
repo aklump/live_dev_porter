@@ -1,0 +1,10 @@
+shell_commands:
+  php: /usr/local/bin/php
+  mysqldump: /usr/local/bin/mysqldump
+  mysql: /usr/local/bin/mysql
+local: live
+environments:
+  live:
+    databases:
+      drupal:
+        password: OWqQtt741kDd6x8c4zZgK0k
