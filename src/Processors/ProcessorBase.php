@@ -138,6 +138,10 @@ abstract class ProcessorBase {
     return ['filepath' => $this->config['FILEPATH']] + pathinfo($this->config['FILEPATH']);
   }
 
+  public function getBasename(): string {
+    return basename($this->config['FILEPATH']);
+  }
+
   /**
    * Load the contents of a file.
    *
