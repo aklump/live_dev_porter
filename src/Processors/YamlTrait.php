@@ -39,7 +39,7 @@ trait YamlTrait {
     }
 
     $serialize = function ($data): string {
-      return is_null($data) ? '' : Yaml::dump($data, 2, 6);
+      return is_null($data) ? '' : Yaml::dump($data, 6, 2);
     };
 
     $unchanged = $serialize(Yaml::parse($this->loadedFile['contents']));
