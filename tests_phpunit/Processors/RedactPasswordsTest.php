@@ -11,12 +11,23 @@ use Symfony\Component\Yaml\Yaml;
 
 /**
  * @covers \AKlump\LiveDevPorter\Processors\RedactPasswords
- * @uses \AKlump\LiveDevPorter\Lexers\RedactPasswordsInPhpLexer
- * @uses \AKlump\LiveDevPorter\Lexers\RedactPasswordsInBashLexer
+ * @uses   \AKlump\LiveDevPorter\Lexers\RedactPasswordsInPhpLexer
+ * @uses   \AKlump\LiveDevPorter\Lexers\RedactPasswordsInBashLexer
  */
 class RedactPasswordsTest extends TestCase {
 
   use TestWithFilesTrait;
+
+  public function testCanRedactPasswordInUrlInEnv() {
+    $filepath = $this->getTestFileFilepath('test.env');
+    $contents = file_get_contents($filepath);
+    $message = (new RedactPasswords())(ProcessorModes::ENV, $contents, [
+      'DATABASE_URL',
+    ]);
+    $this->assertStringContainsString(sprintf("DATABASE_URL=mysql://drupal8:%s@database/drupal8", RedactPasswords::DEFAULT_REPLACEMENT), $contents);
+    $this->assertStringNotContainsString('rock$ol1D', $contents);
+    $this->assertStringContainsString('DATABASE_URL has been redacted', $message);
+  }
 
   public function testCanRedactInEnvFile() {
     $filepath = $this->getTestFileFilepath('test.env');

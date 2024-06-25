@@ -166,16 +166,33 @@ class RedactPasswords {
         break;
       }
       $lexer->moveNext();
-      if ($lexer->token->isA(RedactPasswordsInBashLexer::T_VAR_ASSIGNMENT)) {
-        $find = $lexer->token->value;
-        preg_match('#' . RedactPasswordsInBashLexer::REGEX_KEY . '#', $find, $matches);
-        $key = $matches[1] ?? NULL;
+      $find = $lexer->token->value;
+      preg_match('#' . RedactPasswordsInBashLexer::REGEX_KEY . '#', $find, $matches);
+      $key = $matches[1] ?? NULL;
+
+      if ($lexer->token->isA(RedactPasswordsInBashLexer::T_URL_ASSIGNMENT)) {
+        list($key, $url) = explode('=', $find);
+        if (!$key
+          || (!$this->doesKeyReferenceAPassword($key) && !$this->shouldPointerBeReplaced($key))) {
+          continue;
+        }
+        $data = parse_url($url);
+        $before = $data;
+        $this->redactInArray($data, $context);
+        if ($before !== $data) {
+          $replace = "$key=" . build_url($data);
+        }
+      }
+      elseif ($lexer->token->isA(RedactPasswordsInBashLexer::T_VAR_ASSIGNMENT)) {
         if (!$key
           || (!$this->doesKeyReferenceAPassword($key) && !$this->shouldPointerBeReplaced($key))) {
           continue;
         }
         $replace = RedactPasswords::DEFAULT_REPLACEMENT;
         $replace = preg_replace('#([^=]+=)(.*)#', '$1' . $replace, $find);
+      }
+
+      if(!empty($replace)) {
         $bash_code = str_replace($find, $replace, $bash_code);
         $context['message'] .= sprintf('%s has been redacted%s', $key, PHP_EOL);
       }
