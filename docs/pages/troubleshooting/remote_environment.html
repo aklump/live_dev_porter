@@ -1,13 +1,13 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-knowledge-id="c3f459f9-25ff-4ffb-b805-170cd8e64ce3">
 <head>
   <!-- Required meta tags -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-      <link rel="stylesheet" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/node_modules/bootstrap/dist/css/bootstrap.css?ver=0.0.159">
-      <link rel="stylesheet" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/style.css?ver=0.0.159">
-      <link rel="stylesheet" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/node_modules/bootstrap-icons/font/bootstrap-icons.min.css?ver=0.0.159">
-    <title>Remote Environment | Book</title>
+      <link rel="stylesheet" href="../../dist/node_modules/bootstrap/dist/css/bootstrap.css">
+      <link rel="stylesheet" href="../../dist/style.css">
+      <link rel="stylesheet" href="../../dist/node_modules/bootstrap-icons/font/bootstrap-icons.min.css">
+    <title>Remote Environment | Live Dev Porter</title>
 </head>
 <body class="my-5">
 
@@ -18,7 +18,7 @@
         <nav aria-label="breadcrumb">
   <ol class="breadcrumb mb-0">
         <li class="breadcrumb-item">
-      <a class="fw-bold" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/index.html">Book</a>
+      <a class="fw-bold" href="../../index.html">Live Dev Porter</a>
     </li>
     <li class="breadcrumb-item">
       <a class="fw-bold" href="#" data-bs-toggle="offcanvas"
@@ -26,14 +26,14 @@
          aria-controls="table-of-contents">TOC</a>
     </li>
     <li class="breadcrumb-item">
-      <a href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/troubleshooting/installation.html">Troubleshooting</a></li>
+      <a href="installation.html">Troubleshooting</a></li>
   </ol>
 </nav>
 
       </div>
       <div class="header__tags me-3">  </div>
-      <div class="header__page-numbers flex-shrink-1">27
-        / 27</div>
+      <div class="header__page-numbers flex-shrink-1">25
+        / 28</div>
     </div>
   </div>
 </header>
@@ -42,18 +42,26 @@
   <div class="row mb-5 pt-5">
     <article class="col">
       <h1 class="mb-4 text-primary">Remote Environment</h1>
-      <h2><code>configtest</code> fails on Live has "*" installed</h2>
+      <p><strong>THIS PAGE IS A WORK IN PROGRESS</strong></p>
+<h2><code>configtest</code> fails on Live has "*" installed</h2>
 <p>To fix this you need to ...</p>
+<h2>Cannot pull from remote</h2>
+<p>Try explicitly defining these shell command paths in <em>config.local.yml</em> on the remote server; replace with the correct paths for your server, e.g. <code>which mysql</code>, etc.</p>
+<pre><code class="shell">shell_commands:
+  mysqldump: /usr/local/bin/mysqldump
+  mysql: /usr/local/bin/mysql
+  php: /usr/local/bin/php
+</code></pre>
     </article>
   </div>
 </main>
 
   <footer class="footer d-flex justify-content-center">
     <div class="flex-column justify-content-center">
-                  Version:
-          <strong>0.0.159</strong>
-          &bull;
-                Last Update: <strong>5/11/2024</strong>
+              Version:
+        <strong>0.0.160</strong>
+        &bull;
+            Last Update: <strong>6/25/2024</strong>
     </div>
   </footer>
 
@@ -61,11 +69,11 @@
 <nav class="nav d-flex justify-content-center align-items-center
   fixed-bottom">
   <div class="btn-group flex-fill">
-              <a href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/troubleshooting/installation.html" class="btn nav__prev-chapter btn-secondary"><i class="bi
+              <a href="installation.html" class="btn nav__prev-chapter btn-secondary"><i class="bi
       bi-caret-left-fill"></i> Troubleshooting Installation</a>
   
     
-              <a href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/troubleshooting/installation.html" class="btn nav__prev-page js-nav__prev-page
+              <a href="installation.html" class="btn nav__prev-page js-nav__prev-page
     btn-primary"><i class="bi
       bi-caret-left-fill"></i></a>
   
@@ -76,8 +84,9 @@
        aria-controls="table-of-contents"><i class="bi
            bi-list-ol"></i></a>
     
-              <span class="btn nav__next-page js-nav__next-page
-    btn-primary"></span>
+              <a href="validation.html" class="btn nav__next-page js-nav__next-page
+    btn-primary"><i class="bi bi-file-earmark"></i> Validation Errors <i class="bi
+       bi-caret-right-fill"></i></a>
   
     
               <span class="btn nav__next-chapter btn-secondary "></span>
@@ -105,192 +114,199 @@
         <h2 class="h4 mt-4">Matched Pages</h2>
         <ol class="list-unstyled">
                                               <li data-page="readme" value="1">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/readme.html">Live Dev Porter<span
+      <a class="js-page-link" href="../general/readme.html">Live Dev Porter<span
               class="js-search-score
               badge
-              bg-info rounded-pill badge-sm"></span></a>&nbsp;[General]
+              bg-info rounded-pill badge-sm"></span></a>
     </li>
   
                                     <li data-page="changelog" value="2">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/changelog.html">Changelog<span
+      <a class="js-page-link" href="../general/changelog.html">Changelog<span
               class="js-search-score
               badge
-              bg-info rounded-pill badge-sm"></span></a>&nbsp;[General]
+              bg-info rounded-pill badge-sm"></span></a>
     </li>
   
                                     <li data-page="connection_problems" value="3">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/connection_problems.html">Trouble Connecting to Remote<span
+      <a class="js-page-link" href="../general/connection_problems.html">Trouble Connecting to Remote<span
               class="js-search-score
               badge
-              bg-info rounded-pill badge-sm"></span></a>&nbsp;[General]
+              bg-info rounded-pill badge-sm"></span></a>
     </li>
   
                                     <li data-page="databases" value="4">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/databases.html">Databases<span
+      <a class="js-page-link" href="../general/databases.html">Databases<span
               class="js-search-score
               badge
-              bg-info rounded-pill badge-sm"></span></a>&nbsp;[General]
+              bg-info rounded-pill badge-sm"></span></a>
     </li>
   
                                     <li data-page="environment_roles" value="5">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/environment_roles.html">Environment Roles<span
+      <a class="js-page-link" href="../general/environment_roles.html">Environment Roles<span
               class="js-search-score
               badge
-              bg-info rounded-pill badge-sm"></span></a>&nbsp;[General]
+              bg-info rounded-pill badge-sm"></span></a>
     </li>
   
                                     <li data-page="environments" value="6">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/environments.html">Environments<span
+      <a class="js-page-link" href="../general/environments.html">Environments<span
               class="js-search-score
               badge
-              bg-info rounded-pill badge-sm"></span></a>&nbsp;[General]
+              bg-info rounded-pill badge-sm"></span></a>
     </li>
   
                                     <li data-page="file_groups" value="7">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/file_groups.html">File Groups<span
+      <a class="js-page-link" href="../general/file_groups.html">File Groups<span
               class="js-search-score
               badge
-              bg-info rounded-pill badge-sm"></span></a>&nbsp;[General]
+              bg-info rounded-pill badge-sm"></span></a>
     </li>
   
                                     <li data-page="import" value="8">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/import.html">Import<span
+      <a class="js-page-link" href="../general/import.html">Import<span
               class="js-search-score
               badge
-              bg-info rounded-pill badge-sm"></span></a>&nbsp;[General]
+              bg-info rounded-pill badge-sm"></span></a>
     </li>
   
                                     <li data-page="lando" value="9">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/lando.html">Lando<span
+      <a class="js-page-link" href="../general/lando.html">Lando<span
               class="js-search-score
               badge
-              bg-info rounded-pill badge-sm"></span></a>&nbsp;[General]
+              bg-info rounded-pill badge-sm"></span></a>
     </li>
   
                                     <li data-page="local_build_files" value="10">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/local_build_files.html">Creating Scaffold Files from the Local Environment<span
+      <a class="js-page-link" href="../general/local_build_files.html">Creating Scaffold Files from the Local Environment<span
               class="js-search-score
               badge
-              bg-info rounded-pill badge-sm"></span></a>&nbsp;[General]
+              bg-info rounded-pill badge-sm"></span></a>
     </li>
   
                                     <li data-page="loft_deploy_migrations" value="11">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/loft_deploy_migrations.html">Migrating From Loft Deploy<span
+      <a class="js-page-link" href="../general/loft_deploy_migrations.html">Migrating From Loft Deploy<span
               class="js-search-score
               badge
-              bg-info rounded-pill badge-sm"></span></a>&nbsp;[General]
+              bg-info rounded-pill badge-sm"></span></a>
     </li>
   
                                     <li data-page="plugins" value="12">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/plugins.html">Plugins<span
+      <a class="js-page-link" href="../general/plugins.html">Plugins<span
               class="js-search-score
               badge
-              bg-info rounded-pill badge-sm"></span></a>&nbsp;[General]
+              bg-info rounded-pill badge-sm"></span></a>
     </li>
   
                                     <li data-page="processor_development" value="13">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/processor_development.html">Developing New Processors<span
+      <a class="js-page-link" href="../general/processor_development.html">Developing New Processors<span
               class="js-search-score
               badge
-              bg-info rounded-pill badge-sm"></span></a>&nbsp;[General]
+              bg-info rounded-pill badge-sm"></span></a>
     </li>
   
                                     <li data-page="processors" value="14">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/processors.html">Processors<span
+      <a class="js-page-link" href="../general/processors.html">Processors<span
               class="js-search-score
               badge
-              bg-info rounded-pill badge-sm"></span></a>&nbsp;[General]
+              bg-info rounded-pill badge-sm"></span></a>
     </li>
   
                                     <li data-page="pull" value="15">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/pull.html">Pulling Remote to Local<span
+      <a class="js-page-link" href="../general/pull.html">Pulling Remote to Local<span
               class="js-search-score
               badge
-              bg-info rounded-pill badge-sm"></span></a>&nbsp;[General]
+              bg-info rounded-pill badge-sm"></span></a>
     </li>
   
                                     <li data-page="push" value="16">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/push.html">Push<span
+      <a class="js-page-link" href="../general/push.html">Push<span
               class="js-search-score
               badge
-              bg-info rounded-pill badge-sm"></span></a>&nbsp;[General]
+              bg-info rounded-pill badge-sm"></span></a>
     </li>
   
                                     <li data-page="remote" value="17">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/remote.html">Remote Environment<span
+      <a class="js-page-link" href="../general/remote.html">Remote Environment<span
               class="js-search-score
               badge
-              bg-info rounded-pill badge-sm"></span></a>&nbsp;[General]
+              bg-info rounded-pill badge-sm"></span></a>
     </li>
   
-                                    <li data-page="sanitation" value="18">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/sanitation.html">Sanitation of Vulnerable Data<span
+                                    <li data-page="source_control" value="18">
+      <a class="js-page-link" href="../general/source_control.html">Source Control<span
               class="js-search-score
               badge
-              bg-info rounded-pill badge-sm"></span></a>&nbsp;[General]
+              bg-info rounded-pill badge-sm"></span></a>
     </li>
   
-                                    <li data-page="search__results" value="19">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/search__results.html">Search  Results<span
+                                    <li data-page="troubleshooting" value="19">
+      <a class="js-page-link" href="../general/troubleshooting.html">On Dreamhost, Export Failed Due to PHP Version<span
               class="js-search-score
               badge
-              bg-info rounded-pill badge-sm"></span></a>&nbsp;[General]
+              bg-info rounded-pill badge-sm"></span></a>
     </li>
   
-                                    <li data-page="source_control" value="20">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/source_control.html">Source Control<span
+                                    <li data-page="workflows" value="20">
+      <a class="js-page-link" href="../general/workflows.html">Workflows<span
               class="js-search-score
               badge
-              bg-info rounded-pill badge-sm"></span></a>&nbsp;[General]
+              bg-info rounded-pill badge-sm"></span></a>
     </li>
   
-                                    <li data-page="troubleshooting" value="21">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/troubleshooting.html">On Dreamhost, Export Failed Due to PHP Version<span
+                                    <li data-page="remote_install_alt" value="21">
+      <a class="js-page-link" href="../general/remote_install_alt.html">Alternative Remote Installations<span
               class="js-search-score
               badge
-              bg-info rounded-pill badge-sm"></span></a>&nbsp;[General]
+              bg-info rounded-pill badge-sm"></span></a>
     </li>
   
-                                    <li data-page="workflows" value="22">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/workflows.html">Workflows<span
+                                                          <li data-page="logging" value="22">
+      <a class="js-page-link" href="../developers/logging.html">Enable Logging<span
               class="js-search-score
               badge
-              bg-info rounded-pill badge-sm"></span></a>&nbsp;[General]
+              bg-info rounded-pill badge-sm"></span></a>
     </li>
   
-                                    <li data-page="remote_install_alt" value="23">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/remote_install_alt.html">Alternative Remote Installations<span
+                                    <li data-page="php" value="23">
+      <a class="js-page-link" href="../developers/php.html">Using PHP in the Codebase<span
               class="js-search-score
               badge
-              bg-info rounded-pill badge-sm"></span></a>&nbsp;[General]
+              bg-info rounded-pill badge-sm"></span></a>
     </li>
   
-                                                          <li data-page="logging" value="24">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/developers/logging.html">Enable Logging<span
+                                                          <li data-page="installation" value="24">
+      <a class="js-page-link" href="installation.html">Troubleshooting Installation<span
               class="js-search-score
               badge
-              bg-info rounded-pill badge-sm"></span></a>&nbsp;[Developers]
+              bg-info rounded-pill badge-sm"></span></a>
     </li>
   
-                                    <li data-page="php" value="25">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/developers/php.html">Using PHP in the Codebase<span
+                                    <li data-page="remote_environment" value="25">
+      <a class="js-page-link" href="remote_environment.html">Remote Environment<span
               class="js-search-score
               badge
-              bg-info rounded-pill badge-sm"></span></a>&nbsp;[Developers]
+              bg-info rounded-pill badge-sm"></span></a>
     </li>
   
-                                                          <li data-page="installation" value="26">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/troubleshooting/installation.html">Troubleshooting Installation<span
+                                    <li data-page="validation" value="26">
+      <a class="js-page-link" href="validation.html">Validation Errors<span
               class="js-search-score
               badge
-              bg-info rounded-pill badge-sm"></span></a>&nbsp;[Troubleshooting]
+              bg-info rounded-pill badge-sm"></span></a>
     </li>
   
-                                    <li data-page="remote_environment" value="27">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/troubleshooting/remote_environment.html">Remote Environment<span
+                                                          <li data-page="sanitation" value="27">
+      <a class="js-page-link" href="../security/sanitation.html">Sanitation of Vulnerable Data<span
               class="js-search-score
               badge
-              bg-info rounded-pill badge-sm"></span></a>&nbsp;[Troubleshooting]
+              bg-info rounded-pill badge-sm"></span></a>
+    </li>
+  
+                                    <li data-page="code" value="28">
+      <a class="js-page-link" href="../security/code.html">Provided Sanitization Code<span
+              class="js-search-score
+              badge
+              bg-info rounded-pill badge-sm"></span></a>
     </li>
   
                               </ol>
@@ -300,117 +316,124 @@
               <h2 class="h4 mt-4">General</h2>
         <ol>
                                 <li data-page="readme" value="1">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/readme.html">Live Dev Porter</a>&nbsp;[General]
+      <a class="js-page-link" href="../general/readme.html">Live Dev Porter</a>
     </li>
   
                                 <li data-page="changelog" value="2">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/changelog.html">Changelog</a>&nbsp;[General]
+      <a class="js-page-link" href="../general/changelog.html">Changelog</a>
     </li>
   
                                 <li data-page="connection_problems" value="3">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/connection_problems.html">Trouble Connecting to Remote</a>&nbsp;[General]
+      <a class="js-page-link" href="../general/connection_problems.html">Trouble Connecting to Remote</a>
     </li>
   
                                 <li data-page="databases" value="4">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/databases.html">Databases</a>&nbsp;[General]
+      <a class="js-page-link" href="../general/databases.html">Databases</a>
     </li>
   
                                 <li data-page="environment_roles" value="5">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/environment_roles.html">Environment Roles</a>&nbsp;[General]
+      <a class="js-page-link" href="../general/environment_roles.html">Environment Roles</a>
     </li>
   
                                 <li data-page="environments" value="6">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/environments.html">Environments</a>&nbsp;[General]
+      <a class="js-page-link" href="../general/environments.html">Environments</a>
     </li>
   
                                 <li data-page="file_groups" value="7">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/file_groups.html">File Groups</a>&nbsp;[General]
+      <a class="js-page-link" href="../general/file_groups.html">File Groups</a>
     </li>
   
                                 <li data-page="import" value="8">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/import.html">Import</a>&nbsp;[General]
+      <a class="js-page-link" href="../general/import.html">Import</a>
     </li>
   
                                 <li data-page="lando" value="9">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/lando.html">Lando</a>&nbsp;[General]
+      <a class="js-page-link" href="../general/lando.html">Lando</a>
     </li>
   
                                 <li data-page="local_build_files" value="10">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/local_build_files.html">Creating Scaffold Files from the Local Environment</a>&nbsp;[General]
+      <a class="js-page-link" href="../general/local_build_files.html">Creating Scaffold Files from the Local Environment</a>
     </li>
   
                                 <li data-page="loft_deploy_migrations" value="11">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/loft_deploy_migrations.html">Migrating From Loft Deploy</a>&nbsp;[General]
+      <a class="js-page-link" href="../general/loft_deploy_migrations.html">Migrating From Loft Deploy</a>
     </li>
   
                                 <li data-page="plugins" value="12">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/plugins.html">Plugins</a>&nbsp;[General]
+      <a class="js-page-link" href="../general/plugins.html">Plugins</a>
     </li>
   
                                 <li data-page="processor_development" value="13">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/processor_development.html">Developing New Processors</a>&nbsp;[General]
+      <a class="js-page-link" href="../general/processor_development.html">Developing New Processors</a>
     </li>
   
                                 <li data-page="processors" value="14">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/processors.html">Processors</a>&nbsp;[General]
+      <a class="js-page-link" href="../general/processors.html">Processors</a>
     </li>
   
                                 <li data-page="pull" value="15">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/pull.html">Pulling Remote to Local</a>&nbsp;[General]
+      <a class="js-page-link" href="../general/pull.html">Pulling Remote to Local</a>
     </li>
   
                                 <li data-page="push" value="16">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/push.html">Push</a>&nbsp;[General]
+      <a class="js-page-link" href="../general/push.html">Push</a>
     </li>
   
                                 <li data-page="remote" value="17">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/remote.html">Remote Environment</a>&nbsp;[General]
+      <a class="js-page-link" href="../general/remote.html">Remote Environment</a>
     </li>
   
-                                <li data-page="sanitation" value="18">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/sanitation.html">Sanitation of Vulnerable Data</a>&nbsp;[General]
+                                <li data-page="source_control" value="18">
+      <a class="js-page-link" href="../general/source_control.html">Source Control</a>
     </li>
   
-                                <li data-page="search__results" value="19">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/search__results.html">Search  Results</a>&nbsp;[General]
+                                <li data-page="troubleshooting" value="19">
+      <a class="js-page-link" href="../general/troubleshooting.html">On Dreamhost, Export Failed Due to PHP Version</a>
     </li>
   
-                                <li data-page="source_control" value="20">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/source_control.html">Source Control</a>&nbsp;[General]
+                                <li data-page="workflows" value="20">
+      <a class="js-page-link" href="../general/workflows.html">Workflows</a>
     </li>
   
-                                <li data-page="troubleshooting" value="21">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/troubleshooting.html">On Dreamhost, Export Failed Due to PHP Version</a>&nbsp;[General]
-    </li>
-  
-                                <li data-page="workflows" value="22">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/workflows.html">Workflows</a>&nbsp;[General]
-    </li>
-  
-                                <li data-page="remote_install_alt" value="23">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/remote_install_alt.html">Alternative Remote Installations</a>&nbsp;[General]
+                                <li data-page="remote_install_alt" value="21">
+      <a class="js-page-link" href="../general/remote_install_alt.html">Alternative Remote Installations</a>
     </li>
   
                   </ol>
               <h2 class="h4 mt-4">Developers</h2>
         <ol>
-                                <li data-page="logging" value="24">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/developers/logging.html">Enable Logging</a>&nbsp;[Developers]
+                                <li data-page="logging" value="22">
+      <a class="js-page-link" href="../developers/logging.html">Enable Logging</a>
     </li>
   
-                                <li data-page="php" value="25">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/developers/php.html">Using PHP in the Codebase</a>&nbsp;[Developers]
+                                <li data-page="php" value="23">
+      <a class="js-page-link" href="../developers/php.html">Using PHP in the Codebase</a>
     </li>
   
                   </ol>
               <h2 class="h4 mt-4">Troubleshooting</h2>
         <ol>
-                                <li data-page="installation" value="26">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/troubleshooting/installation.html">Troubleshooting Installation</a>&nbsp;[Troubleshooting]
+                                <li data-page="installation" value="24">
+      <a class="js-page-link" href="installation.html">Troubleshooting Installation</a>
     </li>
   
-                                <li data-page="remote_environment" value="27">
-      <a class="js-page-link" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/troubleshooting/remote_environment.html">Remote Environment</a>&nbsp;[Troubleshooting]
+                                <li data-page="remote_environment" value="25">
+      <a class="js-page-link" href="remote_environment.html">Remote Environment</a>
+    </li>
+  
+                                <li data-page="validation" value="26">
+      <a class="js-page-link" href="validation.html">Validation Errors</a>
+    </li>
+  
+                  </ol>
+              <h2 class="h4 mt-4">Security</h2>
+        <ol>
+                                <li data-page="sanitation" value="27">
+      <a class="js-page-link" href="../security/sanitation.html">Sanitation of Vulnerable Data</a>
+    </li>
+  
+                                <li data-page="code" value="28">
+      <a class="js-page-link" href="../security/code.html">Provided Sanitization Code</a>
     </li>
   
                   </ol>
@@ -432,68 +455,70 @@
                 
         <ul class="list-group list-group-flush">
                                     <a class="list-group-item list-group-item-action"
-                 data-tags="[]" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/readme.html">Live Dev Porter</a>
+                 data-tags="[]" href="../general/readme.html">Live Dev Porter</a>
                                                 <a class="list-group-item list-group-item-action"
-                 data-tags="[]" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/changelog.html">Changelog</a>
+                 data-tags="[]" href="../general/changelog.html">Changelog</a>
                                                 <a class="list-group-item list-group-item-action"
-                 data-tags="[]" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/connection_problems.html">Trouble Connecting to Remote</a>
+                 data-tags="[]" href="../general/connection_problems.html">Trouble Connecting to Remote</a>
                                                 <a class="list-group-item list-group-item-action"
-                 data-tags="[]" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/databases.html">Databases</a>
+                 data-tags="[]" href="../general/databases.html">Databases</a>
                                                 <a class="list-group-item list-group-item-action"
-                 data-tags="[]" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/environment_roles.html">Environment Roles</a>
+                 data-tags="[]" href="../general/environment_roles.html">Environment Roles</a>
                                                 <a class="list-group-item list-group-item-action"
-                 data-tags="[]" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/environments.html">Environments</a>
+                 data-tags="[]" href="../general/environments.html">Environments</a>
                                                 <a class="list-group-item list-group-item-action"
-                 data-tags="[]" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/file_groups.html">File Groups</a>
+                 data-tags="[]" href="../general/file_groups.html">File Groups</a>
                                                 <a class="list-group-item list-group-item-action"
-                 data-tags="[]" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/import.html">Import</a>
+                 data-tags="[]" href="../general/import.html">Import</a>
                                                 <a class="list-group-item list-group-item-action"
-                 data-tags="[]" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/lando.html">Lando</a>
+                 data-tags="[]" href="../general/lando.html">Lando</a>
                                                 <a class="list-group-item list-group-item-action"
-                 data-tags="[]" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/local_build_files.html">Creating Scaffold Files from the Local Environment</a>
+                 data-tags="[]" href="../general/local_build_files.html">Creating Scaffold Files from the Local Environment</a>
                                                 <a class="list-group-item list-group-item-action"
-                 data-tags="[]" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/loft_deploy_migrations.html">Migrating From Loft Deploy</a>
+                 data-tags="[]" href="../general/loft_deploy_migrations.html">Migrating From Loft Deploy</a>
                                                 <a class="list-group-item list-group-item-action"
-                 data-tags="[]" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/plugins.html">Plugins</a>
+                 data-tags="[]" href="../general/plugins.html">Plugins</a>
                                                 <a class="list-group-item list-group-item-action"
-                 data-tags="[]" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/processor_development.html">Developing New Processors</a>
+                 data-tags="[]" href="../general/processor_development.html">Developing New Processors</a>
                                                 <a class="list-group-item list-group-item-action"
-                 data-tags="[]" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/processors.html">Processors</a>
+                 data-tags="[]" href="../general/processors.html">Processors</a>
                                                 <a class="list-group-item list-group-item-action"
-                 data-tags="[]" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/pull.html">Pulling Remote to Local</a>
+                 data-tags="[]" href="../general/pull.html">Pulling Remote to Local</a>
                                                 <a class="list-group-item list-group-item-action"
-                 data-tags="[]" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/push.html">Push</a>
+                 data-tags="[]" href="../general/push.html">Push</a>
                                                 <a class="list-group-item list-group-item-action"
-                 data-tags="[]" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/remote.html">Remote Environment</a>
+                 data-tags="[]" href="../general/remote.html">Remote Environment</a>
                                                 <a class="list-group-item list-group-item-action"
-                 data-tags="[]" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/sanitation.html">Sanitation of Vulnerable Data</a>
+                 data-tags="[]" href="../general/source_control.html">Source Control</a>
                                                 <a class="list-group-item list-group-item-action"
-                 data-tags="[]" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/search__results.html">Search  Results</a>
+                 data-tags="[]" href="../general/troubleshooting.html">On Dreamhost, Export Failed Due to PHP Version</a>
                                                 <a class="list-group-item list-group-item-action"
-                 data-tags="[]" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/source_control.html">Source Control</a>
+                 data-tags="[]" href="../general/workflows.html">Workflows</a>
                                                 <a class="list-group-item list-group-item-action"
-                 data-tags="[]" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/troubleshooting.html">On Dreamhost, Export Failed Due to PHP Version</a>
+                 data-tags="[]" href="../general/remote_install_alt.html">Alternative Remote Installations</a>
                                                 <a class="list-group-item list-group-item-action"
-                 data-tags="[]" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/workflows.html">Workflows</a>
+                 data-tags="[]" href="../developers/logging.html">Enable Logging</a>
                                                 <a class="list-group-item list-group-item-action"
-                 data-tags="[]" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/general/remote_install_alt.html">Alternative Remote Installations</a>
+                 data-tags="[]" href="../developers/php.html">Using PHP in the Codebase</a>
                                                 <a class="list-group-item list-group-item-action"
-                 data-tags="[]" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/developers/logging.html">Enable Logging</a>
+                 data-tags="[]" href="installation.html">Troubleshooting Installation</a>
                                                 <a class="list-group-item list-group-item-action"
-                 data-tags="[]" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/developers/php.html">Using PHP in the Codebase</a>
+                 data-tags="[]" href="remote_environment.html">Remote Environment</a>
                                                 <a class="list-group-item list-group-item-action"
-                 data-tags="[]" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/troubleshooting/installation.html">Troubleshooting Installation</a>
+                 data-tags="[]" href="validation.html">Validation Errors</a>
                                                 <a class="list-group-item list-group-item-action"
-                 data-tags="[]" href="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/pages/troubleshooting/remote_environment.html">Remote Environment</a>
+                 data-tags="[]" href="../security/sanitation.html">Sanitation of Vulnerable Data</a>
+                                                <a class="list-group-item list-group-item-action"
+                 data-tags="[]" href="../security/code.html">Provided Sanitization Code</a>
                               </ul>
       </div>
     </div>
   </div>
 </div>
 
-  <script src="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/node_modules/bootstrap/dist/js/bootstrap.min.js?ver=0.0.159"></script>
-  <script src="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/lunr.js?ver=0.0.159"></script>
-  <script src="/Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter/docs/dist/knowledge.min.js?ver=0.0.159"></script>
+  <script src="../../dist/node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+  <script src="../../dist/lunr.js"></script>
+  <script src="../../dist/knowledge.min.js"></script>
 
 </body>
 </html>

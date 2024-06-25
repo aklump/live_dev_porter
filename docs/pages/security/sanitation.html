@@ -7,7 +7,7 @@
       <link rel="stylesheet" href="../../dist/node_modules/bootstrap/dist/css/bootstrap.css">
       <link rel="stylesheet" href="../../dist/style.css">
       <link rel="stylesheet" href="../../dist/node_modules/bootstrap-icons/font/bootstrap-icons.min.css">
-    <title>Troubleshooting Installation | Live Dev Porter</title>
+    <title>Sanitation of Vulnerable Data | Live Dev Porter</title>
 </head>
 <body class="my-5">
 
@@ -26,13 +26,13 @@
          aria-controls="table-of-contents">TOC</a>
     </li>
     <li class="breadcrumb-item">
-      <a href="installation.html">Troubleshooting</a></li>
+      <a href="sanitation.html">Security</a></li>
   </ol>
 </nav>
 
       </div>
       <div class="header__tags me-3">  </div>
-      <div class="header__page-numbers flex-shrink-1">24
+      <div class="header__page-numbers flex-shrink-1">27
         / 28</div>
     </div>
   </div>
@@ -41,9 +41,68 @@
 <main class="container-md flex-column">
   <div class="row mb-5 pt-5">
     <article class="col">
-      <h1 class="mb-4 text-primary">Troubleshooting Installation</h1>
-      <h2>Failed due to missing configuration; please add "local"</h2>
-<p>Update to the newest version of Live Dev Porter.</p>
+      <h1 class="mb-4 text-primary">Sanitation of Vulnerable Data</h1>
+      <p>This example shows how to setup a processor that will remove the password and secrets from a non-versioned <em>.env</em> file on <code>pull</code>.</p>
+<ol>
+<li>Define a file group <code>install</code>, which includes a file called <em>.env</em>.</li>
+<li>Next, map the file group to your local, e.g., <code>environments.0.files.install</code></li>
+<li><em>(You will need to also map it to the remote, but that's covered elsewhere.)</em></li>
+<li>Define a workflow: <code>development</code></li>
+<li>Add to that workflow a processor item pointing to a class::method, in this case <code>RemoveSecrets::process</code></li>
+<li>Configured the environment to use the <code>development</code> workflow by default on <code>pull</code></li>
+<li>Create the processor class::method as _./live_dev<em>porter/processors/RemoveSecrets.php</em>. Notice the trait and the parent class and study those for more info.</li>
+</ol>
+<h2>Configuration</h2>
+<blockquote class="blockquote"><p>This is not a complete configuration, for example the remove environment is missing; just the items needed to illustrate this concept are shown.</p>
+</blockquote>
+<p>_.live_dev<em>porter/config.yml</em></p>
+<pre><code class="yaml">file_groups:
+  install:
+    include:
+      - /.env
+
+workflows:
+  development:
+    -
+      processor: RemoveSecrets::process
+
+environments:
+  local:
+    files:
+      install: install/default/scaffold
+    command_workflows:
+      pull: development
+</code></pre>
+<h2>The Processor File</h2>
+<p>_./live_dev<em>porter/processors/RemoveSecrets.php</em></p>
+<pre><code class="php">&lt;?php
+
+use AKlump\LiveDevPorter\Processors\ProcessorFailedException;
+
+class RemoveSecrets extends \AKlump\LiveDevPorter\Processors\ProcessorBase {
+
+  use \AKlump\LiveDevPorter\Processors\EnvTrait;
+
+  public function process() {
+    if (!$this-&gt;loadFile()
+      || basename($this-&gt;filepath) != '.env') {
+      return;
+    }
+
+    $response = [];
+    $this-&gt;envReplaceUrlPassword('DATABASE_URL');
+    $response[] = "DATABASE_URL password";
+    foreach (['HASH_SALT', 'SHAREFILE_CLIENT_SECRET'] as $variable_name) {
+      $this-&gt;envReplaceValue($variable_name);
+      $response[] = $variable_name;
+    }
+    $this-&gt;saveFile();
+
+    return sprintf("Removed %s from %s.", implode(', ', $response), $this-&gt;shortpath);
+  }
+
+}
+</code></pre>
     </article>
   </div>
 </main>
@@ -61,11 +120,11 @@
 <nav class="nav d-flex justify-content-center align-items-center
   fixed-bottom">
   <div class="btn-group flex-fill">
-              <a href="installation.html" class="btn nav__prev-chapter btn-secondary"><i class="bi
-      bi-caret-left-fill"></i> Troubleshooting Installation</a>
+              <a href="sanitation.html" class="btn nav__prev-chapter btn-secondary"><i class="bi
+      bi-caret-left-fill"></i> Sanitation of Vulnerable Data</a>
   
     
-              <a href="../developers/php.html" class="btn nav__prev-page js-nav__prev-page
+              <a href="../troubleshooting/validation.html" class="btn nav__prev-page js-nav__prev-page
     btn-primary"><i class="bi
       bi-caret-left-fill"></i></a>
   
@@ -76,8 +135,8 @@
        aria-controls="table-of-contents"><i class="bi
            bi-list-ol"></i></a>
     
-              <a href="remote_environment.html" class="btn nav__next-page js-nav__next-page
-    btn-primary"><i class="bi bi-file-earmark"></i> Remote Environment <i class="bi
+              <a href="code.html" class="btn nav__next-page js-nav__next-page
+    btn-primary"><i class="bi bi-file-earmark"></i> Provided Sanitization Code <i class="bi
        bi-caret-right-fill"></i></a>
   
     
@@ -267,35 +326,35 @@
     </li>
   
                                                           <li data-page="installation" value="24">
-      <a class="js-page-link" href="installation.html">Troubleshooting Installation<span
+      <a class="js-page-link" href="../troubleshooting/installation.html">Troubleshooting Installation<span
               class="js-search-score
               badge
               bg-info rounded-pill badge-sm"></span></a>
     </li>
   
                                     <li data-page="remote_environment" value="25">
-      <a class="js-page-link" href="remote_environment.html">Remote Environment<span
+      <a class="js-page-link" href="../troubleshooting/remote_environment.html">Remote Environment<span
               class="js-search-score
               badge
               bg-info rounded-pill badge-sm"></span></a>
     </li>
   
                                     <li data-page="validation" value="26">
-      <a class="js-page-link" href="validation.html">Validation Errors<span
+      <a class="js-page-link" href="../troubleshooting/validation.html">Validation Errors<span
               class="js-search-score
               badge
               bg-info rounded-pill badge-sm"></span></a>
     </li>
   
                                                           <li data-page="sanitation" value="27">
-      <a class="js-page-link" href="../security/sanitation.html">Sanitation of Vulnerable Data<span
+      <a class="js-page-link" href="sanitation.html">Sanitation of Vulnerable Data<span
               class="js-search-score
               badge
               bg-info rounded-pill badge-sm"></span></a>
     </li>
   
                                     <li data-page="code" value="28">
-      <a class="js-page-link" href="../security/code.html">Provided Sanitization Code<span
+      <a class="js-page-link" href="code.html">Provided Sanitization Code<span
               class="js-search-score
               badge
               bg-info rounded-pill badge-sm"></span></a>
@@ -406,26 +465,26 @@
               <h2 class="h4 mt-4">Troubleshooting</h2>
         <ol>
                                 <li data-page="installation" value="24">
-      <a class="js-page-link" href="installation.html">Troubleshooting Installation</a>
+      <a class="js-page-link" href="../troubleshooting/installation.html">Troubleshooting Installation</a>
     </li>
   
                                 <li data-page="remote_environment" value="25">
-      <a class="js-page-link" href="remote_environment.html">Remote Environment</a>
+      <a class="js-page-link" href="../troubleshooting/remote_environment.html">Remote Environment</a>
     </li>
   
                                 <li data-page="validation" value="26">
-      <a class="js-page-link" href="validation.html">Validation Errors</a>
+      <a class="js-page-link" href="../troubleshooting/validation.html">Validation Errors</a>
     </li>
   
                   </ol>
               <h2 class="h4 mt-4">Security</h2>
         <ol>
                                 <li data-page="sanitation" value="27">
-      <a class="js-page-link" href="../security/sanitation.html">Sanitation of Vulnerable Data</a>
+      <a class="js-page-link" href="sanitation.html">Sanitation of Vulnerable Data</a>
     </li>
   
                                 <li data-page="code" value="28">
-      <a class="js-page-link" href="../security/code.html">Provided Sanitization Code</a>
+      <a class="js-page-link" href="code.html">Provided Sanitization Code</a>
     </li>
   
                   </ol>
@@ -493,15 +552,15 @@
                                                 <a class="list-group-item list-group-item-action"
                  data-tags="[]" href="../developers/php.html">Using PHP in the Codebase</a>
                                                 <a class="list-group-item list-group-item-action"
-                 data-tags="[]" href="installation.html">Troubleshooting Installation</a>
+                 data-tags="[]" href="../troubleshooting/installation.html">Troubleshooting Installation</a>
                                                 <a class="list-group-item list-group-item-action"
-                 data-tags="[]" href="remote_environment.html">Remote Environment</a>
+                 data-tags="[]" href="../troubleshooting/remote_environment.html">Remote Environment</a>
                                                 <a class="list-group-item list-group-item-action"
-                 data-tags="[]" href="validation.html">Validation Errors</a>
+                 data-tags="[]" href="../troubleshooting/validation.html">Validation Errors</a>
                                                 <a class="list-group-item list-group-item-action"
-                 data-tags="[]" href="../security/sanitation.html">Sanitation of Vulnerable Data</a>
+                 data-tags="[]" href="sanitation.html">Sanitation of Vulnerable Data</a>
                                                 <a class="list-group-item list-group-item-action"
-                 data-tags="[]" href="../security/code.html">Provided Sanitization Code</a>
+                 data-tags="[]" href="code.html">Provided Sanitization Code</a>
                               </ul>
       </div>
     </div>
