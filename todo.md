@@ -1,6 +1,7 @@
+- remove the `master_dir` idea, treat it as '.'; it will be more readible to just use `master_files`
 - need a way to be able to write "Deny from all" to web/.htaccess at the start of ldp pull, then reverse when complete to prevent the Drupal bug that breaks if site is visited during import.
 
--
+- 
   bug: init fails
   steps:
     - ./vendor/bin/ldp init
