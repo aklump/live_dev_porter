@@ -16,6 +16,29 @@ fi
 
 _cloudy_define_cloudy_vars
 
+# Detect installation type
+CLOUDY_INSTALLED_AS=$(_cloudy_detect_installation_type)
+if [ $? -ne 0 ]; then
+  write_log_error "Failed to determine \$CLOUDY_INSTALLED_AS"
+else
+  write_log_debug "\$CLOUDY_INSTALLED_AS set to \"$CLOUDY_INSTALLED_AS\""
+fi
+
+# It's possible that the controller has set APP_ROOT, if not we will try to
+# detect what it is automatically.
+if [[ "$APP_ROOT" ]]; then
+  path_is_absolute "$APP_ROOT" && exit_with_failure "\$APP_ROOT must not be set as an absolute path; check $SCRIPT"
+  APP_ROOT="$(_resolve_dir "$(dirname $SCRIPT)/$APP_ROOT")"
+else
+  APP_ROOT="$(_cloudy_detect_app_root_by_installation "$CLOUDY_INSTALLED_AS")"
+  if [ $? -ne 0 ]; then
+    write_log_error "Failed to detect/set \$APP_ROOT "
+    # Do we really need this fallback?
+    APP_ROOT="$(dirname "$SCRIPT")"
+  fi
+fi
+write_log_debug "\$APP_ROOT is \"$APP_ROOT\""
+
 # Store the script options for later use.
 parse_args "$@"
 
@@ -49,7 +72,22 @@ fi
 #
 # PHP Bootstrapping.
 #
-source "$CLOUDY_ROOT/inc/cloudy.composer.sh" || exit_with_failure "Cannot find Composer dependencies."
+if [[ "$COMPOSER_VENDOR" ]]; then
+  # This will be used when this directory is defined at the top of the entry
+  # script as relative to that script.  We look to see if it needs to be
+  # resolved to an absolute path and then exit.
+  if ! path_is_absolute "$COMPOSER_VENDOR"; then
+    # TODO Change this to _resolve()?
+    COMPOSER_VENDOR="$(cd $(dirname "$r/$COMPOSER_VENDOR") && pwd)/$(basename $COMPOSER_VENDOR)"
+  fi
+else
+  COMPOSER_VENDOR=$(_cloudy_detect_composer_vendor_by_installation "$CLOUDY_INSTALLED_AS")
+  if [ $? -ne 0 ]; then
+    write_log_error "Failed to detect/set \$COMPOSER_VENDOR"
+    exit_with_failure "Cannot find Composer dependencies."
+  fi
+fi
+write_log_debug "\$COMPOSER_VENDOR is \"$COMPOSER_VENDOR\""
 
 event_dispatch "pre_config" || exit_with_failure "Non-zero returned by on_pre_config()."
 
@@ -134,10 +172,6 @@ source "$CACHED_CONFIG_FILEPATH" || exit_with_failure "Cannot load cached config
 #
 # End caching setup
 #
-
-eval $(get_config config_path_base)
-APP_ROOT="$(dirname "$SCRIPT")/$config_path_base"
-APP_ROOT="$(cd "$APP_ROOT"; pwd -P)"
 
 eval $(get_config -a additional_bootstrap)
 if [[ "$additional_bootstrap" != null ]]; then

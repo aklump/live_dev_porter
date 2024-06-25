@@ -12,6 +12,7 @@ use Symfony\Component\Yaml\Yaml;
  * Root directory of the Cloudy instance script.
  */
 define('ROOT', getenv('ROOT'));
+define('APP_ROOT', getenv('APP_ROOT'));
 
 require_once __DIR__ . '/error_handler.php';
 
@@ -41,6 +42,7 @@ function _cloudy_realpath($path) {
   }
   if (!empty($path) && substr($path, 0, 1) !== '/') {
     $path = ROOT . '/' . "$_config_path_base/$path";
+    $path = APP_ROOT . '/' . "$_config_path_base/$path";
   }
   if (strstr($path, '*')) {
     $paths = glob($path);

@@ -14,7 +14,7 @@ function is_being_tested() {
 
 # Perform all tests in a file.
 #
-# $1 - The path to a test file.
+# @param string The path to a test file.
 # @option --continue Use this for subsequent calls to this function where you
 # want the results to be added together; that is to say, use this so as NOT to
 # reset the test count, failure count, etc.
@@ -111,9 +111,10 @@ function exit_with_test_results() {
 
 # Assert that variable by name is empty.
 #
-# $1 - The name of a global variable.
+# @param string The name of a global variable.
 #
-# Returns 0 if assertion is true; 1 otherwise.
+# @return 0 if assertion is true.
+# @return 1 if assertion fails.
 function assert_empty() {
     local actual="$1"
 
@@ -124,10 +125,11 @@ function assert_empty() {
 
 # Assert that variable by name is not empty.
 #
-# $1 - The actual value
-# $2 - A custom message on failure.
+# @param mixed The actual value
+# @param string A custom message on failure.
 #
-# Returns 0 if assertion is true; 1 otherwise.
+# @return 0 if assertion is true.
+# @return 1 if assertion fails.
 function assert_not_empty() {
     local actual_value="$1"
     local custom_message="${2:-Value should not be empty}"
@@ -139,8 +141,8 @@ function assert_not_empty() {
 
 # Asset one number is greater than another.
 #
-# $1 - The target value.
-# $2 - The number than should be greater than the target.
+# @param mixed The target value.
+# @param number The number than should be greater than the target.
 #
 # Returns 0 if  $2 is > $1
 function assert_greater_than() {
@@ -154,8 +156,8 @@ function assert_greater_than() {
 
 # Asset one number is less than another.
 #
-# $1 - The target value.
-# $2 - The number than should be less than the target.
+# @param mixed The target value.
+# @param number The number than should be less than the target.
 #
 # Returns 0 if  $2 is < $1
 function assert_less_than() {
@@ -169,10 +171,11 @@ function assert_less_than() {
 
 # Assert that two values are not the same.
 #
-# $1 - The expected value.
-# $2 - The value to test.
+# @param mixed The expected value.
+# @param mixed The value to test.
 #
-# Returns 0 if assertion is true; 1 otherwise.
+# @return 0 if assertion is true.
+# @return 1 if assertion fails.
 function assert_not_equals() {
     local expected="$1"
     local actual="$2"
@@ -187,10 +190,11 @@ function assert_not_equals() {
 #
 # @todo is this needed, since bash is untyped?
 #
-# $1 - The expected value.
-# $2 - The value to test.
+# @param mixed The expected value.
+# @param mixed The value to test.
 #
-# Returns 0 if assertion is true; 1 otherwise.
+# @return 0 if assertion is true.
+# @return 1 if assertion fails.
 function assert_same() {
     local expected="$1"
     local actual="$2"
@@ -202,10 +206,11 @@ function assert_same() {
 
 # Assert that two values are equal in value but not necessarily type.
 #
-# $1 - The expected value.
-# $2 - The value to test.
+# @param mixed The expected value.
+# @param mixed The value to test.
 #
-# Returns 0 if assertion is true; 1 otherwise.
+# @return 0 if assertion is true.
+# @return 1 if assertion fails.
 function assert_equals() {
     local expected="$1"
     local actual="$2"
@@ -217,9 +222,10 @@ function assert_equals() {
 
 # Assert that a value equals "true" or "TRUE".
 #
-# $1 - The value to test.
+# @param mixed The value to test.
 #
-# Returns 0 if assertion is true; 1 otherwise.
+# @return 0 if assertion is true.
+# @return 1 if assertion fails.
 function assert_true() {
     local actual="$1"
     let CLOUDY_ASSERTION_COUNT=(CLOUDY_ASSERTION_COUNT + 1)
@@ -229,9 +235,10 @@ function assert_true() {
 
 # Assert that a value equals "false" or "FALSE".
 #
-# $1 - The value to test.
+# @param mixed The value to test.
 #
-# Returns 0 if assertion is true; 1 otherwise.
+# @return 0 if assertion is true.
+# @return 1 if assertion fails.
 function assert_false() {
     local actual="$1"
     let CLOUDY_ASSERTION_COUNT=(CLOUDY_ASSERTION_COUNT + 1)
@@ -241,9 +248,10 @@ function assert_false() {
 
 # Assert that a file exists by path.
 #
-# $1 - The filepath of the expected file.
+# @param string The filepath of the expected file.
 #
-# Returns 0 if assertion is true; 1 otherwise.
+# @return 0 if assertion is true.
+# @return 1 if assertion fails.
 function assert_file_exists() {
     local filepath="$1"
 
@@ -254,9 +262,10 @@ function assert_file_exists() {
 
 # Assert that a file does not exist at path.
 #
-# $1 - The filepath to ensure does not exist.
+# @param string The filepath to ensure does not exist.
 #
-# Returns 0 if assertion is true; 1 otherwise.
+# @return 0 if assertion is true.
+# @return 1 if assertion fails.
 function assert_file_not_exists() {
     local filepath="$1"
 
@@ -267,10 +276,11 @@ function assert_file_not_exists() {
 
 # Assert that an array does not contain a value.
 #
-# $1 - The value to search for.
-# $2 - The name of a global variable.
+# @param mixed The value to search for.
+# @param string The name of a global variable.
 #
-# Returns 0 if assertion is true; 1 otherwise.
+# @return 0 if assertion is true.
+# @return 1 if assertion fails.
 function assert_not_contains() {
     local key=$1
     local array_var_name=$2
@@ -283,10 +293,11 @@ function assert_not_contains() {
 
 # Assert that an array has a given number of elements.
 #
-# $1 - The expected length.
-# $2 - The name of a global array.
+# @param int The expected length.
+# @param string The name of a global array.
 #
-# Returns 0 if assertion is true; 1 otherwise.
+# @return 0 if assertion is true.
+# @return 1 if assertion fails.
 function assert_count() {
     local expected="$1"
     local array_var_name="$2"
@@ -299,10 +310,11 @@ function assert_count() {
 
 # Assert that an array contains a value.
 #
-# $1 - The value to search for.
-# $2 - The name of a global variable.
+# @param mixed The value to search for.
+# @param string The name of a global variable.
 #
-# Returns 0 if assertion is true; 1 otherwise.
+# @return 0 if assertion is true.
+# @return 1 if assertion fails.
 function assert_contains() {
     local key="$1"
     local array_var_name="$2"
@@ -332,10 +344,11 @@ function assert_exit_status() {
 
 # Assert that an global variable is of a given type.
 #
-# $1 - The expected type.
-# $2 - The name of a global variable.
+# @param stringThe expected type.
+# @param string The name of a global variable.
 #
-# Returns 0 if assertion is true; 1 otherwise.
+# @return 0 if assertion is true.
+# @return 1 if assertion fails.
 function assert_internal_type() {
     local type=$1
     local var_name=$2
@@ -351,10 +364,11 @@ function assert_internal_type() {
 
 # Assert that an global variable is not of a given type.
 #
-# $1 - The expected type.
-# $2 - The name of a global variable.
+# @param stringThe expected type.
+# @param string The name of a global variable.
 #
-# Returns 0 if assertion is true; 1 otherwise.
+# @return 0 if assertion is true.
+# @return 1 if assertion fails.
 function assert_not_internal_type() {
 
     local type=$1
@@ -371,10 +385,11 @@ function assert_not_internal_type() {
 
 # Assert that a value matches a regular expression.
 #
-# $1 - The regular expression.
-# $2 - The value to match against the regexp.
+# @param string The regular expression.
+# @param mixed The value to match against the regexp.
 #
-# Returns 0 if assertion is true; 1 otherwise.
+# @return 0 if assertion is true.
+# @return 1 if assertion fails.
 function assert_reg_exp() {
     local pattern="$1"
     local string="$2"
@@ -439,8 +454,8 @@ function _cloudy_assert_failed() {
 
 # Add a failure message to be shown on exit.
 #
-# $1 - string The reason for the failure.
-# $2 - string A default value if $1 is empty.
+# @param string The reason for the failure.
+# @param string A default value if $1 is empty.
 #
 # @code
 #   test_fail_because "$reason" "Some default if $reason is empty"

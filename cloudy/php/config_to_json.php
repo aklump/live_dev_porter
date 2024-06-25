@@ -32,7 +32,8 @@ try {
     '__cloudy' => [
       'CLOUDY_NAME' => getenv('CLOUDY_NAME'),
       'ROOT' => ROOT,
-      'SCRIPT' => realpath(getenv('SCRIPT')),
+      'APP_ROOT' => APP_ROOT,
+      'SCRIPT' => getenv('SCRIPT'),
       'CONFIG' => $path_to_master_config,
       'WDIR' => getenv('WDIR'),
       'LOGFILE' => getenv('LOGFILE'),

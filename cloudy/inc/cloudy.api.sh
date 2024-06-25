@@ -1,19 +1,18 @@
 #!/usr/bin/env bash
 
-
 # Set a JSON string to be later read by json_get_value().
 #
 # Call this once to put your json string into memory, then make unlimited calls
 # to json_get_value as necessary.  You may check the return code to ensure JSON syntax
 # is valid.  If your string contains single quotes, you will need to escape them.
 #
-# $1 - A JSON string, wrapped by single quotes.
+# @param string A JSON string, wrapped by single quotes.
 #
 # @code
 #   json_set '{"foo":{"bar":"baz et al"}}'
 # @endcode
 #
-# Returns 0 if the JSON is valid; 1 otherwise.
+# @return 0 if the JSON is valid; 1 otherwise.
 json_content=''
 function json_set() {
   local incoming_json="$1"
@@ -30,9 +29,9 @@ function json_set() {
 
 # Load a JSON file to be read by json_get_value.
 #
-# $1 - Path to a valid JSON file
+# @param string Path to a valid JSON file
 #
-# Returns 0 if JSON is valid. 1 if not.
+# @return 0 if JSON is valid. 1 if not.
 function json_load_file() {
   local path_to_json="$1"
 
@@ -46,7 +45,9 @@ function json_load_file() {
   json_set "$loaded_json"
 }
 
-# Echo the JSON string as set
+# Get the set JSON
+#
+# @echo The JSON string set by json_set
 #
 # @code
 #   json="$(json_get)"
@@ -60,7 +61,7 @@ function json_get() {
 #
 # If the path is invalid, an empty string is echoed.  Be sure to wrap in double quotes to protect values that contain spaces.
 #
-# $1 - The dot path, e.g. 'foo.bar'
+# @param string The dot path, e.g. 'foo.bar'
 #
 # @code
 #   json_set '{"foo":{"bar":"baz et al"}}'
@@ -82,8 +83,8 @@ function json_get_value() {
 
 # Present a multiple choice selection list to the user.
 #
-# $1 - The message to display
-# $2 - Optional.  Alter the option to display for cancel.
+# @param string The message to display
+# @param string Optional.  Alter the option to display for cancel.
 #
 # The choices should be defined in the variable: choose__array before calling.
 # You may pass another array which is the labels to appear in the menu if you
@@ -96,7 +97,7 @@ function json_get_value() {
 # [ $? -ne 0 ] && exit_with_success
 # @endcode
 #
-# Returns 0 and echos the choice if one was selected; returns 1 if cancelled.
+# @return 0 and echos the choice if one was selected; returns 1 if cancelled.
 choose__array=()
 choose__labels=()
 function choose() {
@@ -139,11 +140,11 @@ function choose() {
 
 # Prompt for a Y or N confirmation.
 #
-# $1 - The confirmation message
+# @param string The confirmation message
 # --caution - Use when answering Y requires caution.
 # --danger - Use when answering Y is a dangerous thing.
 #
-# Returns 0 if the user answers Y; 1 if not.
+# @return 0 if the user answers Y; 1 if not.
 function confirm() {
     parse_args "$@"
     local message="${parse_args__args[0]:-Continue?} [y/n]:"
@@ -162,9 +163,9 @@ function confirm() {
 
 # Prompt the user to read a message and press any key to continue.
 #
-# $1 - The message to show the user.
+# @param string The message to show the user.
 #
-# Returns nothing
+# @return nothing
 function wait_for_any_key() {
     local message="$1"
 
@@ -177,9 +178,9 @@ function wait_for_any_key() {
 
 # Determine if a given directory has any non-hidden files or directories.
 #
-# $1 - The path to a directory to check
+# @param string The path to a directory to check
 #
-# Returns 0 if the path contains non-hidden files directories; 1 if not.
+# @return 0 if the path contains non-hidden files directories; 1 if not.
 function dir_has_files() {
     local path_to_dir="$1"
 
@@ -188,9 +189,9 @@ function dir_has_files() {
 
 # Echo the title as defined in the configuration.
 #
-# $1 - A default value if no title is defined.
+# @param string A default value if no title is defined.
 #
-# Returns nothing.
+# @return nothing.
 function get_title() {
     local default="$1"
 
@@ -204,7 +205,7 @@ function get_title() {
  #
  # $1 = string The string to hash
  #
- # Returns 0 if the string was able to be hashed.
+ # @return 0 if the string was able to be hashed.
  #
 function md5_string() {
   local string="$1"
@@ -217,7 +218,7 @@ function md5_string() {
 
 # Echos the version of the script.
 #
-# Returns nothing.
+# @return nothing.
 function get_version() {
     local version
     eval $(get_config "version" "1.0")
@@ -226,7 +227,7 @@ function get_version() {
 
 # Echo the current unix timestamp.
 #
-# Returns nothing.
+# @return nothing.
 function timestamp() {
     date +%s
 }
@@ -236,7 +237,7 @@ function timestamp() {
 # options -
 #   -s - Include the seconds
 #
-# Returns nothing.
+# @return nothing.
 function time_local() {
     parse_args "$@"
     if [[ "$parse_args__options__s" ]]; then
@@ -251,7 +252,7 @@ function time_local() {
 # options -
 #   -c - Remove hyphens and colons for use in a filename
 #
-# Returns nothing.
+# @return nothing.
 function date8601() {
     parse_args "$@"
     if [[ "$parse_args__options__c" ]]; then
@@ -264,7 +265,7 @@ function date8601() {
 
 # Validate the CLI input arguments and options.
 #
-# Returns 0 if all input is valid; 1 otherwise.
+# @return 0 if all input is valid; 1 otherwise.
 function validate_input() {
     local command
     local assume_command
@@ -370,14 +371,14 @@ function parse_args() {
 
 # Determine if the script was called with a command.
 #
-# Returns 0 if a command was used.
+# @return 0 if a command was used.
 function has_command() {
   [ ${#CLOUDY_ARGS[0]} -gt 0 ]
 }
 
 # Echo the command that was used to call the script.
 #
-# Returns 0 if a valid command, 1 otherwise.
+# @return 0 if a valid command, 1 otherwise.
 function get_command() {
     local command
     local c
@@ -407,9 +408,9 @@ function get_command() {
 
 # Determine if the script was called with a given option.
 #
-# $1 - The option to check for.
+# @param string The option to check for.
 #
-# Returns 0 if the option was used; 1 if not.
+# @return 0 if the option was used; 1 if not.
 function has_option() {
     local option=$1
 
@@ -420,7 +421,7 @@ function has_option() {
 
 # Determine if any options were used when calling the script.
 #
-# Returns 0 if at least one option was used; 1 otherwise.
+# @return 0 if at least one option was used; 1 otherwise.
 function has_options() {
     [ ${#CLOUDY_OPTIONS[@]} -gt 0 ] && return 0
     return 1
@@ -428,10 +429,10 @@ function has_options() {
 
 # Echo the value of a script option, or a default.
 #
-# $1 - The name of the option
-# $2 - A default value if the option was not used.
+# @param string The name of the option
+# @param string A default value if the option was not used.
 #
-# Returns 0 if the option was used; 2 if the default is echoed.
+# @return 0 if the option was used; 2 if the default is echoed.
 function get_option() {
     local param=$1
     local default=$2
@@ -446,7 +447,7 @@ function get_option() {
 #
 # array_has_value__array
 #
-# $1 - The value to search for in array.
+# @param string The value to search for in array.
 #
 # You must provide your array as $array_has_value__array like so:
 # @code
@@ -483,9 +484,9 @@ function array_has_value() {
 #   eval $(array_map titles)
 # @endcode
 #
-# $1 - string The VARIABLE NAME of the defined array.
+# @param string The VARIABLE NAME of the defined array.
 #
-# Returns nothing.
+# @return nothing.
 function array_map() {
     local array_name=$1
 
@@ -509,9 +510,9 @@ function array_map() {
 #   eval $(array_dedupe duplicated)
 # @endcode
 #
-# $1 - string The VARIABLE NAME of the defined array.
+# @param string The VARIABLE NAME of the defined array.
 #
-# Returns nothing.
+# @return nothing.
 function array_dedupe() {
     local array_name=$1
 
@@ -521,9 +522,9 @@ function array_dedupe() {
 
 # Determine if a function has been defined.
 #
-# $1 - string The name of the function to check.
+# @param string The name of the function to check.
 #
-# Returns 0 if defined; 1 otherwise.
+# @return 0 if defined; 1 otherwise.
 function function_exists() {
     local function_name=$1
 
@@ -542,9 +543,9 @@ function function_exists() {
 #  string_split '<br />' && local words=("${string_split__array[@]}")
 # @endcode
 #
-# $1 - The delimiter string.
+# @param string The delimiter string.
 #
-# Returns 0 if .
+# @return 0 if .
 function string_split() {
     local delimiter="$1"
 
@@ -558,10 +559,14 @@ function string_split() {
 
 # Echo $array_csv__array as CSV
 #
+# @global array $array_csv__array
+#
 # @option --prose Use comma+space and then the word "all" as the final separator
 # as when writing English prose, e.g. "do, re and mi".
 # @option --quotes Wrap each item with double quotes.
 # @option --single-quotes Wrap each item with single quotes.
+#
+# @echo The CSV string
 #
 # @code
 #   array_csv__array=('foo bar' 'baz' zulu)
@@ -594,11 +599,12 @@ function array_csv() {
 
 # Echo a string, which is an array joined by a substring.
 #
-# array_join__array
+# @global array array_join__array
 #
-# $1 - The string to use to glue the pieces together with.
+# @param string The string to use to glue the pieces together with.
 #
-# Returns 0 if all goes well; 1 on failure.
+# @return 0 if all goes well.
+# @return 1 on failure.
 function array_join() {
     local glue="$1"
 
@@ -610,9 +616,9 @@ function array_join() {
 
 # Mutate an array sorting alphabetically.
 #
-# array_sort__array
+# @global array array_sort__array
 #
-# Returns nothing.
+# @return nothing.
 function array_sort() {
     local IFS=$'\n'
     array_sort__array=($(sort <<< "${array_sort__array[*]}"))
@@ -620,14 +626,15 @@ function array_sort() {
 
 # Mutate an array sorting by the length of each item, short ot long
 #
-# array_sort__array
+# @global array array_sort__array
 #
 # @code
 #  array_sort_by_item_length__array=("september" "five" "three" "on")
 #  array_sort_by_item_length
 # @endcode
 #
-# Returns 0 on success; 1 on failure.
+# # @return 0 if assertion is true.
+# @return 1 if assertion failure.
 function array_sort_by_item_length() {
     local sorted
     local php_result
@@ -645,7 +652,8 @@ function array_sort_by_item_length() {
 
 # Determine if there are any arguments for the script "command".
 #
-# Returns 0 if the command has any arguments; 1 if not.
+# @return 0 if the command has any arguments
+# @return 1 if not.
 function has_command_args() {
     [ ${#CLOUDY_ARGS[@]} -gt 1 ] && return 0
     return 1
@@ -653,8 +661,8 @@ function has_command_args() {
 
 # Return a operation argument by zero-based index key.
 #
-# $1 - int The index of the argument
-# $2 - mixed Optional, default value.
+# @param int  The index of the argument
+# @param mixed Optional, default value.
 #
 # As an example see the following code:
 # @code
@@ -663,7 +671,8 @@ function has_command_args() {
 #   get_command_arg 0 --> "blue"
 #   get_command_arg 1 --> "apple"
 # @endcode
-# Returns 0 if found, 2 if using the default.
+# @return 0 if found
+# @return 2 if using the default.
 function get_command_arg() {
     local index=$1
     local default="${2}"
@@ -679,7 +688,7 @@ function get_command_arg() {
 # script was called like this "script.sh do -f re -h mi", this function will
 # echo "do re mi"
 #
-# Returns 0
+# @return 0
 function get_command_args() {
   local command_args=("${CLOUDY_ARGS[@]:1}")
 
@@ -735,9 +744,9 @@ function get_config_as() {
 
 # Echos eval code for the keys of a configuration associative array.
 #
-# $1 - The path to the config item, e.g. "files.private"
+# @param string The path to the config item, e.g. "files.private"
 #
-# Returns 0 on success.
+# @return 0 on success.
 function get_config_keys() {
     local config_key_path="$1"
 
@@ -746,9 +755,9 @@ function get_config_keys() {
 
 # Echo eval code for keys of a configuration associative array using custom var.
 #
-# $1 - The path to the config item, e.g. "files.private"
+# @param string The path to the config item, e.g. "files.private"
 #
-# Returns 0 on success.
+# @return 0 on success.
 function get_config_keys_as() {
     local custom_var_name=$1
     local config_key_path=$2
@@ -763,10 +772,10 @@ function get_config_keys_as() {
 #
 # Relative paths are made absolute using $APP_ROOT.
 #
-# $1 - The path to the config item, e.g. "files.private"
-# -a - If you are expecting an array
+# @param string The path to the config item, e.g. "files.private"
+# @option -a If you are expecting an array
 #
-# Returns 0 on success.
+# @return 0 on success.
 function get_config_path() {
     local config_key_path=$1
     local default_value=$2
@@ -781,11 +790,11 @@ function get_config_path() {
 #
 # Relative paths are made absolute using $APP_ROOT.
 #
-# $1 - The variable name to assign the value to.
-# $2 - The path to the config item, e.g. "files.private"
-# -a - If you are expecting an array
+# @param string The variable name to assign the value to.
+# @param string The path to the config item, e.g. "files.private"
+# @option -a If you are expecting an array
 #
-# Returns 0 on success.
+# @return 0 on success.
 function get_config_path_as() {
     local custom_var_name=$1
     local config_key_path=$2
@@ -800,9 +809,10 @@ function get_config_path_as() {
 
 # Echo the translation of a message id into $CLOUDY_LANGUAGE.
 #
-# $1 - The untranslated message.
+# @param string The untranslated message.
 #
-# Returns 0 if translated; 2 if not translated.
+# @return 0 if translated
+# @return 2 if not translated.
 function translate() {
     local untranslated_message="$1"
 
@@ -823,36 +833,36 @@ function translate() {
 
 # Echo a string with white text.
 #
-# $1 - The string to echo.
+# @param string The string to echo.
 #
-# Returns nothing.
+# @return nothing.
 function echo_white() {
     _cloudy_echo_color 37 "$1"
 }
 
 # Echo a string with red text.
 #
-# $1 - The string to echo.
+# @param string The string to echo.
 #
-# Returns nothing.
+# @return nothing.
 function echo_red() {
     _cloudy_echo_color 31 "$1"
 }
 
 # Echo a string with a red background.
 #
-# $1 - The string to echo.
+# @param string The string to echo.
 #
-# Returns nothing.
+# @return nothing.
 function echo_red_highlight() {
     _cloudy_echo_color 37 "$1" 1 41
 }
 
 # Echo a string with really, really loudly.
 #
-# $1 - The string to echo.
+# @param string The string to echo.
 #
-# Returns nothing.
+# @return nothing.
 function echo_scream() {
   local message="$1"
 
@@ -867,43 +877,43 @@ function echo_scream() {
 
 # Echo an error message
 #
-# $1 - The error message.
+# @param string The error message.
 #
-# Returns nothing.
+# @return nothing.
 function echo_error() {
     _cloudy_echo_color 37 "$1" 1 41
 }
 
 # Echo a warning message
 #
-# $1 - The warning message.
+# @param string The warning message.
 #
-# Returns nothing.
+# @return nothing.
 function echo_warning() {
     _cloudy_echo_color 30 "$1" 1 43
 }
 
 # Echo a string with green text.
 #
-# $1 - The string to echo.
+# @param string The string to echo.
 #
-# Returns nothing.
+# @return nothing.
 function echo_green() {
     _cloudy_echo_color 32 "$1" 0
 }
 
 # Echo a string with a green background.
 #
-# $1 - The string to echo.
+# @param string The string to echo.
 #
-# Returns nothing.
+# @return nothing.
 function echo_green_highlight() {
   _cloudy_echo_color 37 "$1" 1 42
 }
 
 # Echo a message indicating a passed test result.
 #
-# $1 - The message to print
+# @param string The message to print
 #
 function echo_pass() {
   local message=$1
@@ -912,7 +922,7 @@ function echo_pass() {
 
 # Echo a message indicating a failed test result.
 #
-# $1 - The message to print
+# @param string The message to print
 #
 function echo_fail() {
   local message=$1
@@ -923,9 +933,9 @@ function echo_fail() {
 #
 # This should be followed by echo_task_completed or echo_task_failed.
 #
-# $1 - The imperative, e.g., "Download all files"
+# @param string The imperative, e.g., "Download all files"
 #
-# Returns nothing.
+# @return nothing.
 #
 # @see echo_task_completed
 # @see echo_task_failed
@@ -940,14 +950,14 @@ function echo_task() {
 # You may want to do this if the task was aborted and neight completed nor
 # failed.  It will erase the task instead of marking a result.
 #
-# Returns nothing.
+# @return nothing.
 function clear_task() {
   tput rc && tput sc && echo && tput rc
 }
 
 # Replace the task pending with success.
 #
-# Returns nothing.
+# @return nothing.
 #
 # @see echo_task
 # @see echo_task_failed
@@ -957,7 +967,7 @@ function echo_task_completed() {
 
 # Replace the task pending with failure.
 #
-# Returns nothing.
+# @return nothing.
 #
 # @see echo_task
 # @see echo_task_completed
@@ -968,36 +978,36 @@ function echo_task_failed() {
 
 # Echo a string with yellow text.
 #
-# $1 - The string to echo.
+# @param string The string to echo.
 #
-# Returns nothing.
+# @return nothing.
 function echo_yellow() {
     _cloudy_echo_color 33 "$1" 0
 }
 
 # Echo a string with a yellow background.
 #
-# $1 - The string to echo.
+# @param string The string to echo.
 #
-# Returns nothing.
+# @return nothing.
 function echo_yellow_highlight() {
     _cloudy_echo_color 30 "$1" 1 43
 }
 
 # Echo a string with blue text.
 #
-# $1 - The string to echo.
+# @param string The string to echo.
 #
-# Returns nothing.
+# @return nothing.
 function echo_blue() {
     _cloudy_echo_color 34 "$1" 0
 }
 
 # Echo a title string.
 #
-# $1 - The title string.
+# @param string The title string.
 #
-# Returns nothing.
+# @return nothing.
 function echo_title() {
     local headline="$1"
     [[ ! "$headline" ]] && return 1
@@ -1006,9 +1016,9 @@ function echo_title() {
 
 # Echo a heading string.
 #
-# $1 - The heading string.
+# @param string The heading string.
 #
-# Returns nothing.
+# @return nothing.
 function echo_heading() {
     local headline="$1"
     [[ ! "$headline" ]] && return 1
@@ -1017,18 +1027,18 @@ function echo_heading() {
 
 # Remove all items from the list.
 #
-# Returns nothing
+# @return nothing
 function list_clear() {
     echo_list__array=()
 }
 
 # Add an item to the list.
 #
-# echo_list__array
+# @global array echo_list__array
 #
-# $1 - The string to add as a list item.
+# @param string The string to add as a list item.
 #
-# Returns nothing.
+# @return nothing.
 function list_add_item() {
     local item="$1"
     echo_list__array=("${echo_list__array[@]}" "$item")
@@ -1036,7 +1046,7 @@ function list_add_item() {
 
 # Detect if the list has any items.
 #
-# Returns 0 if the list has at least one item.
+# @return 0 if the list has at least one item.
 function list_has_items() {
     [ ${#echo_list__array[@]} -gt 0 ]
 }
@@ -1045,6 +1055,7 @@ function list_has_items() {
  # Echo an array as a bulleted list (does not clear list)
  #
  # @param $echo_list__array
+ # @echo The list
  #
  # You must add items to your list first:
  # @code
@@ -1061,6 +1072,7 @@ function echo_list() {
 
 ##
  # @param $echo_list__array
+ # @echo The list in red.
  #
 function echo_red_list() {
     _cloudy_echo_list 31 31
@@ -1068,6 +1080,7 @@ function echo_red_list() {
 
 ##
  # @param $echo_list__array
+ # @echo The list in green.
  #
 function echo_green_list() {
     _cloudy_echo_list 32 32 -i=0
@@ -1075,6 +1088,7 @@ function echo_green_list() {
 
 ##
  # @param $echo_list__array
+ # @echo The list in yellow.
  #
 function echo_yellow_list() {
     _cloudy_echo_list 33 33 i=0
@@ -1082,6 +1096,7 @@ function echo_yellow_list() {
 
 ##
  # @param $echo_list__array
+ # @echo The list in blue.
  #
 function echo_blue_list() {
     _cloudy_echo_list 34 34 -i=0
@@ -1089,7 +1104,10 @@ function echo_blue_list() {
 
 # Echo the elapsed time since the beginning of the script.
 #
-# Returns nothing.
+# @global int $SECONDS
+#
+# @echo The elapsed time.
+# @return nothing.
 function echo_elapsed() {
   if [[ $SECONDS -lt 61 ]]; then
     printf "%d sec\n" $SECONDS
@@ -1156,10 +1174,11 @@ function implement_cloudy_basic() {
 #
 # You must set up an init command in your core config file.
 # Then call this function from inside `on_boot`, e.g.
+# @code
 # [[ "$(get_command)" == "init" ]] && handle_init
 # ...do your extra work here...
 # exit_with...
-#
+# @endcode
 #
 # You should only call this function if you need to do something additional in
 # your init step, where you don't want to exit.  If not, you should use
@@ -1167,13 +1186,16 @@ function implement_cloudy_basic() {
 #
 # The translation service is not yet bootstrapped in on_pre_config, so if you
 # want to alter the strings printed you can do something like this:
+# @code
 # if [[ "$(get_command)" == "init" ]]; then
 #     CLOUDY_FAILED="Initialization failed."
 #     CLOUDY_SUCCESS="Initialization complete."
 #     exit_with_init
 # fi
+# @endcode
 #
-# Returns 1 if the init fails, 0 otherwise.
+# @return 0 On success.
+# @return 1 if the init fails
 function handle_init() {
     local path_to_files_map="$ROOT/init/cloudypm.files_map.txt"
     [ -f "$path_to_files_map" ] || fail_because "Missing required initialization file: $path_to_files_map."
@@ -1289,13 +1311,15 @@ function handle_init() {
 # [[ "$(get_command)" == "init" ]] && exit_with_init
 # The translation service is not yet bootstrapped in on_pre_config, so if you
 # want to alter the strings printed you can do something like this:
+# @code
 # if [[ "$(get_command)" == "init" ]]; then
 #     CLOUDY_FAILED="Initialization failed."
 #     CLOUDY_SUCCESS="Initialization complete."
 #     exit_with_init
 # fi
+# @endcode
 #
-# Returns nothing.
+# @return nothing.
 function exit_with_init() {
     handle_init || exit_with_failure "${CLOUDY_FAILED:-Initialization failed.}"
     exit_with_success "${CLOUDY_SUCCESS:-Initialization complete.}"
@@ -1304,7 +1328,7 @@ function exit_with_init() {
 ##
  # Empties caches in $CLOUDY_ROOT (or other directory if provided) and exits.
  #
- # Returns nothing.
+ # @return nothing.
  #
 function exit_with_cache_clear() {
     local cloudy_dir="${1:-$CLOUDY_ROOT}"
@@ -1338,7 +1362,8 @@ function exit_with_cache_clear() {
 
 # Echo the help screen and exit.
 #
-# Return 0 on success; 1 otherwise.
+# @return 0 on success
+# @return 1 otherwise.
 function exit_with_help() {
     local help_command=$(_cloudy_get_master_command "$1")
 
@@ -1361,9 +1386,9 @@ function exit_with_help() {
 
 # Echo a success message plus success reasons and exit
 #
-# $1 - The success message to use.
+# @param string The success message to use.
 #
-# Returns 0.
+# @return 0.
 function exit_with_success() {
     local message=$1
 
@@ -1376,16 +1401,16 @@ function exit_with_success() {
 
 # Exit without echoing anything with a 0 status code.
 #
-# Returns nothing.
+# @return nothing.
 function exit_with_success_code_only() {
     CLOUDY_EXIT_STATUS=0 && _cloudy_exit
 }
 
 # Echo a success message (with elapsed time) plus success reasons and exit
 #
-# $1 - The success message to use.
+# @param string The success message to use.
 #
-# Returns 0.
+# @return 0.
 function exit_with_success_elapsed() {
     local message=$1
     local duration=$SECONDS
@@ -1395,8 +1420,8 @@ function exit_with_success_elapsed() {
 
 # Add a warning message to be shown on success exit; not shown on failure exits.
 #
-# $1 - string The warning message.
-# $2 - string A default value if $1 is empty.
+# @param string The warning message.
+# @param string A default value if $1 is empty.
 #
 # @code
 #   warn_because "$reason" "Some default if $reason is empty"
@@ -1404,7 +1429,7 @@ function exit_with_success_elapsed() {
 #
 # @todo Should this show if a failure exit?
 #
-# Returns 1 if both $message and $default are empty; 0 if successful.
+# @return 1 if both $message and $default are empty; 0 if successful.
 function warn_because() {
     local message="$1"
     local default="$2"
@@ -1417,14 +1442,14 @@ function warn_because() {
 
 # Add a success reason to be shown on exit.
 #
-# $1 - string The reason for the success.
-# $2 - string A default value if $1 is empty.
+# @param string The reason for the success.
+# @param string A default value if $1 is empty.
 #
 # @code
 #   succeed_because "$reason" "Some default if $reason is empty"
 # @endcode
 #
-# Returns 1 if both $message and $default are empty; 0 if successful.
+# @return 1 if both $message and $default are empty; 0 if successful.
 function succeed_because() {
     local message="$1"
     local default="$2"
@@ -1438,8 +1463,8 @@ function succeed_because() {
 
 # Checks if a variable has been evaluated into memory and points to an existing path.
 #
-# $1 - The alias.  Or if not aliased, the config path used by `get_config`.
-# $2 - (Optional) The config path, if aliased.
+# @param string The alias.  Or if not aliased, the config path used by `get_config`.
+# @param string (Optional) The config path, if aliased.
 # @option as=name - @deprecated
 #
 # Both of these aliase examples are the same, though the --as is an older syntax
@@ -1455,7 +1480,7 @@ function succeed_because() {
 #   exit_with_failure_if_empty_config 'database.host' --as=host
 # @endcode
 #
-# Returns 0 if the variable exists and points to a file; exits otherwise with 1.
+# @return 0 if the variable exists and points to a file; exits otherwise with 1.
 function exit_with_failure_if_config_is_not_path() {
     local alias=$1
     local config_path=$2
@@ -1495,8 +1520,8 @@ function exit_with_failure_if_config_is_not_path() {
 
 # Checks if a variable has been evaluated into memory yet or exits with failure.
 #
-# $1 - The alias.  Or if not aliased, the config path used by `get_config`.
-# $2 - (Optional) The config path, if aliased.
+# @param string The alias.  Or if not aliased, the config path used by `get_config`.
+# @param string (Optional) The config path, if aliased.
 # @option as=name - @deprecated
 #
 # Both of these aliase examples are the same, though the --as is an older syntax
@@ -1512,7 +1537,7 @@ function exit_with_failure_if_config_is_not_path() {
 #   exit_with_failure_if_empty_config 'database.host' --as=host
 # @endcode
 #
-# Returns 0 if the variable is in memory.
+# @return 0 if the variable is in memory.
 function exit_with_failure_if_empty_config() {
     local alias=$1
     local config_path=$2
@@ -1595,7 +1620,7 @@ function exit_with_failure() {
 #
 # @option --status=N Optional, set the exit status, a number > 0
 #
-# Returns nothing.
+# @return nothing.
 function exit_with_failure_code_only() {
     parse_args "$@"
 
@@ -1614,9 +1639,9 @@ function exit_with_failure_code_only() {
 
 # Test if a program is installed on the system.
 #
-# $1 - The name of the program to check for.
+# @param string The name of the program to check for.
 #
-# Returns 0 if installed; 1 otherwise.
+# @return 0 if installed; 1 otherwise.
 function is_installed() {
     local command=$1
 
@@ -1626,9 +1651,9 @@ function is_installed() {
 
 # Echo the path to an installed program.
 #
-# $1 - The name of the program you need.
+# @param string The name of the program you need.
 #
-# Returns 0 if .
+# @return 0 if .
 function get_installed() {
     local command=$1
 
@@ -1654,14 +1679,14 @@ function fail() {
 
 # Add a failure message to be shown on exit.
 #
-# $1 - string The reason for the failure.
-# $2 - string A default value if $1 is empty.
+# @param string The reason for the failure.
+# @param string A default value if $1 is empty.
 #
 # @code
 #   fail_because "$reason" "Some default if $reason is empty"
 # @endcode
 #
-# Returns 1 if both $message and $default are empty. 0 otherwise.
+# @return 1 if both $message and $default are empty. 0 otherwise.
 function fail_because() {
     local message="$1"
     local default="$2"
@@ -1679,7 +1704,7 @@ function fail_because() {
 
 # Determine if any failure reasons have been defined yet.
 #
-# Returns 0 if one or more failure messages are present; 1 if not.
+# @return 0 if one or more failure messages are present; 1 if not.
 function has_failed() {
     [ $CLOUDY_EXIT_STATUS -gt 0 ] && return 0
     return 1
@@ -1789,7 +1814,7 @@ function path_relative_to_root() {
 
 # Make $1 relative if it's inside $PWD.
 #
-# $1 - An absolute filepath.  $PWD will be replaced by ./ if possible.
+# @param string An absolute filepath.  $PWD will be replaced by ./ if possible.
 #
 function path_relative_to_pwd() {
   local path="$1"
@@ -1805,10 +1830,10 @@ function path_relative_to_pwd() {
 
 # Resolve a path to an absolute link; if already absolute, do nothing.
 #
-# $1 - The dirname to use if $2 is not absolute
-# $2 - The path to make absolute if not starting with /
+# @param string The dirname to use if $2 is not absolute
+# @param string The path to make absolute if not starting with /
 #
-# Returns nothing
+# @return nothing
 function path_resolve() {
     local dirname="${1%/}"
     local path="$2"
@@ -1826,8 +1851,8 @@ function path_resolve() {
 # without a leading slash.  If it cannot be unresolved, any leading slash will
 # remain.  If the two arguments are the same, '.' will be returned.
 #
-# $1 - The dirname to remove from the left of $2
-# $2 - The path to make relative by removing $1, if possible.
+# @param string The dirname to remove from the left of $2
+# @param string The path to make relative by removing $1, if possible.
 #
 function path_unresolve() {
   local dirname="${1%/}"
@@ -1842,9 +1867,9 @@ function path_unresolve() {
 
 # Determine if a path is absolute (begins with /) or not.
 #
-# $1 - The filepath to check
+# @param string The filepath to check
 #
-# Returns 0 if absolute; 1 otherwise.
+# @return 0 if absolute; 1 otherwise.
 function path_is_absolute() {
     local path="$1"
 
@@ -1853,7 +1878,7 @@ function path_is_absolute() {
 
 # Echo the size of a file.
 #
-# $1 - The path to the file.
+# @param string The path to the file.
 function path_filesize() {
   local path="$1"
 
@@ -1862,9 +1887,9 @@ function path_filesize() {
 
 # Echo the last modified time of a file.
 #
-# $1 - The path to the the file.
+# @param string The path to the the file.
 #
-# Returns 1 if the time cannot be determined.
+# @return 1 if the time cannot be determined.
 function path_mtime() {
     local path=$1
     [ -f "$path" ] || return 1
@@ -1927,9 +1952,9 @@ fi
 # It is a common pattern to pass $CLOUDY_NAME as the argument as this will
 # create a folder based on the name of your script.
 #
-# $1 - string An optional directory name to use.
+# @param string An optional directory name to use.
 #
-# Returns 0 if successful
+# @return 0 if successful
 function tempdir() {
     local basename=${1}
 
@@ -1943,9 +1968,9 @@ function tempdir() {
 
 # Echo the uppercase version of a string.
 #
-# $1 - The string to convert to uppercase.
+# @param string The string to convert to uppercase.
 #
-# Returns nothing.
+# @return nothing.
 function string_upper() {
     local string="$1"
 
@@ -1954,9 +1979,9 @@ function string_upper() {
 
 # Echo the string with it's first letter in uppercase.
 #
-# $1 - The string to convert
-#
-# Returns nothing.
+# @param string The string to convert
+# @echo The string with upper case first letter
+# @return nothing.
 function string_ucfirst() {
     local string="$1"
 
@@ -1965,9 +1990,9 @@ function string_ucfirst() {
 
 # Echo the lowercase version of a string.
 #
-# $1 - The string to convert to lowercase.
-#
-# Returns nothing.
+# @param string The string to convert to lowercase.
+# @echo The lowercased string
+# @return nothing.
 function string_lower() {
     local string="$1"
 
@@ -1992,9 +2017,9 @@ function debug() {
 
 # $DESCRIPTION
 #
-# $1 - $PARAM$
+# @param string $PARAM$
 #
-# Returns 0 if $END$.
+# @return 0 if $END$.
 function echo_key_value() {
     local key=$1
     local value=$2
@@ -2003,7 +2028,7 @@ function echo_key_value() {
 
 # Echo an exception message and exit.
 #
-# Returns 3.
+# @return 3.
 function throw() {
     _cloudy_debug_helper "Exception;1;7;$@"
     exit 3
@@ -2011,13 +2036,13 @@ function throw() {
 
 # Echo a message to the user to either enable and repeat, or view log for info.
 #
-# $1 - Path to the logfile; usually you send $LOGFILE, which is the global path.
+# @param string Path to the logfile; usually you send $LOGFILE, which is the global path.
 #
 # @code
 # fail_because "$(echo_see_log $LOGFILE)"
 # @endcode
 #
-# Returns nothing.
+# @return nothing.
 function echo_see_log() {
   local logfile="$1"
 
@@ -2052,7 +2077,7 @@ function write_log_emergency() {
 #
 # $@ - Any number of strings to write to the log.
 #
-# Returns 0 on success or 1 if the log cannot be written to.
+# @return 0 on success or 1 if the log cannot be written to.
 function write_log_alert() {
     local args=("alert" "$@")
     _cloudy_write_log ${args[@]}
@@ -2060,9 +2085,9 @@ function write_log_alert() {
 
 # Write to the log with level critical.
 #
-# $1 - The message to write.
+# @param string The message to write.
 #
-# Returns 0 on success.
+# @return 0 on success.
 function write_log_critical() {
     local args=("critical" "$@")
     _cloudy_write_log ${args[@]}
@@ -2070,9 +2095,9 @@ function write_log_critical() {
 
 # Write to the log with level error.
 #
-# $1 - The message to write.
+# @param string The message to write.
 #
-# Returns 0 on success.
+# @return 0 on success.
 function write_log_error() {
     local args=("error" "$@")
     _cloudy_write_log ${args[@]}
@@ -2080,9 +2105,9 @@ function write_log_error() {
 
 # Write to the log with level warning.
 #
-# $1 - The message to write.
+# @param string The message to write.
 #
-# Returns 0 on success.
+# @return 0 on success.
 function write_log_warning() {
     local args=("warning" "$@")
     _cloudy_write_log ${args[@]}
@@ -2100,9 +2125,9 @@ function write_log_dev_warning() {
 
 # Write to the log with level notice.
 #
-# $1 - The message to write.
+# @param string The message to write.
 #
-# Returns 0 on success.
+# @return 0 on success.
 function write_log_notice() {
     local args=("notice" "$@")
     _cloudy_write_log ${args[@]}
@@ -2110,9 +2135,9 @@ function write_log_notice() {
 
 # Write to the log with level info.
 #
-# $1 - The message to write.
+# @param string The message to write.
 #
-# Returns 0 on success.
+# @return 0 on success.
 function write_log_info() {
     local args=("info" "$@")
     _cloudy_write_log ${args[@]}
@@ -2120,9 +2145,9 @@ function write_log_info() {
 
 # Write to the log with level debug.
 #
-# $1 - The message to write.
+# @param string The message to write.
 #
-# Returns 0 on success.
+# @return 0 on success.
 function write_log_debug() {
     local args=("debug" "$@")
     _cloudy_write_log ${args[@]}
@@ -2132,7 +2157,7 @@ function write_log_debug() {
 #
 # $@ - Each argument is the column header value.
 #
-# Returns nothing.
+# @return nothing.
 function table_set_header() {
     _cloudy_table_header=()
     local i=0
@@ -2150,7 +2175,7 @@ function table_set_header() {
 #
 # A number for each column.  You should call this after adding all rows.
 #
-# Returns nothing.
+# @return nothing.
 function table_set_column_widths() {
   local i=0
   for width in "$@"; do
@@ -2161,14 +2186,14 @@ function table_set_column_widths() {
 
 # Clear all rows from the table definition.
 #
-# Returns nothing.
+# @return nothing.
 function table_clear() {
     _cloudy_table_rows=()
 }
 
 # Determine if the table definition has any rows.
 #
-# Returns 0 if one or more rows in the definition; 1 if table is empty.
+# @return 0 if one or more rows in the definition; 1 if table is empty.
 function table_has_rows() {
     [ ${#_cloudy_table_rows[@]} -gt 0 ]
 }
@@ -2193,10 +2218,10 @@ function table_add_row() {
 
 # Repeat a string N times.
 #
-# $1 - The string to repeat.
-# $2 - The number of repetitions.
+# @param string The string to repeat.
+# @param int The number of repetitions.
 #
-# Returns nothing.
+# @return nothing.
 function string_repeat() {
     local string="$1"
     local repetitions=$2
@@ -2205,21 +2230,21 @@ function string_repeat() {
 
 # Echo a slim version of the table as it's been defined.
 #
-# Returns nothing.
+# @return nothing.
 function echo_slim_table() {
     _cloudy_echo_aligned_columns --lpad=1 --top="" --lborder="" --mborder=":" --rborder=""
 }
 
 # Echo the table as it's been defined.
 #
-# Returns nothing.
+# @return nothing.
 function echo_table() {
     _cloudy_echo_aligned_columns --lpad=1 --top="-" --lborder="|" --mborder="|" --rborder="|"
 }
 
 # Empties the YAML string from earlier builds, making ready anew.
 #
-# Returns 0.
+# @return 0.
 function yaml_clear() {
   yaml_content=''
   return 0
@@ -2227,10 +2252,9 @@ function yaml_clear() {
 
 # Add a line to our YAML data.
 #
-# $1 - string
-#   A complete line with proper indents.
+# @param string A complete line with proper indents.
 #
-# Returns 0.
+# @return 0.
 function yaml_add_line() {
   local line="$1"
 
@@ -2250,10 +2274,9 @@ yaml_content=''
 #   yaml_set "$yaml"
 #   json=$(yaml_get_json)
 #
-# $1 - string
-#   The YAML value to set.
+# @param string The YAML value to set.
 #
-# Returns 0
+# @return 0
 function yaml_set() {
   yaml_content="$1"
   return 0
@@ -2261,14 +2284,14 @@ function yaml_set() {
 
 # Echos the YAML string as YAML.
 #
-# Returns 0
+# @return 0
 function yaml_get() {
   echo "$yaml_content"
 }
 
 # Echos the YAML string as JSON.
 #
-# Returns 0
+# @return 0
 function yaml_get_json() {
   local json
   json=$("$CLOUDY_PHP" "$CLOUDY_ROOT/php/helpers.php" "yaml_to_json" "$yaml_content")

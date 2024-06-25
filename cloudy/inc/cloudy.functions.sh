@@ -1,15 +1,129 @@
 #!/usr/bin/env bash
 
+# TODO rename this as appropriate or find a similar function and merge them.
+function _resolve_file() {
+  local path="$1"
+
+  local directory
+  local basename
+
+  directory=${path%/*}
+  basename=${path##*/}
+
+  if [ -d "$directory" ]; then
+    directory="$(cd "$directory"; pwd -P)"
+  fi
+
+  echo "$directory/$basename"
+}
+# TODO rename this as appropriate or find a similar function and merge them.
+function _resolve_dir() {
+  local directory="$1"
+
+  if [ -d "$directory" ]; then
+    directory="$(cd "$directory"; pwd -P)"
+  fi
+
+  echo "$directory"
+}
+
+function _cloudy_detect_installation_type() {
+  local base
+  local check_composer
+  local check_cloudy
+  base=$(dirname $SCRIPT)
+
+  check_composer="$(_resolve_file "$base/../../../composer.json")"
+  [ -f "$(_resolve_file "$check_composer")" ] && echo $CLOUDY_INSTALL_TYPE_COMPOSER && return 0
+
+  check_composer="$(_resolve_file "$base/composer.json")"
+  check_cloudy="$(_resolve_file "$base/cloudy/cloudy.sh")"
+  [ -f "$check_composer" ] && [ -f "$check_cloudy" ]  && echo $CLOUDY_INSTALL_TYPE_CORE && return 0
+
+  check_composer="$(_resolve_file "$base/framework/cloudy/composer.json")"
+  check_cloudy="$(_resolve_file "$base/framework/cloudy/cloudy.sh")"
+  [ -f "$check_composer" ] && [ -f "$check_cloudy" ]  && echo $CLOUDY_INSTALL_TYPE_SELF && return 0
+
+  check_composer="$(_resolve_file "$base/../../cloudy/cloudy/composer.json")"
+  check_cloudy="$(_resolve_file "$base/../../../cloudypm.lock")"
+  [ -f "$check_composer" ] && [ -f "$check_cloudy" ] && echo $CLOUDY_INSTALL_TYPE_PM && return 0
+
+  return 1
+}
+
+# Echo the detected app root by installation type.
+#
+# Returns 1 if detection failed.
+function _cloudy_detect_app_root_by_installation() {
+  local installation_type="$1"
+
+  local base
+  local app_root
+  base="$(dirname "$SCRIPT")"
+  case "$installation_type" in
+  "$CLOUDY_INSTALL_TYPE_SELF")
+    app_root="$base"
+    ;;
+  "$CLOUDY_INSTALL_TYPE_COMPOSER")
+    app_root="$base/../../../"
+    ;;
+  "$CLOUDY_INSTALL_TYPE_CORE")
+    app_root="$base"
+    ;;
+  "$CLOUDY_INSTALL_TYPE_PM")
+    app_root="$base/../../../"
+    ;;
+  *)
+    return 1
+  esac
+  echo "$(_resolve_file "$app_root")"
+  return 0
+}
+
+function _cloudy_detect_composer_vendor_by_installation() {
+    local installation_type="$1"
+
+    local base
+    local vendor
+    base="$(dirname "$SCRIPT")"
+    case "$installation_type" in
+    "$CLOUDY_INSTALL_TYPE_SELF")
+      vendor="$base/framework/cloudy/vendor"
+      ;;
+    "$CLOUDY_INSTALL_TYPE_COMPOSER")
+      vendor="$base/../../../vendor"
+      ;;
+    "$CLOUDY_INSTALL_TYPE_CORE")
+      # First assume the app has a vendor directory, which cloudy is going to leverage...
+      vendor="$base/vendor"
+      # ... if not then use the one inside cloudy core.
+      [ ! -d "$vendor" ] && vendor="$base/cloudy/vendor"
+      ;;
+    "$CLOUDY_INSTALL_TYPE_PM")
+      vendor="$base/../../cloudy/cloudy/vendor"
+      ;;
+    *)
+      return 1
+    esac
+    echo "$(_resolve_file "$vendor")"
+    return 0
+}
+
 #
 # @file
 # Non-public functions used by the cloudy API.
 #
 function _cloudy_define_cloudy_vars() {
-  # todo Can we move more things here, or would that break scope?
+  # todo Can we move more things here, checking scope is not lost.
   LI="├──"
   LIL="└──"
   LI2="│   $LI"
   LIL2="│   $LIL"
+
+  CLOUDY_INSTALL_TYPE_SELF='self'
+  CLOUDY_INSTALL_TYPE_COMPOSER='composer'
+  CLOUDY_INSTALL_TYPE_CORE='cloudy_core'
+  CLOUDY_INSTALL_TYPE_PM='cloudy_pm'
 }
 
 function _cloudy_bootstrap_php() {
@@ -288,6 +402,9 @@ function _cloudy_get_config() {
 
         # Replace ~ with the actual home page
         path=$(echo ${path/\~/"$HOME"})
+
+        # Replace tokens
+        path=$(echo ${path/\{APP_ROOT\}/"$APP_ROOT"})
 
         # Make relative to $ROOT.
         [[ "$var_value" ]] && [[ "$var_value" != null ]] && [[ "${path:0:1}" != "/" ]] && path=${config_path_base}/${path}
