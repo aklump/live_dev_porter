@@ -1,3 +1,8 @@
+<!--
+id: code
+tags: ''
+-->
+
 # Provided Sanitization Code
 
 The following classes are provided to be used to help with sanitizing secrets from pulled files.

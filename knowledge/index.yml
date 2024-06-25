@@ -17,8 +17,6 @@ page_order:
     - pull
     - push
     - remote
-    - sanitation
-    - search__results
     - source_control
     - troubleshooting
     - workflows
@@ -30,3 +28,6 @@ page_order:
     - installation
     - remote_environment
     - validation
+  security:
+    - sanitation
+    - code

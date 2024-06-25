@@ -8,3 +8,6 @@ chapter_info:
   -
     id: troubleshooting
     title: Troubleshooting
+  -
+    id: security
+    title: Security
