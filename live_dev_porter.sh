@@ -8,6 +8,7 @@
 CONFIG="live_dev_porter.core.yml";
 
 COMPOSER_VENDOR=""
+APP_ROOT="../../.."
 
 # Uncomment this line to enable file logging.
 #LOGFILE="live_dev_porter.core.log"
