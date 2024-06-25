@@ -4,6 +4,7 @@ namespace AKlump\LiveDevPorter\Processors;
 
 use AKlump\LiveDevPorter\Lexers\RedactPasswordsInPhpLexer;
 use AKlump\LiveDevPorter\Lexers\RedactPasswordsInBashLexer;
+use AKlump\LiveDevPorter\Lexers\TokenAdapter;
 use RuntimeException;
 use Symfony\Component\Yaml\Yaml;
 
@@ -141,8 +142,9 @@ class RedactPasswords {
         break;
       }
       $lexer->moveNext();
-      if ($lexer->token->isA(RedactPasswordsInPhpLexer::T_VAR_ASSIGNMENT)) {
-        $find = $lexer->token->value;
+      $token = new TokenAdapter($lexer->token);
+      if ($token->isA(RedactPasswordsInPhpLexer::T_VAR_ASSIGNMENT)) {
+        $find = $token->getValue();
         preg_match('#' . RedactPasswordsInPhpLexer::REGEX_KEY . '#', $find, $matches);
         $key = $matches[1] ?? NULL;
         if (!$key
@@ -166,11 +168,11 @@ class RedactPasswords {
         break;
       }
       $lexer->moveNext();
-      $find = $lexer->token->value;
+      $token = new TokenAdapter($lexer->token);
+      $find = $token->getValue();
       preg_match('#' . RedactPasswordsInBashLexer::REGEX_KEY . '#', $find, $matches);
       $key = $matches[1] ?? NULL;
-
-      if ($lexer->token->isA(RedactPasswordsInBashLexer::T_URL_ASSIGNMENT)) {
+      if ($token->isA(RedactPasswordsInBashLexer::T_URL_ASSIGNMENT)) {
         list($key, $url) = explode('=', $find);
         if (!$key
           || (!$this->doesKeyReferenceAPassword($key) && !$this->shouldPointerBeReplaced($key))) {
@@ -183,7 +185,7 @@ class RedactPasswords {
           $replace = "$key=" . build_url($data);
         }
       }
-      elseif ($lexer->token->isA(RedactPasswordsInBashLexer::T_VAR_ASSIGNMENT)) {
+      elseif ($token->isA(RedactPasswordsInBashLexer::T_VAR_ASSIGNMENT)) {
         if (!$key
           || (!$this->doesKeyReferenceAPassword($key) && !$this->shouldPointerBeReplaced($key))) {
           continue;
@@ -192,7 +194,7 @@ class RedactPasswords {
         $replace = preg_replace('#([^=]+=)(.*)#', '$1' . $replace, $find);
       }
 
-      if(!empty($replace)) {
+      if (!empty($replace)) {
         $bash_code = str_replace($find, $replace, $bash_code);
         $context['message'] .= sprintf('%s has been redacted%s', $key, PHP_EOL);
       }

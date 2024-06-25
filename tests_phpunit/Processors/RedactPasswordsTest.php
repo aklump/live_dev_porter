@@ -11,6 +11,7 @@ use Symfony\Component\Yaml\Yaml;
 
 /**
  * @covers \AKlump\LiveDevPorter\Processors\RedactPasswords
+ * @uses   \AKlump\LiveDevPorter\Lexers\TokenAdapter
  * @uses   \AKlump\LiveDevPorter\Lexers\RedactPasswordsInPhpLexer
  * @uses   \AKlump\LiveDevPorter\Lexers\RedactPasswordsInBashLexer
  */
