@@ -9,6 +9,9 @@ use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\ParentConnectingVisitor;
 use PhpParser\ParserFactory;
 
+/**
+ * @deprecated Since version 0.0.160, Use \AKlump\LiveDevPorter\Processors\RedactPasswords instead.
+ */
 trait PhpTrait {
 
   /**

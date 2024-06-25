@@ -7,6 +7,8 @@ use Symfony\Component\Yaml\Yaml;
 
 /**
  * To be used to sanitize .env files.
+ *
+ * @deprecated Since version 0.0.160, Use \AKlump\LiveDevPorter\Processors\RedactPasswords instead.
  */
 trait YamlTrait {
 
