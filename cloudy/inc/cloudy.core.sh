@@ -37,6 +37,7 @@ else
     APP_ROOT="$(dirname "$SCRIPT")"
   fi
 fi
+export APP_ROOT=$(cd $APP_ROOT && pwd)
 write_log_debug "\$APP_ROOT is \"$APP_ROOT\""
 
 # Store the script options for later use.
