@@ -26,17 +26,17 @@ class RedactPasswords {
   private $replaceableKeys;
 
   /**
-   * @param string|NULL $replacement
    * @param array|null $replaceable_keys
-   *   Leave NULL for automatic key detection; to disable set to an empty array;
+   *   Leave NULL for automatic key detection; TO DISABLE SET TO AN EMPTY ARRAY;
    *   otherwise pass custom keys that will always be replaced.  These are
    *   different from pointers in that these are single keys e.g. "password" and
    *   do not take into account nested data such as "foo.bar.password" and
    *   "lorem.ipsum.password".
+   * @param string|NULL $replacement
    */
-  public function __construct(string $replacement = NULL, array $replaceable_keys = NULL) {
-    $this->replacement = $replacement ?? self::DEFAULT_REPLACEMENT;
+  public function __construct(array $replaceable_keys = NULL, string $replacement = NULL) {
     $this->replaceableKeys = $replaceable_keys ?? $this->getDefaultReplaceableKeys();
+    $this->replacement = $replacement ?? self::DEFAULT_REPLACEMENT;
   }
 
   /**
@@ -151,8 +151,7 @@ class RedactPasswords {
           || (!$this->doesKeyReferenceAPassword($key) && !$this->shouldPointerBeReplaced($key))) {
           continue;
         }
-        $replace = RedactPasswords::DEFAULT_REPLACEMENT;
-        $replace = preg_replace('#(=>.+?)(\w+)#', '$1' . $replace, $find);
+        $replace = preg_replace('#(=>.+?)(\w+)#', '$1' . $this->replacement, $find);
         $php_code = str_replace($find, $replace, $php_code);
         $context['message'] .= sprintf('%s has been redacted%s', $key, PHP_EOL);
       }
@@ -190,8 +189,7 @@ class RedactPasswords {
           || (!$this->doesKeyReferenceAPassword($key) && !$this->shouldPointerBeReplaced($key))) {
           continue;
         }
-        $replace = RedactPasswords::DEFAULT_REPLACEMENT;
-        $replace = preg_replace('#([^=]+=)(.*)#', '$1' . $replace, $find);
+        $replace = preg_replace('#([^=]+=)(.*)#', '$1' . $this->replacement, $find);
       }
 
       if (!empty($replace)) {

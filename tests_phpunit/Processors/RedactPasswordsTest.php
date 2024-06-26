@@ -65,7 +65,7 @@ class RedactPasswordsTest extends TestCase {
   public function testReplacementIsConfigurable() {
     $filepath = $this->getTestFileFilepath('redact_passwords.yml');
     $contents = file_get_contents($filepath);
-    (new RedactPasswords('removed'))(ProcessorModes::YAML, $contents);
+    (new RedactPasswords(NULL, 'removed'))(ProcessorModes::YAML, $contents);
     $data = Yaml::parse($contents);
     $this->assertSame('removed', $data['foo']['pass']);
   }
@@ -86,7 +86,7 @@ class RedactPasswordsTest extends TestCase {
   public function testSettingReplaceableKeysToEmptyArraysDisablesDefaultKeys() {
     $filepath = $this->getTestFileFilepath('redact_passwords.yml');
     $contents = file_get_contents($filepath);
-    (new RedactPasswords(NULL, []))(ProcessorModes::YAML, $contents);
+    (new RedactPasswords([]))(ProcessorModes::YAML, $contents);
     $data = Yaml::parse($contents);
     $this->assertNotSame(RedactPasswords::DEFAULT_REPLACEMENT, $data['foo']['pass']);
     $this->assertNotSame(RedactPasswords::DEFAULT_REPLACEMENT, $data['foo']['bar']['password']);
