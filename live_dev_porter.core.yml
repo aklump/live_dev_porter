@@ -3,7 +3,6 @@ name: 'Live Dev Porter'
 description: 'Simplifies the management and transfer of assets between website environments.'
 version: 0.0.162
 author: 'Aaron Klump <sourcecode@intheloftstudios.com>'
-config_path_base: ../../..
 additional_config:
   - '{APP_ROOT}/.live_dev_porter/config.yml'
   - '{APP_ROOT}/.live_dev_porter/config.local.yml'

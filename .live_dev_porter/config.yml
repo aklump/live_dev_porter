@@ -1,0 +1,6 @@
+environments:
+  dev:
+    label: Development
+    write_access: true
+    plugin: default
+    base_path: /Users/aklump/Code/Packages/bash/live_dev_porter/opt/aklump/live_dev_porter
