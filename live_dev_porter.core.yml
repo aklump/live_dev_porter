@@ -7,7 +7,7 @@ config_path_base: ../../..
 path_to_app: .
 additional_config:
   - '{APP_ROOT}/.live_dev_porter/config.yml'
-  - '{APP_ROOT}./live_dev_porter/config.local.yml'
+  - '{APP_ROOT}/.live_dev_porter/config.local.yml'
 additional_bootstrap: null
 default_command: help
 max_database_rollbacks_to_keep: 15
