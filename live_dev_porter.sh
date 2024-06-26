@@ -8,7 +8,7 @@
 CONFIG="live_dev_porter.core.yml";
 
 # Uncomment this line to enable file logging.
-#LOGFILE="live_dev_porter.core.log"
+#[[ ! "$LOGFILE" ]] && LOGFILE="live_dev_porter.core.log"
 
 function on_pre_config() {
   source "$CLOUDY_ROOT/inc/cloudy.read_local_config.sh"
