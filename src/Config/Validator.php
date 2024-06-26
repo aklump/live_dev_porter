@@ -27,7 +27,6 @@ final class Validator {
       'description',
       'max_database_rollbacks_to_keep',
       'name',
-      'path_to_app',
       'plugins',
       'title',
       'version',

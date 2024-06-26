@@ -4,7 +4,6 @@ description: 'Simplifies the management and transfer of assets between website e
 version: 0.0.162
 author: 'Aaron Klump <sourcecode@intheloftstudios.com>'
 config_path_base: ../../..
-path_to_app: .
 additional_config:
   - '{APP_ROOT}/.live_dev_porter/config.yml'
   - '{APP_ROOT}/.live_dev_porter/config.local.yml'
