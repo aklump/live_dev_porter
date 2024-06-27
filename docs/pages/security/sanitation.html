@@ -73,32 +73,52 @@ environments:
     command_workflows:
       pull: development
 </code></pre>
+<h2>The .env file</h2>
+<pre><code class="shell">FOO=BAR
+HASH_SALT='x4XchzwQ`zk55n24r$\ZQ1P.qkcqZcGEiW7J1-K0jcC9|HC(Csl&lt;;kwxPteegp7aS4iNq~to'
+CLIENT_SECRET='TQiGdby59oBv3n$BqOZVxzkKX9ojztZX1hIIK6jIKog\q&gt;iN*IDCbO8b$pbmT1BhMiijIHx4XchzwQ`zk55n24r$\ZQ1P.qkcqZcGEiW7J1-K0jcC9|HC(Csl&lt;;kwxPteegp7aS4iNq~to'
+BAR=BAZ
+DATABASE_URL=mysql://drupal8:rock$ol1D@database/drupal8
+</code></pre>
+<p>After being sanitized:
+<code>`</code>shell
+FOO=BAR
+HASH_SALT=REDACTED
+CLIENT_SECRET=REDACTED
+BAR=BAZ
+DATABASE_URL=mysql://drupal8:PASSWORD@database/drupal8
+<code>`</code></p>
 <h2>The Processor File</h2>
 <p>_./live_dev<em>porter/processors/RemoveSecrets.php</em></p>
-<pre><code class="php">&lt;?php
-
-use AKlump\LiveDevPorter\Processors\ProcessorFailedException;
-
-class RemoveSecrets extends \AKlump\LiveDevPorter\Processors\ProcessorBase {
-
-  use \AKlump\LiveDevPorter\Processors\EnvTrait;
+<pre><code class="php">class RemoveSecrets extends \AKlump\LiveDevPorter\Processors\ProcessorBase {
 
   public function process() {
-    if (!$this-&gt;loadFile()
-      || basename($this-&gt;filepath) != '.env') {
-      return;
+    if (!$this-&gt;isWriteableEnvironment() || 'install' !== $this-&gt;filesGroupId || !$this-&gt;loadFile()) {
+      throw new \AKlump\LiveDevPorter\Processors\ProcessorSkippedException();
     }
 
-    $response = [];
-    $this-&gt;envReplaceUrlPassword('DATABASE_URL');
-    $response[] = "DATABASE_URL password";
-    foreach (['HASH_SALT', 'SHAREFILE_CLIENT_SECRET'] as $variable_name) {
-      $this-&gt;envReplaceValue($variable_name);
-      $response[] = $variable_name;
-    }
-    $this-&gt;saveFile();
+    // We will apply sanitizing to the ".env" file.
+    if ($this-&gt;getBasename() === '.env') {
+    
+      // This argument is passed by reference and is mutated by $redactor.
+      $redactor = (new \AKlump\LiveDevPorter\Security\Redactor($this-&gt;loadedFile['contents']));
+      
+      // The default replacement will be used for these two keys.
+      $redactor-&gt;find(['CLIENT_SECRET', 'HASH_SALT'])-&gt;redact();
+      
+      // A custom "PASSWORD" replacement will be used.
+      $redactor-&gt;find(['DATABASE_URL'])-&gt;replaceWith('PASSWORD')-&gt;redact();
+      
+      // This will contain messages about what, if anything has been redacted.  Or be an empty string if no redaction occurred.
+      $message = $redactor-&gt;getMessage();
+      if (!$message || $this-&gt;saveFile() !== FALSE) {
+        return $message;
+      }
 
-    return sprintf("Removed %s from %s.", implode(', ', $response), $this-&gt;shortpath);
+      throw new \Symfony\Component\Process\Exception\ProcessFailedException('Could not save %s', $this-&gt;getFilepath());
+    }
+
+    throw new \AKlump\LiveDevPorter\Processors\ProcessorSkippedException();
   }
 
 }
@@ -110,9 +130,9 @@ class RemoveSecrets extends \AKlump\LiveDevPorter\Processors\ProcessorBase {
   <footer class="footer d-flex justify-content-center">
     <div class="flex-column justify-content-center">
               Version:
-        <strong>0.0.164</strong>
+        <strong>0.0.165</strong>
         &bull;
-            Last Update: <strong>6/26/2024</strong>
+            Last Update: <strong>6/27/2024</strong>
     </div>
   </footer>
 
