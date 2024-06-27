@@ -40,35 +40,59 @@ environments:
       pull: development
 ```
 
+## The .env file
+
+```shell
+FOO=BAR
+HASH_SALT='x4XchzwQ`zk55n24r$\ZQ1P.qkcqZcGEiW7J1-K0jcC9|HC(Csl<;kwxPteegp7aS4iNq~to'
+CLIENT_SECRET='TQiGdby59oBv3n$BqOZVxzkKX9ojztZX1hIIK6jIKog\q>iN*IDCbO8b$pbmT1BhMiijIHx4XchzwQ`zk55n24r$\ZQ1P.qkcqZcGEiW7J1-K0jcC9|HC(Csl<;kwxPteegp7aS4iNq~to'
+BAR=BAZ
+DATABASE_URL=mysql://drupal8:rock$ol1D@database/drupal8
+```
+
+After being sanitized:
+```shell
+FOO=BAR
+HASH_SALT=REDACTED
+CLIENT_SECRET=REDACTED
+BAR=BAZ
+DATABASE_URL=mysql://drupal8:PASSWORD@database/drupal8
+```
+
 ## The Processor File
 
 _./live_dev_porter/processors/RemoveSecrets.php_
 
 ```php
-<?php
-
-use AKlump\LiveDevPorter\Processors\ProcessorFailedException;
-
 class RemoveSecrets extends \AKlump\LiveDevPorter\Processors\ProcessorBase {
 
-  use \AKlump\LiveDevPorter\Processors\EnvTrait;
-
   public function process() {
-    if (!$this->loadFile()
-      || basename($this->filepath) != '.env') {
-      return;
+    if (!$this->isWriteableEnvironment() || 'install' !== $this->filesGroupId || !$this->loadFile()) {
+      throw new \AKlump\LiveDevPorter\Processors\ProcessorSkippedException();
     }
 
-    $response = [];
-    $this->envReplaceUrlPassword('DATABASE_URL');
-    $response[] = "DATABASE_URL password";
-    foreach (['HASH_SALT', 'SHAREFILE_CLIENT_SECRET'] as $variable_name) {
-      $this->envReplaceValue($variable_name);
-      $response[] = $variable_name;
-    }
-    $this->saveFile();
+    // We will apply sanitizing to the ".env" file.
+    if ($this->getBasename() === '.env') {
+    
+      // This argument is passed by reference and is mutated by $redactor.
+      $redactor = (new \AKlump\LiveDevPorter\Security\Redactor($this->loadedFile['contents']));
+      
+      // The default replacement will be used for these two keys.
+      $redactor->find(['CLIENT_SECRET', 'HASH_SALT'])->redact();
+      
+      // A custom "PASSWORD" replacement will be used.
+      $redactor->find(['DATABASE_URL'])->replaceWith('PASSWORD')->redact();
+      
+      // This will contain messages about what, if anything has been redacted.  Or be an empty string if no redaction occurred.
+      $message = $redactor->getMessage();
+      if (!$message || $this->saveFile() !== FALSE) {
+        return $message;
+      }
 
-    return sprintf("Removed %s from %s.", implode(', ', $response), $this->shortpath);
+      throw new \Symfony\Component\Process\Exception\ProcessFailedException('Could not save %s', $this->getFilepath());
+    }
+
+    throw new \AKlump\LiveDevPorter\Processors\ProcessorSkippedException();
   }
 
 }

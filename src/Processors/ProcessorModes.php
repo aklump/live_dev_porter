@@ -2,6 +2,9 @@
 
 namespace AKlump\LiveDevPorter\Processors;
 
+/**
+ * All constants must be positive integer values.
+ */
 class ProcessorModes {
 
   const ENV = 1;
