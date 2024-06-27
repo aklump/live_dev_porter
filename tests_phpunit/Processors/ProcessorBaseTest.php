@@ -19,8 +19,9 @@ class ProcessorBaseTest extends TestCase {
       'FILEPATH' => $this->getTestFileFilepath($expected),
     ];
     $obj = new ProcessorBaseTestable($processor_config);
-    $name = $obj->getBasename();
-    $this->assertSame($expected, $name);
+    $this->assertSame($expected, $obj->getBasename());
+    $this->assertSame($processor_config['FILEPATH'], $obj->getFilepath());
+    $this->assertSame('yml', $obj->getExtension());
   }
 }
 
