@@ -27,7 +27,7 @@ fi
 # It's possible that the controller has set APP_ROOT, if not we will try to
 # detect what it is automatically.
 if [[ "$APP_ROOT" ]]; then
-  if ! path_is_absolute; then
+  if ! path_is_absolute "$APP_ROOT"; then
     APP_ROOT="$(_resolve_dir "$(dirname $SCRIPT)/$APP_ROOT")"
   fi
 else
@@ -37,6 +37,9 @@ else
     # Do we really need this fallback?
     APP_ROOT="$(dirname "$SCRIPT")"
   fi
+fi
+if [[ ! "$APP_ROOT" ]]; then
+  exit_with_failure '$APP_ROOT is empty; Cloudy cannot continue.'
 fi
 export APP_ROOT=$(cd $APP_ROOT && pwd)
 write_log_debug "\$APP_ROOT is \"$APP_ROOT\""

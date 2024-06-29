@@ -8,6 +8,10 @@
 use Ckr\Util\ArrayMerger;
 use Symfony\Component\Yaml\Yaml;
 
+require_once __DIR__ . '/cloudy.api.php';
+require_once __DIR__ . '/error_handler.php';
+require_once __DIR__ . '/cloudy.functions.php';
+
 /**
  * Root directory of the Cloudy instance script.
  */
@@ -23,9 +27,6 @@ $composer_vendor = getenv('COMPOSER_VENDOR');
 if (empty($composer_vendor)) {
   throw new RuntimeException('Environment var "$composer_vendor" cannot be empty.');
 }
-
-require_once __DIR__ . '/error_handler.php';
-require_once __DIR__ . '/cloudy.functions.php';
 
 /** @var \Composer\Autoload\ClassLoader $class_loader */
 $class_loader = require_once $composer_vendor . '/autoload.php';
@@ -162,5 +163,3 @@ function array_sort_by_item_length() {
 
   return array_values($stack);
 }
-
-require_once __DIR__ . '/cloudy.api.php';
