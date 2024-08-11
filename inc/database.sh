@@ -60,7 +60,7 @@ function database_get_defaults_file() {
   local database_id="$2"
 
   local defaults_file
-  defaults_file=$(call_php_class_method "\AKlump\LiveDevPorter\Database\DatabaseGetDefaultsFile::__invoke($environment_id,$database_id)")
+  defaults_file=$(call_php_class_method "\AKlump\LiveDevPorter\Database\DatabaseGetPathToDefaultsFile::__invoke($environment_id,$database_id)")
   if [[ $? -ne 0 ]]; then
     write_log_error "'${FUNCNAME[0]}' failed: $defaults_file"
     fail_because "$defaults_file" && return 1
@@ -100,7 +100,7 @@ function database_delete_all_defaults_files(){
     [[ ! -f "$filepath" ]] && continue
     sandbox_directory "$(dirname $filepath)"
     if chmod 0600 "$filepath" && rm "$filepath"; then
-      succeed_because "$(path_unresolve "$APP_ROOT" "$filepath")"
+      succeed_because "$(path_make_relative "$filepath" "$CLOUDY_BASEPATH")"
     else
       fail_because "Failed to delete $filepath"
     fi
@@ -115,7 +115,7 @@ function database_delete_all_name_files() {
     [[ ! -f "$filepath" ]] && continue
     sandbox_directory "$(dirname $filepath)"
     if chmod 0600 "$filepath" && rm "$filepath"; then
-      succeed_because "$(path_unresolve "$APP_ROOT" "$filepath")"
+      succeed_because "$(path_make_relative "$filepath" "$CLOUDY_BASEPATH")"
     else
       fail_because "Failed to delete $filepath"
     fi
@@ -153,7 +153,7 @@ function database_get_cached_name_filepath() {
   local database_id="$2"
 
   local filepath
-  filepath=$(call_php_class_method "\AKlump\LiveDevPorter\Database\DatabaseGetDefaultsFile::__invoke($environment_id,$database_id)")
+  filepath=$(call_php_class_method "\AKlump\LiveDevPorter\Database\DatabaseGetPathToDefaultsFile::__invoke($environment_id,$database_id)")
   if [[ $? -ne 0 ]]; then
     write_log_error "'${FUNCNAME[0]}' failed: $filepath"
     fail_because "$filepath" && return 1

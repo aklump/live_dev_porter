@@ -1,10 +1,11 @@
 <?php
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 /**
  * @file
  * Handle PHP errors by routing to the Cloudy error handling.
  *
- * To see the log output the env var LOGFILE must be set to a writeable path.
+ * To see the log output the env var CLOUDY_LOG must be set to a writeable path.
  */
 
 function _cloudy_php_error_handler_get_level($error_code) {
@@ -54,7 +55,7 @@ function _cloudy_php_shutdown_handler() {
   call_user_func_array('write_log', $args);
 }
 
-$logfile = getenv('LOGFILE');
+$logfile = getenv('CLOUDY_LOG');
 if (!empty($logfile)) {
   error_reporting(E_ALL);
 }

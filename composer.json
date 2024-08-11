@@ -4,7 +4,8 @@
     "license": "BSD-3-Clause",
     "autoload": {
         "psr-4": {
-            "AKlump\\LiveDevPorter\\": "src/"
+            "AKlump\\LiveDevPorter\\": "src/",
+            "AKlump\\Cloudy\\": "./cloudy/php/src/"
         }
     },
     "autoload-dev": {
@@ -22,15 +23,16 @@
         "bin/ldp"
     ],
     "require": {
-        "php": "^7.3 || ^8",
-        "jasny/dotkey": "^1.0",
-        "ckr/arraymerger": "^2.0",
-        "nikic/php-parser": "^4.15",
-        "ext-json": "*",
-        "symfony/yaml": "^3.4 || ^4 || ^5 || ^6",
-        "justinrainbow/json-schema": "^5.2",
+        "aklump/build-url": "^0.0.2",
+        "aklump/glob": "^0.0",
         "aklump/loft-lib": "^2.1",
+        "ckr/arraymerger": "^2.0",
         "doctrine/lexer": "^1.2 || ^2.1",
-        "aklump/build-url": "^0.0.2"
+        "ext-json": "*",
+        "jasny/dotkey": "^1.0",
+        "justinrainbow/json-schema": "^5.2",
+        "nikic/php-parser": "^4.15",
+        "php": "^7.3 || ^8",
+        "symfony/yaml": "^3.4 || ^4 || ^5 || ^6"
     }
 }

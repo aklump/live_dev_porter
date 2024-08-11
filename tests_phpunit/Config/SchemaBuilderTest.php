@@ -22,7 +22,7 @@ class SchemaBuilderTest extends TestCase {
     ], $cloudy_config);
     $this->expectException(\RuntimeException::class);
     $this->expectExceptionMessageMatches('/PLUGINS_DIR/');
-    $builder->build();
+    $builder->onRebuildConfig();
   }
 
   public function testMissingPluginsDirThrows() {
@@ -32,6 +32,6 @@ class SchemaBuilderTest extends TestCase {
     ], $cloudy_config);
     $this->expectException(\RuntimeException::class);
     $this->expectExceptionMessageMatches('/PLUGINS_DIR/');
-    $builder->build();
+    $builder->onRebuildConfig();
   }
 }

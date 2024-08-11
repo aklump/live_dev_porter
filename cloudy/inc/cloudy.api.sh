@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# SPDX-License-Identifier: BSD-3-Clause
+
 # Set a JSON string to be later read by json_get_value().
 #
 # Call this once to put your json string into memory, then make unlimited calls
@@ -18,9 +20,10 @@ function json_set() {
   local incoming_json="$1"
 
   local clean_json
-  clean_json="$("$CLOUDY_PHP" "$CLOUDY_ROOT/php/helpers.php" "json_bash_filter" "$incoming_json")"
+
+  clean_json="$(. "$PHP_FILE_RUNNER" "$CLOUDY_CORE_DIR/php/functions/invoke.php" "json_bash_filter" "$incoming_json")"
   if [[ $? -ne 0 ]]; then
-    write_log_error "json_set \"$path\" failed set JSON: $incoming_json"
+    write_log_error "json_set \"$path\" failed to set JSON: $incoming_json"
     write_log_error "$clean_json"
     return 1
   fi
@@ -36,7 +39,8 @@ function json_load_file() {
   local path_to_json="$1"
 
   local loaded_json
-  loaded_json="$("$CLOUDY_PHP" "$CLOUDY_ROOT/php/helpers.php" "json_load_file" "$path_to_json")"
+
+  loaded_json="$(. "$PHP_FILE_RUNNER" "$CLOUDY_CORE_DIR/php/functions/invoke.php" "json_load_file" "$path_to_json")"
   if [[ $? -ne 0 ]]; then
     write_log_error "json_load_file \"$path\" failed to load $path_to_json"
     write_log_error "$loaded_json"
@@ -72,7 +76,8 @@ function json_get_value() {
   local path="$1"
 
   local value
-  value="$("$CLOUDY_PHP" "$CLOUDY_ROOT/php/helpers.php" "json_get_value" "$path" "$json_content")"
+
+  value="$(. "$PHP_FILE_RUNNER" "$CLOUDY_CORE_DIR/php/functions/invoke.php" "json_get_value" "$path" "$json_content")"
   if [[ $? -ne 0 ]]; then
     write_log_error "json_get_value \"$path\" failed against JSON: $(json_get)"
     write_log_error "$value"
@@ -196,7 +201,7 @@ function get_title() {
     local default="$1"
 
     local title
-    eval $(get_config "title" "$default")
+    eval $(get_config_as "title" "title" "$default")
     echo $title
 }
 
@@ -221,7 +226,7 @@ function md5_string() {
 # @return nothing.
 function get_version() {
     local version
-    eval $(get_config "version" "1.0")
+    eval $(get_config_as "version" "version" "1.0")
     echo $version
 }
 
@@ -263,9 +268,9 @@ function date8601() {
     return 0
 }
 
-# Validate the CLI input arguments and options.
+# Validate the CLI input arguments and options and exit if invalid.
 #
-# @return 0 if all input is valid; 1 otherwise.
+# @return 0 if all input is valid
 function validate_input() {
     local command
     local assume_command
@@ -294,17 +299,10 @@ function validate_input() {
        array_has_value__array=(${_cloudy_get_valid_operations_by_command__array[@]})
        array_has_value $name || fail_because "Invalid option: $name"
        eval "value=\"\$CLOUDY_OPTION__$(md5_string $name)\""
-
-       # Assert the provided value matches schema.
-       eval $(_cloudy_validate_input_against_schema "commands.$command.options.$name" "$name" "$value")
-       if [[ "$schema_errors" ]]; then
-            for error in "${schema_errors[@]}"; do
-               fail_because "$error"
-            done
-       fi
+       . "$PHP_FILE_RUNNER" "$CLOUDY_CORE_DIR/php/validate_against_schema.php" "commands.$command.options.$name" "$name" "$value"
     done
 
-    has_failed && return 1
+    has_failed && exit_with_failure "Input validation failed."
     return 0
 }
 
@@ -638,7 +636,9 @@ function array_sort() {
 function array_sort_by_item_length() {
     local sorted
     local php_result
-    php_result=$("$CLOUDY_PHP" "$CLOUDY_ROOT/php/helpers.php" "array_sort_by_item_length" "sorted" "${array_sort_by_item_length__array[@]}")
+    local result
+
+    php_result=$(. "$PHP_FILE_RUNNER" "$CLOUDY_CORE_DIR/php/functions/invoke.php" "array_sort_by_item_length" "sorted" "${array_sort_by_item_length__array[@]}")
     result=$?
     if [[ $result -ne 0 ]]; then
       write_log_error "array_sort_by_item_length failed."
@@ -712,6 +712,8 @@ function get_command_args() {
  #   eval $(get_config -a 'path.to.array' 'default_value')
  # @code
  #
+ # @deprecated Since version 2.0.0, Use get_config_as() instead.
+ #
 function get_config() {
     local config_path=$1
     local default_value=$2
@@ -742,11 +744,14 @@ function get_config_as() {
     _cloudy_get_config "$config_path" "$default_value" --as="$custom_var_name" $parse_args__options_passthru
 }
 
-# Echos eval code for the keys of a configuration associative array.
-#
-# @param string The path to the config item, e.g. "files.private"
-#
-# @return 0 on success.
+## Echos eval code for the keys of a configuration associative array.
+ #
+ # @param string The path to the config item, e.g. "files.private"
+ #
+ # @return 0 on success.
+ #
+ # @deprecated Since version 2.0.0, Use get_config_keys_as() instead.
+ ##
 function get_config_keys() {
     local config_key_path="$1"
 
@@ -768,14 +773,17 @@ function get_config_keys_as() {
     _cloudy_get_config -a --keys "$config_key_path" "" --as="$custom_var_name"
 }
 
-# Echo eval code for paths of a configuration item.
-#
-# Relative paths are made absolute using $APP_ROOT.
-#
-# @param string The path to the config item, e.g. "files.private"
-# @option -a If you are expecting an array
-#
-# @return 0 on success.
+## Echo eval code for paths of a configuration item.
+ #
+ # Relative paths are made absolute using $CLOUDY_BASEPATH.
+ #
+ # @param string The path to the config item, e.g. "files.private"
+ # @option -a If you are expecting an array
+ #
+ # @return 0 on success.
+ #
+ # @deprecated Since version 2.0.0, Use get_config_path_as() instead.
+ ##
 function get_config_path() {
     local config_key_path=$1
     local default_value=$2
@@ -788,7 +796,7 @@ function get_config_path() {
 
 # Echo eval code for paths of a configuration item using custom var.
 #
-# Relative paths are made absolute using $APP_ROOT.
+# Relative paths are made absolute using $CLOUDY_BASEPATH.
 #
 # @param string The variable name to assign the value to.
 # @param string The path to the config item, e.g. "files.private"
@@ -1197,11 +1205,10 @@ function implement_cloudy_basic() {
 # @return 0 On success.
 # @return 1 if the init fails
 function handle_init() {
-    local path_to_files_map="$ROOT/init/cloudypm.files_map.txt"
-    [ -f "$path_to_files_map" ] || fail_because "Missing required initialization file: $path_to_files_map."
-
-    local init_source_dir="$ROOT/init"
+    local init_source_dir="$(dirname "$CLOUDY_PACKAGE_CONTROLLER")/init"
     [ -d "$init_source_dir" ] || fail_because "Missing initialization source directory: $init_source_dir"
+    local path_to_files_map="$init_source_dir/cloudypm.files_map.txt"
+    [ -f "$path_to_files_map" ] || fail_because "Missing required initialization file: $path_to_files_map."
     local from_map=()
     local to_map=()
     local init_config_dir
@@ -1211,28 +1218,21 @@ function handle_init() {
     local token_match
     local uninterpolated_token
 
-    # Token support is detected by checking if APP_ROOT has been set yet or not.
+    # Token support is detected by checking if CLOUDY_BASEPATH has been set yet or not.
     # If this is called too early then the configuration is not loaded and token
     # support will not be supported.
-    [[ "$APP_ROOT" ]] && token_support=true || token_support=false
+    [[ "$CLOUDY_BASEPATH" ]] && token_support=true || token_support=false
 
-    # The token "${config_path_base}" should be used in the files map, so it's
-    # required that the configured value is available to proceed with this
-    # process.
-    if [[ $token_support == true ]]; then
-      eval $(get_config_as config_path_base config_path_base)
-      if [[ ! "$config_path_base" ]]; then
-        fail_because "config_path_base cannot be empty, did you mean '.'?"
-        write_log_notice "config_path_base cannot be empty, did you mean '.' ?"
-        write_log_debug "Make sure $CONFIG contains a value for config_path_base."
-      fi
+    # @see changelog for version 2.0.0
+    grep \${config_path_base} "$path_to_files_map" > /dev/null
+    if [[ $? -eq 0 ]]; then
+      fail_because "The token \"{APP_ROOT}\" must be used; \"\${config_path_base}\" is no longer supported; in $path_to_files_map"
     fi
 
     token_match='\{.+\}'
     while read -r from to || [[ -n "$line" ]]; do
       if [[ "$token_support" == true ]]; then
-        to="${to/\{config_path_base\}/$config_path_base}"
-        to="${to/\{APP_ROOT\}/$APP_ROOT}"
+        to="$(_cloudy_resolve_path_tokens "$to")"
       fi
       if [[ "$from" == "*" ]]; then
           to="${to%\*}"
@@ -1258,15 +1258,18 @@ function handle_init() {
         for basename in $(ls $init_source_dir); do
             [[ "$basename" == cloudypm* ]] && continue
             source_path="$init_source_dir/$basename"
-            destination_path=$(path_relative_to_root "$init_config_dir/$basename")
+            destination_path="$init_config_dir/$basename"
+            p="$(path_make_absolute "$destination_path" "$ROOT")" && destination_path="$p"
             if [[ "$basename" == 'gitignore' ]]; then
-              $destination_path = "$(realpath "$ROOT/../../../opt/.gitignore")"
+              # Merge into the cloudy PM git ignore.
+              destination_path="$(realpath "$ROOT/../../../opt/.gitignore")"
             fi
 
             local i=0
             for special_file in "${from_map[@]}"; do
                if [[ "$special_file" == "$basename" ]];then
-                 destination_path="$(path_relative_to_root ${to_map[$i]})"
+                 destination_path="${to_map[$i]}"
+                 p="$(path_make_absolute "$destination_path" "$ROOT")" && destination_path="$p"
                fi
                let i++
             done
@@ -1307,7 +1310,7 @@ function handle_init() {
 # Performs an initialization (setup default config, etc.) and exits.
 #
 # You must set up an init command in your core config file.
-# Then call this function from inside `on_pre_config`, e.g.
+# Then call this function from inside `on_boot`, e.g.
 # [[ "$(get_command)" == "init" ]] && exit_with_init
 # The translation service is not yet bootstrapped in on_pre_config, so if you
 # want to alter the strings printed you can do something like this:
@@ -1326,12 +1329,12 @@ function exit_with_init() {
 }
 
 ##
- # Empties caches in $CLOUDY_ROOT (or other directory if provided) and exits.
+ # Empties caches in $CLOUDY_CORE_DIR (or other directory if provided) and exits.
  #
  # @return nothing.
  #
 function exit_with_cache_clear() {
-    local cloudy_dir="${1:-$CLOUDY_ROOT}"
+    local cloudy_dir="${1:-$CLOUDY_CORE_DIR}"
     local clear
     [[ ! "${cloudy_dir}" ]] && exit_with_failure "Invalid cache directory ${cloudy_dir}"
     event_dispatch "clear_cache" "$cloudy_dir" || exit_with_failure "Clearing caches failed"
@@ -1510,8 +1513,6 @@ function exit_with_failure_if_config_is_not_path() {
 
     exit_with_failure_if_empty_config $@
 
-    value=$(path_relative_to_config_base $value)
-
     # Make sure it's a path.
     [ ! -e "$value" ] && exit_with_failure "Failed because the path \"$value\" , does not exist; defined in configuration as $config_path."
 
@@ -1602,6 +1603,10 @@ function exit_with_failure() {
 
     echo && echo_error "🔥 $exit_message"
 
+    if [[ "$CLOUDY_LOG" ]]; then
+      CLOUDY_FAILURES=("${CLOUDY_FAILURES[@]}" "More info: $CLOUDY_LOG")
+    fi
+
     ## Write out the failure messages if any.
     if [ ${#CLOUDY_FAILURES[@]} -gt 0 ]; then
         echo_list__array=("${CLOUDY_FAILURES[@]}")
@@ -1677,16 +1682,17 @@ function fail() {
     CLOUDY_EXIT_STATUS=1 && return 0
 }
 
-# Add a failure message to be shown on exit.
-#
-# @param string The reason for the failure.
-# @param string A default value if $1 is empty.
-#
-# @code
-#   fail_because "$reason" "Some default if $reason is empty"
-# @endcode
-#
-# @return 1 if both $message and $default are empty. 0 otherwise.
+## Add a failure message to be shown on exit.
+ #
+ # @param string The reason for the failure.
+ # @param string A default value if $1 is empty.
+ #
+ # @code
+ #   fail_because "$message" "Some default if \$message is empty"
+ # @endcode
+ #
+ # @return 1 if both $message and $default are empty. 0 otherwise.
+ ##
 function fail_because() {
     local message="$1"
     local default="$2"
@@ -1706,7 +1712,7 @@ function fail_because() {
 #
 # @return 0 if one or more failure messages are present; 1 if not.
 function has_failed() {
-    [ $CLOUDY_EXIT_STATUS -gt 0 ] && return 0
+    [[ $CLOUDY_EXIT_STATUS -gt 0 ]] && return 0
     return 1
 }
 
@@ -1768,6 +1774,9 @@ function event_dispatch() {
 ##
  # Register an event listener.
  #
+ # @param string The event id, e.g. "boot"
+ # @param string The function name to call on the event.
+ #
 function event_listen() {
     local event_id="$1"
     local callback="${2:-on_$1}"
@@ -1787,84 +1796,6 @@ function event_listen() {
 # Filepaths
 #
 
-##
- # Echo a path relative to config_path_base.
- #
- # If the path begins with / it is unchanged.
- #
-function path_relative_to_config_base() {
-    local path="$1"
-
-    local config_path_base=${cloudy_config_22b41169ff3731365de5e8293e01c831}
-    [[ "${config_path_base:0:1}" != '/' ]] && config_path_base="${ROOT}/$config_path_base"
-    config_path_base=${config_path_base%/}
-    path_resolve "$config_path_base" "$path"
-}
-
-##
- # Expand a relative path using $ROOT as base.
- #
- # If the path begins with / it is unchanged.
- #
-function path_relative_to_root() {
-    local path="$1"
-
-    path_resolve "$ROOT" "$path"
-}
-
-# Make $1 relative if it's inside $PWD.
-#
-# @param string An absolute filepath.  $PWD will be replaced by ./ if possible.
-#
-function path_relative_to_pwd() {
-  local path="$1"
-
-  relative=$(path_unresolve "$PWD" "$path")
-  if [[ "$relative" != "$path" ]]; then
-    if [[ "$relative" != '.' ]]; then
-      relative="./$relative"
-    fi
-  fi
-  echo "$relative"
-}
-
-# Resolve a path to an absolute link; if already absolute, do nothing.
-#
-# @param string The dirname to use if $2 is not absolute
-# @param string The path to make absolute if not starting with /
-#
-# @return nothing
-function path_resolve() {
-    local dirname="${1%/}"
-    local path="$2"
-
-    [[ "${path:0:1}" != '/' ]] && path="$dirname/$path"
-    [ ! -e $path ] && echo $path && return
-
-    # If it exists, we will echo the real path.
-    echo "$(cd $(dirname $path) && pwd)/$(basename $path)"
-}
-
-# Echo a relative path by removing a leading directory(ies).
-#
-# The trailing slash will always be removed.  The relative path is returned
-# without a leading slash.  If it cannot be unresolved, any leading slash will
-# remain.  If the two arguments are the same, '.' will be returned.
-#
-# @param string The dirname to remove from the left of $2
-# @param string The path to make relative by removing $1, if possible.
-#
-function path_unresolve() {
-  local dirname="${1%/}"
-  local path="${2%/}"
-
-  local relative=${path#"$dirname"}
-  [[ "$relative" == "$path" ]] && echo "$path" && return 0
-  relative=${relative#/}
-  [[ "$relative" ]] && echo "$relative" && return 0
-  echo '.'
-}
-
 # Determine if a path is absolute (begins with /) or not.
 #
 # @param string The filepath to check
@@ -1876,13 +1807,28 @@ function path_is_absolute() {
     [[ "${path:0:1}" == '/' ]]
 }
 
+##
+ # Check if a filepath is a YAML file.
+ #
+ # @param string Path to file in question.
+ #
+ # @return 0 If it is.
+ # @return 1 If it is not a YAML file.
+ ##
+function path_is_yaml() {
+  local path="$1"
+
+  extension=$(path_extension "$path")
+  [[ "$extension" == 'yml' ]] || [[ "$extension" == 'yaml' ]] || [[ "$extension" == 'YML' ]] || [[ "$extension" == 'YAML' ]]
+}
+
 # Echo the size of a file.
 #
 # @param string The path to the file.
 function path_filesize() {
   local path="$1"
 
-  echo $(du -hs "$path" | cut -f1)
+  stat -f%z "$path"
 }
 
 # Echo the last modified time of a file.
@@ -1919,29 +1865,6 @@ function path_extension() {
     fi
     echo "$extension"
 }
-
-##
- # Define realpath if it's not defined.
- #
-type realpath >/dev/null 2>&1
-if [ $? -gt 0 ]; then
-    function realpath() {
-      if [ -d "$1" ]; then
-        # @link https://stackoverflow.com/questions/284662/how-do-you-normalize-a-file-path-in-bash
-        cd "$1"; pwd
-        return 0
-      fi
-
-      local parent=$(dirname "$1")
-      if [ -d "$parent" ]; then
-        cd "$parent"; echo "$(pwd)/$(basename $1)"
-        return 0
-      fi
-
-      echo "$1"
-      return 0
-    }
-fi
 
 # Echo a temporary directory filepath.
 #
@@ -2036,10 +1959,10 @@ function throw() {
 
 # Echo a message to the user to either enable and repeat, or view log for info.
 #
-# @param string Path to the logfile; usually you send $LOGFILE, which is the global path.
+# @param string Path to the logfile; usually you send $CLOUDY_LOG, which is the global path.
 #
 # @code
-# fail_because "$(echo_see_log $LOGFILE)"
+# fail_because "$(echo_see_log $CLOUDY_LOG)"
 # @endcode
 #
 # @return nothing.
@@ -2294,11 +2217,172 @@ function yaml_get() {
 # @return 0
 function yaml_get_json() {
   local json
-  json=$("$CLOUDY_PHP" "$CLOUDY_ROOT/php/helpers.php" "yaml_to_json" "$yaml_content")
+
+  json=$(. "$PHP_FILE_RUNNER" "$CLOUDY_CORE_DIR/php/functions/invoke.php" "yaml_to_json" "$yaml_content")
   if [[ $? -ne 0 ]]; then
-    write_log_error "yaml_get_json \"$yaml\" failed against YAML: $($yaml_content)"
+    write_log_error "yaml_get_json \"$yaml\" failed against YAML: $yaml_content"
     write_log_error "$json"
     return 1
   fi
   echo "$json"
+}
+
+##
+ # Get a new UUID
+ #
+ # @echo A new UUID
+ #
+function create_uuid() {
+  echo $(uuidgen)
+}
+
+##
+ # Remove leading whitespace from string.
+ #
+ # @param string
+ # @echo The left trimmed string
+ ##
+function ltrim() {
+  local line="$1"
+  echo "${line#"${line%%[![:space:]]*}"}"
+}
+
+##
+ # Remove trailing whitespace from string.
+ #
+ # @param string
+ # @echo The right trimmed string
+ ##
+function rtrim() {
+  local line="$1"
+  echo "${line%"${line##*[![:space:]]}"}"
+}
+
+##
+ # Echo a string after removing leading and trailing quotes, as per YAML string.
+ #
+ # @param string
+ #
+ # @echo The string with the first and last single/double quote(s) removed.
+ ##
+function trim_quotes() {
+    local string=$1
+
+    string=${string#\'}
+    string=${string#\"}
+    string=${string%\'}
+    string=${string%\"}
+
+    echo "$string"
+}
+
+##
+ # Take an absolute path and make it relative to a parent path if possible.
+ #
+ # @param string The absolute path.
+ # @param string The absolute PARENT path.
+ #
+ # @echo The relative path if it worked; the original relative path if it didn't.
+ # @return 0 If the path could be make relative.
+ # @return 1 If there was a problem creating a relative path.
+
+ # @code
+ # result="$(path_make_relative '/some/great/path/bush.md' '/some/great')"
+ # [ $? -eq 0 ] && made_relative=true || made_relative=false
+ # @endcode
+ ##
+function path_make_relative() {
+  local path="${1%%/}"
+  local parent="${2%%/}"
+
+  [[ "$path" == "$parent" ]] && echo '.' && return 0
+
+  parent="$parent/"
+  [[ "$path" != "$parent"* ]] && return 1
+  path="${path#$parent}"
+  if [ -e "$parent/$path" ]; then
+    path="$(realpath "$parent/$path")"
+    path="${path#$parent}"
+  fi
+  echo "${path%%/}"
+  return 0
+}
+
+##
+ # Take an relative path and make it absolute to a parent.
+ #
+ # @param string The relative path.
+ # @param string The absolute PARENT path.
+ #
+ # @echo The absolute path if it worked, otherwise nothing.
+ # @return 0 If the path could be make absolute.
+ # @return 1 If $1 is not relative.
+ # @return 2 If $2 is not absolute.
+ # @return 3 If $1 is empty
+ #
+ # @code
+ # # Use this pattern to only change path if it was able to be made absolute.
+ # a=$(path_make_absolute "$path" "$absolute_prefix") && path="$a"
+ # @endcode
+ ##
+function path_make_absolute() {
+  local path="$1"
+  local parent="$2"
+
+  [[ ! "$path" ]] && return 3
+  path_is_absolute "$path" && return 1
+  ! path_is_absolute "$parent" && return 2
+  path="${parent%%/}/${path%%/}"
+  [ -e "$path" ] && echo "$(realpath "$path")" || echo "$path"
+  return 0
+}
+
+##
+ # Make a path output without leading $PWD if possible.
+ #
+ # Use this function when printing paths to the user as it will make paths
+ # relative to the current working directory, shortening them, making them
+ # "pretty".
+ # @param string The path to possible shorten.
+ #
+ # @echo The original path or the relative to $PWD if possible
+ # @return 0
+ ##
+function path_make_pretty() {
+  local path="$1"
+
+  p="$(path_make_relative "$path" "$PWD")" && path="$p"
+  ! path_is_absolute "$path" && [[ "$path" != "." ]] && path="./$path"
+  echo $path
+  return 0
+}
+
+##
+ # Remove dots but not symlinks from a path.
+ #
+ # @see realpath if you want to resolve symlinks.
+ #
+ # @param string The absolute path to make canonical.
+ #
+ # @echo The canonical path with symbolic links removed.
+ # @return 0 If all is well
+ # @return 1 If $1 does not exist.
+ # @return 2 If $1 is empty.
+ # @return 3 If $1 is not absolute.
+ ##
+function path_make_canonical() {
+  local path="$1"
+
+  [[ ! "$path" ]] && return 2
+  ! path_is_absolute "$path" && return 3
+  [[ ! -e "$path" ]] && return 1
+
+  local _basename
+  if [[ ! -d "$path" ]]; then
+    _basename="$(basename "$path")"
+    path="$(dirname "$path")"
+  fi
+  path="$(cd "$path"; pwd -L)"
+  [[ "$_basename" ]] &&  path="${path%%/}/$_basename" || path="${path%%/}"
+  echo "$path"
 }

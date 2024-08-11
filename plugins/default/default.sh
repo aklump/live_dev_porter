@@ -224,8 +224,8 @@ function default_on_push_files() {
       call_php_class_method_echo_or_fail "\AKlump\LiveDevPorter\Statistics::start" "$stat_arguments"
 
       rsync_options="$base_rsync_options"
-      source_path=$(path_resolve "$source_base" "$source")
-      destination_path=$(path_resolve "$destination_base" "$destination")
+      source_path=$(path_make_absolute "$source" "$source_base")
+      destination_path=$(path_make_absolute "$destination" "$destination_base")
 
       ruleset="$CACHE_DIR/rsync_ruleset.$FILES_GROUP_ID.txt"
       if [[ -f "$ruleset" ]]; then
@@ -319,8 +319,8 @@ function default_on_pull_files() {
       call_php_class_method_echo_or_fail "\AKlump\LiveDevPorter\Statistics::start" "$stat_arguments"
 
       rsync_options="$base_rsync_options"
-      source_path=$(path_resolve "$source_base" "$source")
-      destination_path=$(path_resolve "$destination_base" "$destination")
+      source_path=$(path_make_absolute "$source" "$source_base")
+      destination_path=$(path_make_absolute "$destination" "$destination_base")
 
       ruleset="$CACHE_DIR/rsync_ruleset.$FILES_GROUP_ID.txt"
       [[ -f "$ruleset" ]] || fail_because "Missing ruleset $ruleset; try clearing caches." || return 1
@@ -353,7 +353,7 @@ function default_on_pull_files() {
           for include in "${includes[@]}"; do
             for FILEPATH in "$destination_path"/${include#/}; do
               if [[ -f "$FILEPATH" ]]; then
-                SHORTPATH=$(path_unresolve "$destination_path" "$FILEPATH")
+                SHORTPATH=$(path_make_relative "$FILEPATH" "$destination_path")
                 SHORTPATH=${SHORTPATH#/}
                 execute_workflow_processors "$WORKFLOW_ID" || fail
               fi

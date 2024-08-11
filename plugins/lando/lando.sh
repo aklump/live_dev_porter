@@ -12,7 +12,7 @@ function lando_on_configtest() {
   done
   [[ "$run_lando_tests" == false ]] && return 255
 
-  lando_file="$APP_ROOT/.lando.yml"
+  lando_file="$CLOUDY_BASEPATH/.lando.yml"
   echo_task "Can read Lando file: $lando_file"
   ! [[ -f "$lando_file" ]] && echo_task_failed && fail && return 1
 
@@ -57,10 +57,10 @@ function lando_on_rebuild_config() {
 
     eval $(get_config_as service "$db_pointer.service")
 
-    ! json_set "$(cd $APP_ROOT && lando info -s $service --format=json 2>/dev/null | tail -1)" && fail_because "Could not read Lando configuration" && return 1
+    ! json_set "$(cd $CLOUDY_BASEPATH && lando info -s $service --format=json 2>/dev/null | tail -1)" && fail_because "Could not read Lando configuration" && return 1
 
     filepath=$(database_get_defaults_file "$LOCAL_ENV_ID" "$database_id")
-    path_label="$(path_unresolve "$APP_ROOT" "$filepath")"
+    path_label="$(path_make_relative "$filepath" "$CLOUDY_BASEPATH")"
 
     # Create the .cnf file
     directory=""$(dirname "$filepath")""
@@ -85,7 +85,7 @@ function lando_on_rebuild_config() {
 
     # Save the database name
     name_path="$(database_get_cached_name_filepath "$LOCAL_ENV_ID" "$database_id")"
-    name_label="$(path_unresolve "$APP_ROOT" "$name_path")"
+    name_label="$(path_make_relative "$name_path" "$CLOUDY_BASEPATH")"
     echo "$(json_get_value '0.creds.database')" > $name_path || return 1
     succeed_because "$name_label has been created."
   done

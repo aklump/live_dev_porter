@@ -1,2 +1,2 @@
-* {APP_ROOT}/.live_dev_porter/*
-config.gitignore {APP_ROOT}/.live_dev_porter/.gitignore
+* $CLOUDY_BASEPATH/.live_dev_porter/*
+config.gitignore $CLOUDY_BASEPATH/.live_dev_porter/.gitignore

@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
       <link rel="stylesheet" href="../../dist/node_modules/bootstrap/dist/css/bootstrap.css">
-      <link rel="stylesheet" href="../../dist/style.css">
+      <link rel="stylesheet" href="../../dist/bootstrap_theme.css">
       <link rel="stylesheet" href="../../dist/node_modules/bootstrap-icons/font/bootstrap-icons.min.css">
     <title>Plugins | Live Dev Porter</title>
 </head>
@@ -55,7 +55,7 @@
 <li><em>config.yml</em> should all configuration that the plugin is expecting to use.</li>
 <li><p><em>plugin.sh</em> should contain functions; all that are public must be prefixed by the plugin name:</p>
 <pre><code class="bash">function mysql_on_init() {
-  ensure_files_local_directories &amp;&amp; succeed_because "Updated fetch structure at $(path_unresolve "$APP_ROOT" "$FETCH_FILES_PATH")"
+  ensure_files_local_directories &amp;&amp; succeed_because "Updated fetch structure at $(path_make_relative "$FETCH_FILES_PATH" "$CLOUDY_BASEPATH")"
 }
 </code></pre>
 </li>
@@ -101,7 +101,7 @@ function _mysql_get_remote_env() {
               Version:
         <strong>0.0.167</strong>
         &bull;
-            Last Update: <strong>6/29/2024</strong>
+            Last Update: <strong>8/12/2024</strong>
     </div>
   </footer>
 

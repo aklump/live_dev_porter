@@ -16,7 +16,7 @@ class DatabaseGetConnectionUrl {
    *    The path to a certain db.cnf file.
    */
   public function __invoke(string $environment_id, string $database_id): string {
-    $defaults_file = (new DatabaseGetDefaultsFile($this->config))($environment_id, $database_id);
+    $defaults_file = (new DatabaseGetPathToDefaultsFile($this->config))($environment_id, $database_id);
     $cnf = file_get_contents($defaults_file);
     preg_match_all("/^(.+)=(.+)$/m", $cnf, $matches);
     if (!$matches) {

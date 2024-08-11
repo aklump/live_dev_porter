@@ -37,7 +37,7 @@ function mysql_on_rebuild_config() {
     exit_with_failure_if_empty_config "user" "$db_pointer.user"
 
     filepath=$(database_get_defaults_file "$LOCAL_ENV_ID" "$database_id")
-    path_label="$(path_unresolve "$APP_ROOT" "$filepath")"
+    path_label="$(path_make_relative "$filepath" "$CLOUDY_BASEPATH")"
 
     # Create the .cnf file
     directory=""$(dirname "$filepath")""
@@ -127,11 +127,14 @@ function mysql_on_configtest() {
   done
 }
 
-# Enter a local database shell
-#
-# $1 - The local database ID to use.
-#
-# Returns 0 if .
+##
+ # Enter a local database shell
+ #
+ # @param string The local database ID
+ #
+ # @return 1 If can't find the database by ID
+ # @return The exit status of the mysql command
+ ##
 function mysql_on_db_shell() {
   local database_id="$1"
 
@@ -243,7 +246,7 @@ function mysql_on_export_db() {
 
   # Ensure we don't clobber an existing.
   if [[ "$force" != true ]]; then
-    shortpath="$(path_unresolve "$PWD" "$save_as")"
+    shortpath="$(path_make_pretty "$save_as")"
     [[ -f "$save_as" ]] && fail_because "$shortpath exists; use --force to overwrite." && return 1
     [[ -f "$save_as.gz" ]] && fail_because "$shortpath.gz exists; use --force to overwrite." && return 1
   fi
@@ -438,7 +441,7 @@ function mysql_on_push_db() {
 
     # Handle any failure up to this point.
     if has_failed; then
-      fail_because "$(echo_see_log $LOGFILE)"
+      fail_because "$(echo_see_log $CLOUDY_LOG)"
       echo_task_failed
       return 1
     fi
@@ -494,7 +497,7 @@ function mysql_on_push_db() {
   result_status=$?
   if [[ $result_status -ne 0 ]]; then
     write_log_error "Remote exited with: $result_status"
-    fail_because "$(echo_see_log $LOGFILE)"
+    fail_because "$(echo_see_log $CLOUDY_LOG)"
   fi
   [[ $result_status -eq 3 ]] && echo_task_failed && fail_because "Remote import failed" && return 1
   echo_task_completed
@@ -586,7 +589,7 @@ function mysql_on_pull_db() {
 
   # Handle any failure up to this point.
   if has_failed; then
-    fail_because "$(echo_see_log $LOGFILE)"
+    fail_because "$(echo_see_log $CLOUDY_LOG)"
     echo_task_failed
     return 1
   fi

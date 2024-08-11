@@ -13,8 +13,7 @@ for id in "${ACTIVE_ENVIRONMENTS[@]}"; do
   eval $(get_config_as -a 'write_access' "environments.$id.write_access")
 #  eval $(get_config_as -a 'plugin' "environments.$id.plugin")
   eval $(get_config_as -a 'ssh' "environments.$id.ssh")
-  base_path=$(environment_path_resolve "$id")
-  base_path_short=$(path_relative_to_pwd "$base_path")
+  base_path=$(environment_path_resolve "$id") && base_path_short=$(path_make_pretty "$base_path")
 
   adjective="Other"
   [[ "$id" == "$LOCAL_ENV_ID" ]] && adjective="Local"
@@ -48,7 +47,7 @@ for id in "${ACTIVE_ENVIRONMENTS[@]}"; do
     if [[ "$id" == "$LOCAL_ENV_ID" ]]; then
       table_add_row "connection" "$(database_get_connection_url "$id" "$database_id")"
       dumpfiles_dir="$(database_get_local_directory "$id" "$database_id")"
-      table_add_row "exports" "$(path_relative_to_pwd "$dumpfiles_dir")"
+      table_add_row "exports" "$(path_make_pretty "$dumpfiles_dir")"
     fi
     first_db=false
   done
@@ -63,12 +62,12 @@ for id in "${ACTIVE_ENVIRONMENTS[@]}"; do
   for group_id in "${file_groups[@]}"; do
     eval $(get_config_as group_path "environments.$id.files.${group_id}")
     if [[ "$group_path" ]]; then
-      group_path="$(path_resolve "$base_path" "$group_path")"
+      group_path="$(path_make_absolute "$group_path" "$base_path")"
       group_path=${group_path%/}
       group_path=${group_path%.}
       group_path=${group_path%/}
       if [[ "$id" == "$LOCAL_ENV_ID" ]]; then
-        group_path_short=$(path_relative_to_pwd "$group_path")
+        group_path_short=$(path_make_pretty "$group_path")
       else
         group_path_short="$group_path"
       fi

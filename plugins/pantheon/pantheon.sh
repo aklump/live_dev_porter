@@ -70,7 +70,7 @@ function pantheon_fetch_files() {
     [ -d "$FETCH_FILES_PATH/$group" ] || mkdir -p "$FETCH_FILES_PATH/$group"
     for subdir in "${subdirs[@]}"; do
       local local_path=$(combo_path_get_local "$subdir")
-      local_path=$(path_resolve "$FETCH_FILES_PATH/$group" "$local_path")
+      local_path=$(path_make_absolute "$local_path" "$FETCH_FILES_PATH/$group")
       [ -d "$local_path" ] || mkdir -p "$local_path"
       local remote_path=$(combo_path_get_remote "$subdir")
 

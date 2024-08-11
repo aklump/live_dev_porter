@@ -48,7 +48,7 @@ class MySqlTableListProvider implements TableListProviderInterface {
     else {
       $query .= sprintf("SELECT GROUP_CONCAT(table_name separator '%s') FROM information_schema.tables WHERE table_schema='%s'", self::SEP, $database_name);
     }
-    $defaults_file = (new DatabaseGetDefaultsFile($this->config))($this->env, $this->db);
+    $defaults_file = (new DatabaseGetPathToDefaultsFile($this->config))($this->env, $this->db);
     $query = (new EscapeDoubleQuotes())($query);
     $mysql = $this->config->get('shell_commands.mysql') ?? 'mysql';
     $command = sprintf('%s --defaults-file="%s" -AN -e "%s"', $mysql, $defaults_file, $query);

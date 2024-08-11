@@ -20,7 +20,7 @@ tags: ''
 
    ```bash
    function mysql_on_init() {
-     ensure_files_local_directories && succeed_because "Updated fetch structure at $(path_unresolve "$APP_ROOT" "$FETCH_FILES_PATH")"
+     ensure_files_local_directories && succeed_because "Updated fetch structure at $(path_make_relative "$FETCH_FILES_PATH" "$CLOUDY_BASEPATH")"
    }
    ```
 4. Plugins may provide the following functions:

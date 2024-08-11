@@ -5,15 +5,20 @@
 #
 
 # Define the configuration file relative to this script.
-CONFIG="live_dev_porter.core.yml";
+CLOUDY_PACKAGE_CONFIG="live_dev_porter.core.yml";
 
-# Uncomment this line to enable file logging.
-#[[ ! "$LOGFILE" ]] && LOGFILE="live_dev_porter.core.log"
+# Comment this next line to disable file logging.
+[[ "$CLOUDY_LOG" ]] || controller_log="live_dev_porter.log"
+
+# These are globals custom to Live Dev Porter, not to Cloudy.
+# TODO These should be namspaced to LDP?
+declare -x SOURCE_DIR
+declare -x CACHE_DIR
+declare -x PLUGINS_DIR
 
 function on_pre_config() {
-  source "$CLOUDY_ROOT/inc/cloudy.read_local_config.sh"
-  SOURCE_DIR="$ROOT/scripts"
-  TEMP_DIR=$(tempdir $CLOUDY_NAME)
+  source "$CLOUDY_CORE_DIR/inc/config/early.sh"
+  SOURCE_DIR="$ROOT/inc"
   PLUGINS_DIR="$ROOT/plugins"
   ALL_PLUGINS=()
   for i in $(cd $PLUGINS_DIR && find . -maxdepth 1 -type d); do
@@ -30,11 +35,9 @@ function on_compile_config() {
 }
 
 function on_clear_cache() {
-  call_php_class_method_echo_or_fail "\AKlump\LiveDevPorter\Config\SchemaBuilder::destroy" "CACHE_DIR=$CONFIG_DIR/.cache"
-
-  # We have to do all plugins because a plugin may have changed, and if we only
-  # did active ones, there inactive plugin will not know to clean up it's
-  # generated files, e.g., lando.
+  # We have to trigger all plugins because a plugin may have changed, and if we
+  # only triggered active ones, then an inactive plugin will not know to clean
+  # up it's generated files, e.g., lando.
   for plugin in "${ALL_PLUGINS[@]}"; do
     plugin_implements "$plugin" clear_cache && call_plugin "$plugin" clear_cache
   done
@@ -58,9 +61,9 @@ function on_exit_with_failure() {
 }
 
 function on_boot() {
-  CONFIG_DIR="$APP_ROOT/.live_dev_porter"
-  CACHE_DIR="$CONFIG_DIR/.cache"
-  [[ -d "$CACHE_DIR" ]] || mkdir -p "$CACHE_DIR"
+  CONFIG_DIR="$CLOUDY_BASEPATH/.live_dev_porter"
+  # TODO Search code and replace CACHE_DIR?
+  CACHE_DIR="$CLOUDY_CACHE_DIR"
   if [[ "$(get_command)" == "init" ]]; then
     handle_init || exit_with_failure "${CLOUDY_FAILED:-Initialization failed.}"
   fi
@@ -83,7 +86,7 @@ function on_boot() {
 }
 
 # Begin Cloudy Bootstrap
-s="${BASH_SOURCE[0]}";while [ -h "$s" ];do dir="$(cd -P "$(dirname "$s")" && pwd)";s="$(readlink "$s")";[[ $s != /* ]] && s="$dir/$s";done;r="$(cd -P "$(dirname "$s")" && pwd)";source "$r/cloudy/cloudy.sh";[[ "$ROOT" != "$r" ]] && echo "$(tput setaf 7)$(tput setab 1)Bootstrap failure, cannot load cloudy.sh$(tput sgr0)" && exit 1
+s="${BASH_SOURCE[0]}";while [ -h "$s" ];do dir="$(cd -P "$(dirname "$s")" && pwd)";s="$(readlink "$s")";[[ $s != /* ]] && s="$dir/$s";done;r="$(cd -P "$(dirname "$s")" && pwd)";CLOUDY_CORE_DIR="$r/cloudy";source "$CLOUDY_CORE_DIR/cloudy.sh";[[ "$ROOT" != "$r" ]] && echo "$(tput setaf 7)$(tput setab 1)Bootstrap failure, cannot load cloudy.sh$(tput sgr0)" && exit 1
 # End Cloudy Bootstrap
 
 # Input validation.
@@ -100,8 +103,8 @@ case $COMMAND in
 
     "config-migrate")
       echo_title "Migrate from Loft Deploy"
-      path_to_loft_deploy=$(get_command_arg 0 "$APP_ROOT/.loft_deploy")
-      message="$($CLOUDY_PHP "$ROOT/php/migrate.php" "$path_to_loft_deploy")" || fail
+      path_to_loft_deploy=$(get_command_arg 0 "$CLOUDY_BASEPATH/.loft_deploy")
+      message="$(. "$PHP_FILE_RUNNER" "$ROOT/php/migrate.php" "$path_to_loft_deploy")" || fail
       has_failed && fail_because "$message" && exit_with_failure "Migration failed."
       succeed_because "$message"
       exit_with_success "Migration complete"
@@ -146,12 +149,6 @@ case $COMMAND in
       ;;
 
 esac
-
-# Export some environment variables that will be available to any PHP class that
-# needs them.
-export APP_ROOT
-export CLOUDY_CONFIG_JSON
-export PLUGINS_DIR
 
 eval $(get_config_as LOCAL_ENV_ID 'local')
 exit_with_failure_if_empty_config 'LOCAL_ENV_ID' 'local'
@@ -237,15 +234,14 @@ else
   do_files=true
 fi
 
-if [[ "$CLOUDY_CONFIG_HAS_CHANGED" == true ]] && [[ "$COMMAND" != "clear-cache" ]]; then
-  call_php_class_method_echo_or_fail "\AKlump\LiveDevPorter\Config\RsyncHelper::createFiles" "CACHE_DIR=$CONFIG_DIR/.cache"
-  call_php_class_method_echo_or_fail "\AKlump\LiveDevPorter\Config\SchemaBuilder::build"  "CACHE_DIR=$CONFIG_DIR/.cache"
-  call_php_class_method_echo_or_fail "\AKlump\LiveDevPorter\Config\Validator::validate" "CACHE_DIR=$CONFIG_DIR/.cache"
-
-  for plugin in "${ACTIVE_PLUGINS[@]}"; do
-    plugin_implements "$plugin" rebuild_config && call_plugin "$plugin" rebuild_config
-  done
+# This is here and not in an event function because we want to ensure the app is
+# setup correctly for all scenarios.  In effect we are forcing all traffic
+# through this narrow get.
+# TODO I wonder if clear-cache should be removed from this?
+if [[ "$CLOUDY_CONFIG_HAS_CHANGED" == 'true' ]] && [[ "$COMMAND" != "clear-cache" ]] && [[ "$COMMAND" != "config-fix" ]]; then
+  . "$SOURCE_DIR/snippets/_rebuild_config.sh"
 fi
+
 # keep this after has changed or the help route will not build
 implement_cloudy_basic
 implement_route_access
@@ -263,6 +259,18 @@ fi
 
 # Handle other commands.
 case $COMMAND in
+    "config-fix")
+      # Caching and config changes should usually be handled separately due to
+      # their differing needs and impacts on performance. Regenerate config data
+      # only when changes occur to the original config.yml to prevent
+      # unnecessary system load. However, cache-config synchronicity may require
+      # joint management.  The user may want to force a config-derivate file
+      # rebuild without editing the configuration files.
+      . "$SOURCE_DIR/snippets/_rebuild_config.sh"
+      has_failed && exit_with_failure
+      exit_with_success
+      ;;
+
     "config-test")
       echo_title "Test Configuration"
       implement_configtest
@@ -277,8 +285,9 @@ case $COMMAND in
           fi
         fi
       done
-      has_failed && fail_because "Try clearing caches." && exit_with_failure "Tests failed."
-      exit_with_success "All tests passed."
+      ! has_failed && exit_with_success "All tests passed."
+      fail_because "Try config-fix and/or cache-clear and re-test."
+      exit_with_failure "Tests failed."
       ;;
 
     "process")
@@ -326,7 +335,7 @@ case $COMMAND in
           processor_list=("${workflow_preprocessors[@]}" "${workflow_processors[@]}")
           choose__array=("${processor_list[@]}" "ALL")
         else
-          processor_list=($($CLOUDY_PHP "$ROOT/php/get_processors.php" "$CONFIG_DIR"))
+          processor_list=($(. "$PHP_FILE_RUNNER" "$ROOT/php/get_processors.php" "$CONFIG_DIR"))
           choose__array=("${processor_list[@]}")
         fi
         processor=$(choose "Please choose" "CANCEL")
@@ -344,19 +353,19 @@ case $COMMAND in
           # We can only check for .sh files because the php argument will be
           # "class::method", not the basepath.
           processor_path="$CONFIG_DIR/processors/$processor"
-          echo_task "$(path_unresolve "$CONFIG_DIR" "$processor_path")"
+          echo_task "$(path_make_relative "$processor_path" "$CONFIG_DIR")"
           if [[ ! -f "$processor_path" ]]; then
-            processor_output="\"$(path_unresolve "$PWD" "$processor_path")\" is not there."
+            processor_output="\"$(path_make_relative "$processor_path" "$PWD")\" is not there."
             processor_result=128
           else
-            processor_output=$(cd "$APP_ROOT"; source "$SOURCE_DIR/processor_support.sh"; . "$processor_path")
+            processor_output=$(cd "$CLOUDY_BASEPATH"; source "$SOURCE_DIR/processor_support.sh"; . "$processor_path")
             processor_result=$?
           fi
         else
           echo_task "$processor"
           php_query="autoload=$CONFIG_DIR/processors/&COMMAND=$COMMAND&LOCAL_ENV_ID=$LOCAL_ENV_ID&REMOTE_ENV_ID=$REMOTE_ENV_ID&DATABASE_ID=$DATABASE_ID&DATABASE_NAME=$DATABASE_NAME&FILES_GROUP_ID=$FILES_GROUP_ID&FILEPATH=$FILEPATH&SHORTPATH=$SHORTPATH&IS_WRITEABLE_ENVIRONMENT=$IS_WRITEABLE_ENVIRONMENT"
           processor_class=$(call_php_class_method "\AKlump\LiveDevPorter\Helpers\ResolveClassShortname::__invoke($processor,'\AKlump\LiveDevPorter\Processors')")
-          processor_output=$(cd "$APP_ROOT";$CLOUDY_PHP "$ROOT/php/class_method_caller.php" "$processor_class" "$php_query")
+          processor_output=$(cd "$CLOUDY_BASEPATH";. "$PHP_FILE_RUNNER" "$ROOT/php/class_method_caller.php" "$processor_class" "$php_query")
           processor_result=$?
         fi
 
@@ -401,7 +410,7 @@ case $COMMAND in
       echo_title "Enter $LOCAL_ENV_ID database \"$DATABASE_ID\""
       write_log_debug "With plugin: \"$plugin\""
       call_plugin $plugin db_shell "$DATABASE_ID" || fail
-      has_failed && exit_with_failure
+      has_failed && fail_because "Try config-fix and then redo." && exit_with_failure "Failed to connect to the database."
       exit_with_success_elapsed
       ;;
 
@@ -428,7 +437,7 @@ case $COMMAND in
       else
         export_directory="$(database_get_local_directory "$LOCAL_ENV_ID" "$DATABASE_ID")"
       fi
-      export_directory_shortpath="$(path_unresolve "$PWD" "$export_directory")"
+      export_directory_shortpath="$(path_make_pretty "$export_directory")"
 
       table_clear
       # This will create a quick link for the user to "open in Finder"
@@ -477,20 +486,20 @@ case $COMMAND in
 
       # Give the the user a select menu.
       if [[ -f "$filepath" ]]; then
-        shortpath=$(path_unresolve "$PWD" "$filepath")
+        shortpath=$(path_make_pretty "$filepath")
       else
         pull_dir=$(database_get_local_directory "$REMOTE_ENV_ID" "$DATABASE_ID")
         backups_dir=$(database_get_local_directory "$LOCAL_ENV_ID" "$DATABASE_ID")
         table_clear
-        table_add_row "$REMOTE_ENV_ID" "$(path_unresolve "$PWD" "$pull_dir")"
-        table_add_row "$LOCAL_ENV_ID" "$(path_unresolve "$PWD" "$backups_dir")"
+        table_add_row "$REMOTE_ENV_ID" "$(path_make_pretty "$pull_dir")"
+        table_add_row "$LOCAL_ENV_ID" "$(path_make_pretty "$backups_dir")"
         echo; echo_slim_table
 
         echo_heading "Sorted newest to oldest by local date"
         echo
 
         # Get the JSON that represents our import choices.
-        json_set "$($CLOUDY_PHP "$ROOT/php/get_db_dumps.php" "$filepath" "$PWD" "$pull_dir" "$backups_dir")"
+        json_set "$(. "$PHP_FILE_RUNNER" "$ROOT/php/get_db_dumps.php" "$filepath" "$PWD" "$pull_dir" "$backups_dir")"
         choose__array=()
         choose__labels=()
         for (( i=0; i<$(json_get_value count); i++ )); do
@@ -592,8 +601,8 @@ case $COMMAND in
             save_dir=$(database_get_local_directory "$REMOTE_ENV_ID" "$DATABASE_ID")
             backups_dir=$(database_get_local_directory "$LOCAL_ENV_ID" "$DATABASE_ID")
             table_clear
-            table_add_row "downloads" "$(path_unresolve "$PWD" "$save_dir")"
-            table_add_row "backups" "$(path_unresolve "$PWD" "$backups_dir")"
+            table_add_row "downloads" "$(path_make_pretty "$save_dir")"
+            table_add_row "backups" "$(path_make_pretty "$backups_dir")"
             echo; echo_slim_table
 
             echo_red "Press CTRL-C at any time to abort."

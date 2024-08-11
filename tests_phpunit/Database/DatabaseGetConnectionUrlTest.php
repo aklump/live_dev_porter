@@ -10,7 +10,7 @@ use PHPUnit\Framework\TestCase;
 /**
  * @covers \AKlump\LiveDevPorter\Database\DatabaseGetConnectionUrl
  * @uses \AKlump\LiveDevPorter\Config\RuntimeConfig
- * @uses \AKlump\LiveDevPorter\Database\DatabaseGetDefaultsFile
+ * @uses \AKlump\LiveDevPorter\Database\DatabaseGetPathToDefaultsFile
  */
 class DatabaseGetConnectionUrlTest extends TestCase {
 

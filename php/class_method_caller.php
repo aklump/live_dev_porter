@@ -11,8 +11,12 @@
  * @see call_php_class_method_echo_or_fail
  * @see ClassMethodCaller::CLASS_NOT_EXISTS
  *
+ * @code
+ * call_php_class_method_echo_or_fail "\AKlump\LiveDevPorter\Config\SchemaBuilder::build" "CACHE_DIR=$CACHE_DIR"
+ * @endcode
+ *
  * 1. The first argument is expected to be a class::method string, e.g. "Foo::bar"
- * 1. The second argument is a query string e.g., "1=foo&2=bar" or CSV "foo,bar", which will be deserialized as arguments.
+ * 1. The second argument is a query string e.g., "1=foo&2=bar" or CSV "foo,bar", which will be deserialized as constructor arguments.
  * 1. Any additional arguments will be sent to the method...
  * 1. Arguments may contain PHP constants, as they will be value-replaced, e.g. "foo,bar,\AKlump\LiveDevPorter\Database\GetExportTables::STRUCTURE"
  * 1. The exit code will be 0 if successful.
@@ -22,6 +26,22 @@
 use AKlump\LiveDevPorter\Config\RuntimeConfig;
 use AKlump\LiveDevPorter\Config\RuntimeConfigInterface;
 use AKlump\LiveDevPorter\Php\ClassMethodCaller;
+
+/** @var array $CLOUDY_FAILURES */
+/** @var array $CLOUDY_SUCCESSES */
+/** @var integer $CLOUDY_EXIT_STATUS */
+/** @var string $CLOUDY_BASEPATH */
+/** @var string $CLOUDY_CACHE_DIR */
+/** @var string $CLOUDY_COMPOSER_VENDOR */
+/** @var string $CLOUDY_CONFIG_JSON */
+/** @var string $CLOUDY_CORE_DIR */
+/** @var string $CLOUDY_LOG */
+/** @var string $CLOUDY_PACKAGE_CONFIG */
+/** @var string $CLOUDY_PACKAGE_CONTROLLER */
+/** @var string $CLOUDY_RUNTIME_ENV */
+/** @var string $CLOUDY_RUNTIME_UUID */
+/** @var string $CLOUDY_START_DIR */
+/** @var string $PHP_FILE_RUN_CONTROLLER */
 
 require_once __DIR__ . '/_bootstrap.php';
 
@@ -44,13 +64,15 @@ function get_cloudy_config(): RuntimeConfigInterface {
 
     return $value;
   };
-  $config['APP_ROOT'] = $getenv('APP_ROOT');
+
+  // TODO These do not have to use $get_env anymore, since Cloudy 2.0 provides them as variables to this script.
+  $config['CLOUDY_BASEPATH'] = $getenv('CLOUDY_BASEPATH');
   $config['CACHE_DIR'] = $getenv('CACHE_DIR');
   $config['CLOUDY_PHP'] = $getenv('CLOUDY_PHP');
-  $config['COMPOSER_VENDOR'] = $getenv('COMPOSER_VENDOR');
+  $config['CLOUDY_COMPOSER_VENDOR'] = $getenv('CLOUDY_COMPOSER_VENDOR');
   $config['PLUGINS_DIR'] = $getenv('PLUGINS_DIR');
   $config['SOURCE_DIR'] = $getenv('SOURCE_DIR');
-  $config['TEMP_DIR'] = $getenv('TEMP_DIR');
+  $config['CLOUDY_TMPDIR'] = $getenv('CLOUDY_TMPDIR');
   $cloudy_config = json_decode($getenv('CLOUDY_CONFIG_JSON'), TRUE) ?? [];
   if (!$cloudy_config) {
     throw new \RuntimeException(sprintf('Missing or empty environment variable CLOUDY_CONFIG_JSON; try calling clear-cache.'));

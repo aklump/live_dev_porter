@@ -2,6 +2,8 @@
 
 namespace AKlump\LiveDevPorter\Config;
 
+use RuntimeException;
+
 /**
  * Adds config-derived attributes to the JSON schemas.
  */
@@ -28,27 +30,33 @@ final class SchemaBuilder {
     $this->jsonSchemaDist = $config['CACHE_DIR'] . '/config.schema.json';
   }
 
-  public function destroy() {
+  public function onRebuildConfig() {
+    $this->destroyConfigBasedFiles();
+
+    return $this->generateConfigBasedFiles();
+  }
+
+  private function destroyConfigBasedFiles() {
     if (file_exists($this->jsonSchemaDist)) {
       unlink($this->jsonSchemaDist);
     }
   }
 
-  public function build() {
+  private function generateConfigBasedFiles(): string {
     $parent_dir = dirname($this->jsonSchemaDist);
     if (!file_exists($parent_dir)) {
       $result = mkdir($parent_dir, 0755, TRUE);
       if (!$result) {
-        throw new \RuntimeException(sprintf('Failed to create json schema distribution directory: %s', $parent_dir));
+        throw new RuntimeException(sprintf('Failed to create json schema distribution directory: %s', $parent_dir));
       }
     }
     if (!file_exists($this->jsonSchemaSource)) {
-      throw new \RuntimeException(sprintf('Cannot compile JSON Schema for project; file not found; %s', $this->jsonSchemaSource));
+      throw new RuntimeException(sprintf('Cannot compile JSON Schema for project; file not found; %s', $this->jsonSchemaSource));
     }
     $json = file_get_contents($this->jsonSchemaSource);
     $data = json_decode($json, TRUE);
     if (!is_array($data) || empty($data)) {
-      throw new \RuntimeException(sprintf('Failed to parse JSON Schema file:  %s', $this->jsonSchemaSource));
+      throw new RuntimeException(sprintf('Failed to parse JSON Schema file:  %s', $this->jsonSchemaSource));
     }
 
     // This step replaces our tokens with user-configured, realtime values.
@@ -86,7 +94,7 @@ final class SchemaBuilder {
   private function getPluginIds(): array {
     $directory = $this->config["PLUGINS_DIR"] ?? '';
     if (empty($directory) || !is_dir($directory)) {
-      throw new \RuntimeException(sprintf('Missing value for PLUGINS_DIR'));
+      throw new RuntimeException(sprintf('Missing value for PLUGINS_DIR'));
     }
 
     return array_values(array_filter(scandir($directory), function ($path) {

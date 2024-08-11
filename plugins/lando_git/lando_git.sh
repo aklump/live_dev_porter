@@ -30,7 +30,7 @@ function lando_git_on_clear_cache() {
     [[ ! -f "$filepath" ]] && continue
     sandbox_directory "$(dirname $filepath)"
     if chmod 0600 "$filepath" && rm "$filepath"; then
-      succeed_because "$(path_unresolve "$APP_ROOT" "$filepath")"
+      succeed_because "$(path_make_relative "$filepath" "$CLOUDY_BASEPATH")"
     else
       fail_because "Failed to delete $filepath"
     fi
@@ -91,7 +91,7 @@ function lando_git_on_rebuild_config() {
     ! json_set "$(cd $local_base_path && lando info -s $service --format=json 2>/dev/null | tail -1)" && fail_because "Could not read Lando configuration" && return 1
 
     filepath=$(database_get_defaults_file "$LOCAL_ENV_ID" "$database_id")
-    path_label="$(path_unresolve "$APP_ROOT" "$filepath")"
+    path_label="$(path_make_relative "$filepath" "$CLOUDY_BASEPATH")"
 
     # Create the .cnf file
     directory=""$(dirname "$filepath")""
@@ -116,7 +116,7 @@ function lando_git_on_rebuild_config() {
 
     # Save the database name
     name_path="$(database_get_cached_name_filepath "$LOCAL_ENV_ID" "$database_id")"
-    name_label="$(path_unresolve "$APP_ROOT" "$name_path")"
+    name_label="$(path_make_relative "$name_path" "$CLOUDY_BASEPATH")"
     echo "$(json_get_value '0.creds.database')" > $name_path || return 1
     succeed_because "$name_label has been created."
   done

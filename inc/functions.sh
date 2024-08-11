@@ -4,18 +4,16 @@
 # @see class_method_caller.php
 # @see call_php_class_method_echo_or_fail for another version.
 #
+# @code
+# call_php_class_method "\AKlump\LiveDevPorter\Config\SchemaBuilder::build" "CACHE_DIR=$CACHE_DIR"
+# @endcode
+#
 # Returns 0 if successful.  Non-zero otherwise.
 function call_php_class_method() {
   local callback="$1"
   local serialized_args="$2"
 
-  export CACHE_DIR
-  export CLOUDY_PHP
-  export COMPOSER_VENDOR
-  export PLUGINS_DIR
-  export SOURCE_DIR
-  export TEMP_DIR
-  $CLOUDY_PHP "$ROOT/php/class_method_caller.php" "$callback" "$serialized_args"
+  . "$PHP_FILE_RUNNER" "$ROOT/php/class_method_caller.php" "$callback" "$serialized_args"
 }
 
 # Call a php class method AND set success/failure status and messaging.
@@ -28,7 +26,7 @@ function call_php_class_method_echo_or_fail() {
   local callback="$1"
   local serialized_args="$2"
 
-  message="$($CLOUDY_PHP "$ROOT/php/class_method_caller.php" "$callback" "$serialized_args" "${@:3}")"
+  message="$(. "$PHP_FILE_RUNNER" "$ROOT/php/class_method_caller.php" "$callback" "$serialized_args" "${@:3}")"
   status=$?
   if [[ $status -ne 0 ]]; then
     fail_because "$message"
@@ -48,12 +46,12 @@ function call_php_class_method_echo_or_fail() {
 # Returns 0 if .
 function echo_php_class_method() {
   local callback="$1"
-  local query_string="$2"
+  local serialized_args="$2"
 
-  $CLOUDY_PHP "$ROOT/php/class_method_caller.php" "$callback" "$query_string" "${@:3}"
+  . "$PHP_FILE_RUNNER" "$ROOT/php/class_method_caller.php" "$callback" "$serialized_args" "${@:3}"
 }
 
-# Ensure a directory is within the $APP_ROOT.
+# Ensure a directory is within the $CLOUDY_BASEPATH.
 #
 # This should be called before any write operations to the file system as it
 # will make sure the directory is within the app, which is assumed to be safe.
@@ -73,11 +71,11 @@ function sandbox_directory() {
   # relative links will fail sandboxing.
   [[ -d "$dir" ]] && dir="$(cd $1 && pwd)"
 
-  ! [[ "$APP_ROOT" ]] && fail_because '$APP_ROOT was empty'
-  ! [[ -d "$APP_ROOT" ]] && fail_because "\$APP_ROOT does not exist"
+  ! [[ "$CLOUDY_BASEPATH" ]] && fail_because '$CLOUDY_BASEPATH was empty'
+  ! [[ -d "$CLOUDY_BASEPATH" ]] && fail_because "\$CLOUDY_BASEPATH does not exist"
   ! [[ "$dir" ]] && fail_because "The directory is an empty value."
-  local unresolved="$(path_unresolve "$APP_ROOT" "$dir")"
-  [[ "$dir" == "$unresolved" ]] && fail_because "The directory \"$dir\" must be within \$APP_ROOT"
+  local unresolved="$(path_make_relative "$dir" "$CLOUDY_BASEPATH")"
+  [[ "$dir" == "$unresolved" ]] && fail_because "The directory \"$dir\" must be within \$CLOUDY_BASEPATH"
   has_failed && exit_with_failure
 }
 
@@ -212,12 +210,12 @@ function execute_workflow_processors() {
   eval $(get_config_as -a processors "workflows.$workflow.$type")
   for basename in "${processors[@]}"; do
     processor_path="$CONFIG_DIR/processors/$basename"
-    processor="$(path_unresolve "$APP_ROOT" "$processor_path")"
+    processor="$(path_make_relative "$processor_path" "$CLOUDY_BASEPATH")"
 
     if [[ "$(path_extension "$processor_path")" == "sh" ]]; then
       [[ ! -f "$processor_path" ]] && fail_because "Missing file processor: $processor" && return 1
-      [[ "$JSON_RESPONSE" != true ]] && echo_task "$(path_unresolve "$CONFIG_DIR" "$processor_path")"
-      processor_output=$(cd "$APP_ROOT"; source "$SOURCE_DIR/processor_support.sh"; . "$processor_path")
+      [[ "$JSON_RESPONSE" != true ]] && echo_task "$(path_make_relative "$processor_path" "$CONFIG_DIR")"
+      processor_output=$(cd "$CLOUDY_BASEPATH"; source "$SOURCE_DIR/processor_support.sh"; . "$processor_path")
       processor_result=$?
     else
       php_query="autoload=$CONFIG_DIR/processors/&COMMAND=$COMMAND&LOCAL_ENV_ID=$LOCAL_ENV_ID&REMOTE_ENV_ID=$REMOTE_ENV_ID&DATABASE_ID=$DATABASE_ID&DATABASE_NAME=$DATABASE_NAME&FILES_GROUP_ID=$FILES_GROUP_ID&FILEPATH=$FILEPATH&SHORTPATH=$SHORTPATH&IS_WRITEABLE_ENVIRONMENT=$IS_WRITEABLE_ENVIRONMENT"
@@ -227,8 +225,8 @@ function execute_workflow_processors() {
       if [[ $processor_result -ne 0 ]]; then
         processor_output="$processor_class"
       else
-        [[ "$JSON_RESPONSE" != true ]] && echo_task "$(path_unresolve "$CONFIG_DIR" "$processor_path")"
-        processor_output=$(cd "$APP_ROOT"; $CLOUDY_PHP "$ROOT/php/class_method_caller.php" "$processor_class" "$php_query")
+        [[ "$JSON_RESPONSE" != true ]] && echo_task "$(path_make_relative "$processor_path" "$CONFIG_DIR")"
+        processor_output=$(cd "$CLOUDY_BASEPATH"; $CLOUDY_PHP "$ROOT/php/class_method_caller.php" "$processor_class" "$php_query")
         processor_result=$?
       fi
     fi
@@ -270,6 +268,7 @@ function call_plugin() {
   local func_name
   func_name=$(_plugin_get_func_name "$plugin" "$function_tail")
   ! plugin_implements $plugin $function_tail && fail_because "Plugin \"$plugin\" does not define a function called $func_name()" && return 1
+  write_log_debug "Calling plugin with: $func_name"
   $func_name "${args[@]}"
 }
 
@@ -360,21 +359,25 @@ function get_ssh_auth() {
   fi
 }
 
-# Resolve an environment relative path to absolute
-#
-# $1 - The environment ID.
-# $2 - The relative path.
-#
-# Returns 0 if successful. 1 if failed. Echos the absolute path.
+## Echo an absolute path to a given environment path.
+ #
+ # @param string The environment ID.
+ # @param string Optional relative path and will be appended to the environment's base_path if provided.
+ #
+ # @echo The absolute path for the given environment, only if successful.
+ # @return 0 if successful
+ # @return 1 if failed.
+##
 function environment_path_resolve() {
   local environment_id="$1"
-  local path="$2"
+  local relative_path="$2"
 
-  [[ '/' == "${path:0:1}" ]] &&  echo "The path argument must not begin with /" && return 1
+  path_is_absolute "$relative_path" && fail_because "Second argument may only be a relative path or omitted." && return 1
+  eval $(get_config_path_as "path" "environments.$environment_id.base_path")
+  [[ ! "$path" ]] && fail_because "Missing config for: environments.$environment_id.base_path" && return 1
 
-  eval $(get_config_path_as base_path "environments.$environment_id.base_path")
-  [[ ! "$base_path" ]] && echo "Missing config for: environments.$environment_id.base_path" && return 1
-  path_resolve "$base_path" "$path"
+  [[ "$relative_path" ]] && p="$(path_make_absolute "$relative_path" "$path")" && path="$p"
+  echo "$path"
 }
 
 # Echo the local part of a file path config value.

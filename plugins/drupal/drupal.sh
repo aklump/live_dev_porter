@@ -37,7 +37,7 @@ function drupal_on_rebuild_config() {
     json_set "$result"
 
     filepath=$(database_get_defaults_file "$LOCAL_ENV_ID" "$database_id")
-    path_label="$(path_unresolve "$APP_ROOT" "$filepath")"
+    path_label="$(path_make_relative "$filepath" "$CLOUDY_BASEPATH")"
 
     # Create the .cnf file
     directory=""$(dirname "$filepath")""
@@ -62,7 +62,7 @@ function drupal_on_rebuild_config() {
 
     # Save the database name
     name_path="$(database_get_cached_name_filepath "$LOCAL_ENV_ID" "$database_id")"
-    name_label="$(path_unresolve "$APP_ROOT" "$name_path")"
+    name_label="$(path_make_relative "$name_path" "$CLOUDY_BASEPATH")"
     echo "$(json_get_value '0.creds.database')" > $name_path
     succeed_because "$name_label has been created."
   done

@@ -1,4 +1,5 @@
 <?php
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 /**
  * @file
@@ -10,39 +11,50 @@
 use AKlump\LoftLib\Bash\Configuration;
 use JsonSchema\Validator;
 
-require_once __DIR__ . '/bootstrap.php';
+/** @var array $CLOUDY_FAILURES */
+/** @var array $CLOUDY_SUCCESSES */
+/** @var integer $CLOUDY_EXIT_STATUS */
+/** @var string $CLOUDY_BASEPATH */
+/** @var string $CLOUDY_CACHE_DIR */
+/** @var string $CLOUDY_COMPOSER_VENDOR */
+/** @var string $CLOUDY_CONFIG_JSON */
+/** @var string $CLOUDY_CORE_DIR */
+/** @var string $CLOUDY_PACKAGE_CONFIG */
+/** @var string $CLOUDY_PACKAGE_CONTROLLER */
+/** @var string $CLOUDY_RUNTIME_ENV */
+/** @var string $CLOUDY_RUNTIME_UUID */
+/** @var string $CLOUDY_START_DIR */
+/** @var string $PHP_FILE_RUN_CONTROLLER */
 
-$config = json_decode(isset($argv[1]) ? $argv[1] : '[]', TRUE);
-$config_key = isset($argv[2]) ? $argv[2] : NULL;
-$name = isset($argv[3]) ? $argv[3] : NULL;
-$value = isset($argv[4]) ? $argv[4] : NULL;
-$schema = isset($config[$config_key]) ? $config[$config_key] : [];
+$config_key = $argv[1] ?? NULL;
+$name = $argv[2] ?? NULL;
+$value = $argv[3] ?? NULL;
+
+$config = json_decode($CLOUDY_CONFIG_JSON, TRUE);
+
+$schema = \Jasny\DotKey::on($config)->get($config_key);
+if (empty($schema)) {
+  return;
+}
 
 // Handle casting 'true' 'false' in bash to boolean in PHP.
-if ('boolean' === (isset($schema['type']) ? $schema['type'] : '')) {
+if ('boolean' === ($schema['type'] ?? '')) {
   $value = $value === 'true' ? TRUE : $value;
   $value = $value === 'false' ? FALSE : $value;
 }
 
 $validator = new Validator();
 $validator->validate($value, (object) $schema);
-$exit_code = 0;
-
-if (!$validator->isValid()) {
-  $errors = [];
-  $exit_code = 1;
-  foreach ($validator->getErrors() as $error) {
-
-    // Translate some default errors to our context.
-    switch ($error['message']) {
-      case 'String value found, but a boolean is required':
-        $error['message'] = 'Boolean options may not be given a value.';
-        break;
-    }
-
-    $errors[] = sprintf("[%s] %s", $name, $error['message']);
-  }
-  echo 'declare -a schema_errors=("' . implode('" "', $errors) . '")';
+if ($validator->isValid()) {
+  return;
 }
 
-exit($exit_code);
+foreach ($validator->getErrors() as $error) {
+
+  // Translate some default errors to our context.
+  if ($error['message'] == 'String value found, but a boolean is required') {
+    $error['message'] = 'Boolean options may not be given a value.';
+  }
+
+  fail_because(sprintf("[%s] %s", $name, $error['message']));
+}

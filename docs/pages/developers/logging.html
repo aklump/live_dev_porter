@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
       <link rel="stylesheet" href="../../dist/node_modules/bootstrap/dist/css/bootstrap.css">
-      <link rel="stylesheet" href="../../dist/style.css">
+      <link rel="stylesheet" href="../../dist/bootstrap_theme.css">
       <link rel="stylesheet" href="../../dist/node_modules/bootstrap-icons/font/bootstrap-icons.min.css">
     <title>Enable Logging | Live Dev Porter</title>
 </head>
@@ -42,12 +42,11 @@
   <div class="row mb-5 pt-5">
     <article class="col">
       <h1 class="mb-4 text-primary">Enable Logging</h1>
-      <p>Export the variable <code>LOGFILE</code> with an absolute path to enable logging.</p>
-<pre><code class="shell">$ export LOGFILE=/some/path/to/app.log
-$ ldp export
+      <p>Enable logging with the following (note the example uses the <code>pull</code> command, but that part, the command, is irrelevant).  Also you may alter the path if you want to write the log file to somewhere else.</p>
+<pre><code class="shell">export CLOUDY_LOG="$PWD/live_dev_porter.core.log"; ldp pull
 </code></pre>
 <p>Disable logging by setting that same variable to an empty string:</p>
-<pre><code class="shell">$ export LOGFILE=''
+<pre><code class="shell">$ export CLOUDY_LOG=''; ldp pull
 </code></pre>
     </article>
   </div>
@@ -58,7 +57,7 @@ $ ldp export
               Version:
         <strong>0.0.167</strong>
         &bull;
-            Last Update: <strong>6/29/2024</strong>
+            Last Update: <strong>8/12/2024</strong>
     </div>
   </footer>
 

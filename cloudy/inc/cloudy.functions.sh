@@ -1,83 +1,140 @@
 #!/usr/bin/env bash
 
-# TODO rename this as appropriate or find a similar function and merge them.
-function _resolve_file() {
+# SPDX-License-Identifier: BSD-3-Clause
+
+##
+ # @file Unpublished, private functions
+ #
+ # Developers should not rely on the functions in this file as they may change
+ # at any time.
+ ##
+
+##
+ # Define realpath if it's not defined.
+ #
+type realpath >/dev/null 2>&1
+if [ $? -gt 0 ]; then
+    function realpath() {
+      if [ -d "$1" ]; then
+        # @link https://stackoverflow.com/questions/284662/how-do-you-normalize-a-file-path-in-bash
+        cd "$1"; pwd
+        return 0
+      fi
+
+      local parent=$(dirname "$1")
+      if [ -d "$parent" ]; then
+        cd "$parent"; echo "$(pwd)/$(basename $1)"
+        return 0
+      fi
+
+      echo "$1"
+      return 0
+    }
+fi
+
+##
+ # Replace path tokens with runtime values.
+ #
+ # @global $CLOUDY_BASEPATH
+ # @param string The path containing one or more tokens
+ #
+ # @echo The path with values in place of tokens.
+ ##
+function _cloudy_resolve_path_tokens() {
   local path="$1"
 
-  local directory
-  local basename
-
-  directory=${path%/*}
-  basename=${path##*/}
-
-  if [ -d "$directory" ]; then
-    directory="$(cd "$directory"; pwd -P)"
-  fi
-
-  echo "$directory/$basename"
-}
-# TODO rename this as appropriate or find a similar function and merge them.
-function _resolve_dir() {
-  local directory="$1"
-
-  if [ -d "$directory" ]; then
-    directory="$(cd "$directory"; pwd -P)"
-  fi
-
-  echo "$directory"
+  path="${path/\$CLOUDY_BASEPATH/$CLOUDY_BASEPATH}"
+  path="${path/\$CLOUDY_CORE_DIR/$CLOUDY_CORE_DIR}"
+  path="${path/#\~\//$HOME/}"
+  echo "$path"
 }
 
-function _cloudy_detect_installation_type() {
-  local base
-  local check_composer
-  local check_cloudy
-  base=$(dirname $SCRIPT)
-
-  check_composer="$(_resolve_file "$base/../../../composer.json")"
-  [ -f "$(_resolve_file "$check_composer")" ] && echo $CLOUDY_INSTALL_TYPE_COMPOSER && return 0
-
-  check_composer="$(_resolve_file "$base/composer.json")"
-  check_cloudy="$(_resolve_file "$base/cloudy/cloudy.sh")"
-  [ -f "$check_composer" ] && [ -f "$check_cloudy" ]  && echo $CLOUDY_INSTALL_TYPE_CORE && return 0
-
-  check_composer="$(_resolve_file "$base/framework/cloudy/composer.json")"
-  check_cloudy="$(_resolve_file "$base/framework/cloudy/cloudy.sh")"
-  [ -f "$check_composer" ] && [ -f "$check_cloudy" ]  && echo $CLOUDY_INSTALL_TYPE_SELF && return 0
-
-  check_composer="$(_resolve_file "$base/../../cloudy/cloudy/composer.json")"
-  check_cloudy="$(_resolve_file "$base/../../../cloudypm.lock")"
-  [ -f "$check_composer" ] && [ -f "$check_cloudy" ] && echo $CLOUDY_INSTALL_TYPE_PM && return 0
-
-  return 1
-}
-
-# Echo the detected app root by installation type.
-#
-# Returns 1 if detection failed.
-function _cloudy_detect_app_root_by_installation() {
-  local installation_type="$1"
-
-  local base
-  local app_root
-  base="$(dirname "$SCRIPT")"
-  case "$installation_type" in
-  "$CLOUDY_INSTALL_TYPE_SELF")
-    app_root="$base"
-    ;;
-  "$CLOUDY_INSTALL_TYPE_COMPOSER")
-    app_root="$base/../../../"
-    ;;
-  "$CLOUDY_INSTALL_TYPE_CORE")
-    app_root="$base"
-    ;;
-  "$CLOUDY_INSTALL_TYPE_PM")
-    app_root="$base/../../../"
-    ;;
-  *)
+declare -a _cloudy_test_paths__array=()
+##
+ # Test an array of paths.
+ #
+ # @global _cloudy_test_paths__array
+ #
+ # @return 0 If all paths exist
+ # @return 1 If one or more paths do not exist
+ #
+ # @code
+ # _cloudy_test_paths__array=("/foo/" "/foo/bar.txt")
+ # _cloudy_test_paths || exit_with_failure
+ # @endcode
+ ##
+function _cloudy_test_paths() {
+  local _path
+  for _path in ${_cloudy_test_paths__array[@]} ; do
+    [[ -e "$_path" ]] && continue
     return 1
-  esac
-  echo "$(_resolve_file "$app_root")"
-  return 0
+  done
+}
+
+##
+ # Detect the type of Cloudy installation for a given directory.
+ #
+ # @param string $base The base directory to use to detect the installation type.
+ #
+ # @echo string The detected type.
+ # @return 0 In all scenarios.
+ ##
+function _cloudy_detect_installation_type() {
+  local base="$1"
+
+  base=$(dirname "$base")
+
+  _cloudy_test_paths__array=("$base/../../../composer.json")
+  _cloudy_test_paths && echo $CLOUDY_INSTALL_TYPE_COMPOSER && return 0
+
+  _cloudy_test_paths__array=("$base/composer.json" "$base/cloudy/cloudy.sh")
+  _cloudy_test_paths && echo $CLOUDY_INSTALL_TYPE_CORE && return 0
+
+  _cloudy_test_paths__array=("$base/cloudy/composer.json" "$base/cloudy/cloudy.sh")
+  _cloudy_test_paths && echo $CLOUDY_INSTALL_TYPE_SCRIPT && return 0
+
+  _cloudy_test_paths__array=("$base/cloudy/dist/composer.json" "$base/cloudy/dist/cloudy.sh")
+  _cloudy_test_paths && echo $CLOUDY_INSTALL_TYPE_SELF && return 0
+
+  _cloudy_test_paths__array=("$base/../../cloudy/cloudy/composer.json" "$base/../../../cloudypm.lock")
+  _cloudy_test_paths && echo $CLOUDY_INSTALL_TYPE_PM && return 0
+
+  _cloudy_test_paths__array=("$base/cloudy/dist/cloudy.sh" "$base/cloudy/vendor" "$base/cloudy/composer.lock")
+  _cloudy_test_paths && echo $CLOUDY_INSTALL_TYPE_COMPOSER_CREATE_PROJECT && return 0
+
+  _cloudy_test_paths__array=("$base/vendor/aklump/cloudy/dist/cloudy.sh" "$base/vendor" "$base/composer.lock")
+  _cloudy_test_paths && echo $CLOUDY_INSTALL_TYPE_COMPOSER_REQUIRE && return 0
+
+  # This is a fallback and means we can't figure it out.
+  echo $CLOUDY_INSTALL_TYPE_CUSTOM && return 0
+}
+
+function _cloudy_detect_basepath() {
+  local _installation_type="$1"
+
+  if [[ "$_installation_type" == "$CLOUDY_INSTALL_TYPE_CORE" ]]; then
+    # The controller is inside of a vendor directory, as if composer require, e.g.
+    # vendor/VENDOR_NAME/PACKAGE/CONTROLLER, and cloudy is installed.
+    test_basepath="$(dirname "$CLOUDY_PACKAGE_CONTROLLER")"
+    test_basepath="$(path_make_canonical "$test_basepath/../../..")"
+    _cloudy_test_paths__array=("$test_basepath" "$test_basepath/vendor" "$test_basepath/composer.json" "$test_basepath/composer.lock")
+    _cloudy_test_paths && echo $test_basepath && return 0
+  fi
+
+  local config_dir="$(dirname "$CLOUDY_PACKAGE_CONFIG")";
+  regex=".*/([^/]*)/([^/]*)/([^/]*)$"
+  [[ "$config_dir" =~ $regex ]]
+  third_last_element="${BASH_REMATCH[1]}"
+  if [[ 'opt' == "$third_last_element" ]]; then
+    basepath="$config_dir/../../../"
+  elif [[ 'vendor' == "$third_last_element" ]]; then
+    basepath="$config_dir/../../../"
+  else
+    basepath="$config_dir/"
+  fi
+
+  echo "$(path_make_canonical "$basepath")"
+  return 0;
 }
 
 function _cloudy_detect_composer_vendor_by_installation() {
@@ -85,16 +142,29 @@ function _cloudy_detect_composer_vendor_by_installation() {
 
     local base
     local vendor
-    base="$(dirname "$SCRIPT")"
+    local check_composer
+    local check_composer_lock
+    local check_vendor
+
+    base="$(dirname "$CLOUDY_PACKAGE_CONTROLLER")"
     case "$installation_type" in
     "$CLOUDY_INSTALL_TYPE_SELF")
-      vendor="$base/framework/cloudy/vendor"
+      vendor="$base/cloudy/vendor"
+      ;;
+    "$CLOUDY_INSTALL_TYPE_SCRIPT")
+      vendor="$base/cloudy/vendor"
       ;;
     "$CLOUDY_INSTALL_TYPE_COMPOSER")
       vendor="$base/../../../vendor"
       ;;
+    "$CLOUDY_INSTALL_TYPE_COMPOSER_CREATE_PROJECT")
+      vendor="$CLOUDY_CORE_DIR/../vendor"
+      ;;
+    "$CLOUDY_INSTALL_TYPE_COMPOSER_REQUIRE")
+      vendor="$base/vendor"
+      ;;
     "$CLOUDY_INSTALL_TYPE_CORE")
-      # First assume the app has a vendor directory, which cloudy is going to leverage...
+      # Does the app have a vendor directory, which cloudy should leverage?
       vendor="$base/vendor"
       # ... if not then use the one inside cloudy core.
       [ ! -d "$vendor" ] && vendor="$base/cloudy/vendor"
@@ -103,44 +173,27 @@ function _cloudy_detect_composer_vendor_by_installation() {
       vendor="$base/../../cloudy/cloudy/vendor"
       ;;
     *)
-      return 1
+      # Maybe cloudy framework is providing the vendor directory, we can be
+      # relatively safe if composer.lock and vendor exist, since they are not in
+      # the Cloudy framework repo.
+      check_composer="$CLOUDY_CORE_DIR/composer.json"
+      check_composer_lock="$CLOUDY_CORE_DIR/composer.lock"
+      check_vendor="$CLOUDY_CORE_DIR/vendor/"
+      if [ -f "$check_composer" ] && [ -f "$check_composer_lock" ] && [ -d "$check_vendor" ]; then
+        vendor="$CLOUDY_CORE_DIR/vendor/"
+      fi
     esac
-    echo "$(_resolve_file "$vendor")"
+
+    ! [[ -d "$vendor" ]] && return 1
+    echo "$(path_make_canonical "$vendor")"
     return 0
-}
-
-#
-# @file
-# Non-public functions used by the cloudy API.
-#
-function _cloudy_define_cloudy_vars() {
-  # todo Can we move more things here, checking scope is not lost.
-  LI="├──"
-  LIL="└──"
-  LI2="│   $LI"
-  LIL2="│   $LIL"
-
-  CLOUDY_INSTALL_TYPE_SELF='self'
-  CLOUDY_INSTALL_TYPE_COMPOSER='composer'
-  CLOUDY_INSTALL_TYPE_CORE='cloudy_core'
-  CLOUDY_INSTALL_TYPE_PM='cloudy_pm'
-}
-
-function _cloudy_bootstrap_php() {
-  if [[ ! "$CLOUDY_PHP" ]]; then
-    CLOUDY_PHP="$(command -v php)"
-  fi
-  [[ !  "$CLOUDY_PHP" ]] && fail_because "\$CLOUDY_PHP cannot be set; PHP not found." && return 1
-  [[ ! -x "$CLOUDY_PHP" ]] && fail_because "\$CLOUDY_PHP ($CLOUDY_PHP) is not executable" && return 1
-  local php_version=$("$CLOUDY_PHP" -v | head -1 | grep -E "PHP ([0-9.]+)")
-  [[ ! "$php_version" ]] && fail_because "\$CLOUDY_PHP ($CLOUDY_PHP) does not appear to be a PHP binary; $CLOUDY_PHP -v failed to display PHP version" && return 1
-  return 0
 }
 
 function _cloudy_bootstrap_translations() {
   # todo Document this and add to schema.
   eval $(get_config_as "lang" "language" "en")
   CLOUDY_LANGUAGE=$lang
+  write_log_debug "\$CLOUDY_LANGUAGE is $CLOUDY_LANGUAGE"
 
   # todo may not need to do these two?
   CLOUDY_SUCCESS=$(translate "Completed successfully.")
@@ -186,8 +239,12 @@ function _cloudy_bootstrap() {
 }
 
 ##
-# Delete $CACHED_CONFIG_FILEPATH as necessary.
-#
+ # Delete $CACHED_CONFIG_FILEPATH as necessary.
+ #
+ # @global string $CACHED_CONFIG_HASH_FILEPATH
+ # @global string $CACHED_CONFIG_FILEPATH
+ # @global string $CACHED_CONFIG_JSON_FILEPATH
+
 function _cloudy_auto_purge_config() {
   local purge=false
 
@@ -220,12 +277,12 @@ function _cloudy_auto_purge_config() {
     fi
   fi
 
-  has_failed && exit_with_failure "Cannot auto purge config."
+  has_failed && return 1
   return 0
 }
 
 ##
-# Detect if cached config is stale against $CONFIG.
+# Detect if cached config is stale against $CLOUDY_PACKAGE_CONFIG.
 #
 function _cloudy_has_config_changed() {
   # When configuration gets cached, this file gets created with a line for
@@ -248,6 +305,52 @@ function _cloudy_get_file_mtime() {
 }
 
 ##
+ # Parse a base configuration file for all additional_config
+ #
+ # @global array _cloudy_unprocessed_additional_config_paths__array
+ #
+ # @return 1 If the base_config cannot be read.
+ ##
+declare -a _cloudy_unprocessed_additional_config_paths__array=()
+function _cloudy_read_unprocessed_additional_config_paths() {
+    local base_config=$1
+
+    ! path_is_yaml "$base_config" && return 1
+    local start_collecting=false
+    _cloudy_unprocessed_additional_config_paths__array=()
+    while IFS='' read -r line; do
+        if [[ "$line" == "additional_config:"* ]]; then
+            start_collecting=true
+        elif [[ "$start_collecting" = true ]]; then
+            if [[ "$line" =~ ^[[:space:]]*"-".* ]]; then
+                # remove leading whitespace and '-' from the line
+                line="$(_cloudy_ltrim_yaml_array_item "$line")"
+                line="$(trim_quotes "$line")"
+                _cloudy_unprocessed_additional_config_paths__array+=("$line")
+            else
+                break
+            fi
+        fi
+    done < "$base_config"
+    return 0
+}
+
+##
+ # Trim left whitespace and hyphen.
+ #
+ # @param string The line from yaml with left indent and/or hypen.
+ #
+ # @echo The line with leading whitespace and hypen remove.
+ #
+function _cloudy_ltrim_yaml_array_item() {
+    local line="$1"
+
+    line="${line##*[[:space:]]'- '}"
+    line="$(ltrim "$line")"
+    echo "$line"
+}
+
+##
 # Return config eval code for a given config path.
 #
 # @param string
@@ -264,24 +367,22 @@ function _cloudy_get_config() {
   local config_path="$1"
   local default_value="$2"
 
+  local array_keys
+  local cached_var_name
+  local cached_var_name_keys
+  local code
+  local config_path_base
   local default_type
+  local dev_null
+  local eval_code
+  local mutator
+  local paths
+  local var_code
   local var_name
   local var_type
   local var_value
-  local var_code
-  local array_keys
-  local mutator
-  local eval_code
-  local dev_null
-  local code
-  local cached_var_name
-  local cached_var_name_keys
-  local file_list
-  local config_path_base=${cloudy_config_22b41169ff3731365de5e8293e01c831}
 
-  # Determine if we have an absolute relative path base or, if not prepend $ROOT.
-  [[ "${config_path_base:0:1}" != '/' ]] && config_path_base="${ROOT}/$config_path_base"
-
+  config_path_base=${cloudy_config_22b41169ff3731365de5e8293e01c831}
   # Remove trailing / for proper path construction.
   config_path_base=${config_path_base%/}
 
@@ -348,45 +449,11 @@ function _cloudy_get_config() {
   elif [[ "$var_type" == "associative_array" ]]; then
     code=''
     for key in "${var_keys[@]}"; do
-
       cached_var_name=cloudy_config_$(md5_string ${config_path}.${key})
 
       if [[ "$mutator" == "_cloudy_realpath" ]]; then
-        local path=$(eval "echo \$$cached_var_name")
-
-        # Replace ~ with the actual home page
-        path=$(echo ${path/\~/"$HOME"})
-
-        # On first pass we will try to expand globbed filenames, which will
-        # cause file_list to be longer than var_value.
-        file_list=()
-
-        # Make relative to $ROOT.
-        [[ "$path" ]] && [[ "$path" != null ]] && [[ "${path:0:1}" != "/" ]] && path=${config_path_base}/${path}
-
-        # This will expand a glob finder.
-        if [ -d "$path" ]; then
-          file_list=("${file_list[@]}" $path)
-        elif [ -f "$path" ]; then
-          file_list=("${file_list[@]}" $(ls $path))
-        elif [[ "$path" != null ]]; then
-          file_list=("${file_list[@]}" $path)
-        fi
-
-        # Glob may have increased our file_list so we apply realpath to all
-        # of them here.
-        local i=0
-        for path in "${file_list[@]}"; do
-          if [ -e "$path" ]; then
-            file_list[$i]=$(realpath "$path")
-          fi
-          let i++
-        done
-        if [[ ${#file_list[@]} -eq 1 ]]; then
-          eval "$cached_var_name="${file_list[0]}""
-        else
-          eval "$cached_var_name=("${file_list[@]}")"
-        fi
+        paths=($(eval "echo \$$cached_var_name"))
+        source "$CLOUDY_CORE_DIR/inc/snippets/_cloudy_get_config.file_list.sh"
       fi
 
       var_code=$(declare -p $cached_var_name)
@@ -394,42 +461,10 @@ function _cloudy_get_config() {
     done
   else
     if [[ "$mutator" == "_cloudy_realpath" ]]; then
-
-      # On first pass we will try to expand globbed filenames, which will
-      # cause file_list to be longer than var_value.
-      file_list=()
-      for path in "${var_value[@]}"; do
-
-        # Replace ~ with the actual home page
-        path=$(echo ${path/\~/"$HOME"})
-
-        # Replace tokens
-        path=$(echo ${path/\{APP_ROOT\}/"$APP_ROOT"})
-
-        # Make relative to $ROOT.
-        [[ "$var_value" ]] && [[ "$var_value" != null ]] && [[ "${path:0:1}" != "/" ]] && path=${config_path_base}/${path}
-
-        # This will expand a glob finder.
-        if [ -d "$path" ]; then
-          file_list=("${file_list[@]}" $path)
-        elif [ -f "$path" ]; then
-          file_list=("${file_list[@]}" $(ls $path))
-        elif [[ "$path" != null ]]; then
-          file_list=("${file_list[@]}" $path)
-        fi
-      done
-
-      # Glob may have increased our file_list so we apply realpath to all
-      # of them here.
-      local i=0
-      for path in "${file_list[@]}"; do
-        if [ -e "$path" ]; then
-          file_list[$i]=$(realpath "$path")
-        fi
-        let i++
-      done
-      eval "$cached_var_name=("${file_list[@]}")"
+      paths=("${var_value[@]}")
+      source "$CLOUDY_CORE_DIR/inc/snippets/_cloudy_get_config.file_list.sh"
     fi
+
     code=$(declare -p $cached_var_name)
     code="${code//$cached_var_name=/$var_name=}"
   fi
@@ -439,6 +474,7 @@ function _cloudy_get_config() {
 
 function _cloudy_exit() {
   event_dispatch "exit" $CLOUDY_EXIT_STATUS
+  [ -f "$CLOUDY_RUNTIME_ENV" ] && rm "$CLOUDY_RUNTIME_ENV"
   [[ "$CLOUDY_EXIT_STATUS" -eq 0 ]] && write_log_info "Exit status is: $CLOUDY_EXIT_STATUS"
   [[ "$CLOUDY_EXIT_STATUS" -ne 0 ]] && write_log_notice "Exit status is: $CLOUDY_EXIT_STATUS"
   exit $CLOUDY_EXIT_STATUS
@@ -644,7 +680,7 @@ function _cloudy_help_for_single_command() {
   echo_green "$help"
   echo
 
-  usage="./$(basename $SCRIPT) CMD"
+  usage="./$(basename $CLOUDY_PACKAGE_CONTROLLER) CMD"
   [ ${#arguments} -gt 0 ] && usage="$usage <arguments>"
   [ ${#options} -gt 0 ] && usage="$usage <options>"
 
@@ -733,13 +769,13 @@ function _cloudy_debug_helper() {
 }
 
 function _cloudy_write_log() {
-  [[ "$LOGFILE" ]] || return
+  [[ "$CLOUDY_LOG" ]] || return
   local level="$1"
   shift
-  local directory=$(dirname $LOGFILE)
+  local directory=$(dirname $CLOUDY_LOG)
   test -d "$directory" || mkdir -p "$directory"
-  touch "$LOGFILE"
-  echo "[$(date)] [$level] $@" >>"$LOGFILE"
+  touch "$CLOUDY_LOG"
+  echo "[$(date)] [$level] $@" >>"$CLOUDY_LOG"
 }
 
 ##
@@ -856,7 +892,7 @@ function _cloudy_validate_command() {
     array_has_value "$command" && return 0
   done
 
-  fail_because "You have called $(basename $SCRIPT) using the command \"$command\", which does not exist."
+  fail_because "You have called $(basename $CLOUDY_PACKAGE_CONTROLLER) using the command \"$command\", which does not exist."
   return 1
 }
 
@@ -880,17 +916,4 @@ function _cloudy_validate_command_arguments() {
   done
 
   return $status
-}
-
-##
-# Validate command input against the script's schema.
-#
-function _cloudy_validate_input_against_schema() {
-  local config_path_to_schema=$1
-  local name=$2
-  local value=$3
-
-  local errors
-  echo $("$CLOUDY_PHP" $CLOUDY_ROOT/php/validate_against_schema.php "$CLOUDY_CONFIG_JSON" "$config_path_to_schema" "$name" "$value")
-  return $?
 }

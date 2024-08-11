@@ -4,7 +4,7 @@ namespace AKlump\LiveDevPorter\Database;
 
 use AKlump\LiveDevPorter\Traits\HasConfigOnlyConstructorTrait;
 
-class DatabaseGetDefaultsFile {
+class DatabaseGetPathToDefaultsFile {
 
   use HasConfigOnlyConstructorTrait;
 

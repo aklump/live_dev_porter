@@ -2,6 +2,8 @@
 
 namespace AKlump\LiveDevPorter\Config;
 
+use RuntimeException;
+
 class RsyncHelper {
 
   const TYPE_INCLUDE = 'include';
@@ -13,15 +15,19 @@ class RsyncHelper {
     $this->dist = $config['CACHE_DIR'];
   }
 
-  public function createFiles() {
+  public function onRebuildConfig() {
+    $this->destroyRulesetFiles();
+    $this->writeRulesetFiles();
+  }
 
-    // First delete any cached files created earlier.
+  private function destroyRulesetFiles() {
     $path = sprintf('%s/rsync_*.txt', $this->dist);
     foreach (glob($path) as $path) {
       unlink($path);
     }
+  }
 
-    // Now convert configuration to rsync filter files.
+  private function writeRulesetFiles() {
     foreach ($this->config['file_groups'] ?? [] as $group_id => $group_data) {
       $filter_type = [];
       if (!empty($group_data['include'])) {
@@ -31,7 +37,7 @@ class RsyncHelper {
         $filter_type[] = self::TYPE_EXCLUDE;
       }
       if (count($filter_type) > 2) {
-        throw new \RuntimeException(sprintf('Both "include" and "exclude" may not be used at the same time.  Configuration problem with file group: %s', $group_id));
+        throw new RuntimeException(sprintf('Both "include" and "exclude" may not be used at the same time.  Configuration problem with file group: %s', $group_id));
       }
       $filter_type = array_values($filter_type)[0];
 
@@ -51,7 +57,7 @@ class RsyncHelper {
       $file_contents = implode(PHP_EOL, $ruleset);
       $save_result = file_put_contents($path, $file_contents);
       if (FALSE === $save_result) {
-        throw new \RuntimeException(sprintf('Failed to save %s', $path));
+        throw new RuntimeException(sprintf('Failed to save %s', $path));
       }
     }
   }

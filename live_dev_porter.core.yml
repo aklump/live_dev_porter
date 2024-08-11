@@ -4,8 +4,8 @@ description: 'Simplifies the management and transfer of assets between website e
 version: 0.0.167
 author: 'Aaron Klump <sourcecode@intheloftstudios.com>'
 additional_config:
-  - '{APP_ROOT}/.live_dev_porter/config.yml'
-  - '{APP_ROOT}/.live_dev_porter/config.local.yml'
+  - '$CLOUDY_BASEPATH/.live_dev_porter/config.yml'
+  - '$CLOUDY_BASEPATH/.live_dev_porter/config.local.yml'
 additional_bootstrap: null
 default_command: help
 max_database_rollbacks_to_keep: 15
@@ -169,6 +169,12 @@ commands:
         help: 'Use this to open config.local.yml instead of config.yml.'
         aliases:
           - l
+  config-fix:
+    help: Fix common configuration problems, such as missing or stale cached configuration files.
+    aliases:
+      - configfix
+      - fix-config
+      - fixconfig
   config-test:
     help: 'Run tests to validate configuration.'
     aliases:

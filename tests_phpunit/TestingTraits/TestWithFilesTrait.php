@@ -2,6 +2,8 @@
 
 namespace AKlump\LiveDevPorter\Tests\TestingTraits;
 
+use InvalidArgumentException;
+
 trait TestWithFilesTrait {
 
   /**
@@ -29,11 +31,11 @@ trait TestWithFilesTrait {
    */
   public function deleteTestFile($test_file) {
     if (empty($test_file)) {
-      throw new \InvalidArgumentException('$test_file cannot be empty');
+      throw new InvalidArgumentException('$test_file cannot be empty');
     }
     $is_absolute = substr($test_file, 0, 1) === '/';
     if ($is_absolute && !$this->isTestFile($test_file)) {
-      throw new \InvalidArgumentException(sprintf('You cannot delete absolute paths outside of the sandbox: %s', $test_file));
+      throw new InvalidArgumentException(sprintf('You cannot delete absolute paths outside of the sandbox: %s', $test_file));
     }
     if (!$is_absolute) {
       $test_file = $this->getTestFileFilepath($test_file);
@@ -96,7 +98,7 @@ trait TestWithFilesTrait {
     $is_dir = substr($path, -1) === '/';
 
     if ($create && !$is_dir && !pathinfo($path, PATHINFO_EXTENSION) && substr($path, 0, 1) !== '.') {
-      throw new \InvalidArgumentException(sprintf('When creating a test filepath directory, $relative must end with a forward slash, e.g. ->%s("%s", true)', __FUNCTION__, "$relative/"));
+      throw new InvalidArgumentException(sprintf('When creating a test filepath directory, $relative must end with a forward slash, e.g. ->%s("%s", true)', __FUNCTION__, "$relative/"));
     }
 
     if ($is_dir) {

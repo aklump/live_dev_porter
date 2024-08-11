@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# SPDX-License-Identifier: BSD-3-Clause
+
 declare -a SANDBOX_CLOUDY_FAILURES=()
 declare -a SANDBOX_CLOUDY_SUCCESSES=()
 SANDBOX_CLOUDY_EXIT_STATUS=0
@@ -24,7 +26,12 @@ function do_tests_in() {
     local testfile=$1
 
     parse_args $@
-    local CLOUDY_ACTIVE_TESTFILE=$(path_relative_to_root "${parse_args__args[0]}")
+
+    local CLOUDY_ACTIVE_TESTFILE="${parse_args__args[0]}"
+    if ! path_is_absolute "$CLOUDY_ACTIVE_TESTFILE"; then
+      CLOUDY_ACTIVE_TESTFILE="$(path_make_absolute "${parse_args__args[0]}" "$ROOT")"
+    fi
+
     if [[ "$parse_args__options__continue" != true ]]; then
       CLOUDY_ASSERTION_COUNT=0
       CLOUDY_TEST_COUNT=0
@@ -59,6 +66,7 @@ function do_tests_in() {
           fail_because "Test not found: $CLOUDY_ACTIVE_TEST"
         else
             let CLOUDY_TEST_COUNT=(CLOUDY_TEST_COUNT + 1)
+            write_log_debug "TEST #$CLOUDY_TEST_COUNT: $CLOUDY_ACTIVE_TEST"
             [ "$(type -t 'setup_before_test')" = "function" ] && setup_before_test
             create_test_sandbox
             $CLOUDY_ACTIVE_TEST

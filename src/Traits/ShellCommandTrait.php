@@ -3,6 +3,8 @@
 namespace AKlump\LiveDevPorter\Traits;
 
 
+use RuntimeException;
+
 trait ShellCommandTrait {
 
   /**
@@ -17,7 +19,7 @@ trait ShellCommandTrait {
   public function system(string $command): string {
     $result = system($command, $result_code);
     if (0 !== $result_code) {
-      throw new \RuntimeException(sprintf('Failed: %s', $command));
+      throw new RuntimeException(sprintf('Failed: %s', $command));
     }
 
     return $result;
@@ -47,7 +49,7 @@ trait ShellCommandTrait {
         $message .= PHP_EOL . "Output: " . PHP_EOL;
         $message .= implode(PHP_EOL, $output) . PHP_EOL;
       }
-      throw new \RuntimeException($message, $result_code);
+      throw new RuntimeException($message, $result_code);
     }
 
     return $result;

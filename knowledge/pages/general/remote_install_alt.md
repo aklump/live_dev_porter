@@ -39,9 +39,9 @@ To install Live Dev Porter on a remote server without using source control do th
 4. `cd bin && pwd` and copy to clipboard
 5. Add the clipboard contents to the `$PATH` variable in (probably) _.profile_
 6. Reload the profile, e.g. `. ~/.profile`
-7. Open _live_dev_porter.sh_ and change `COMPOSER_VENDOR` to:
+7. Open _live_dev_porter.sh_ and change `CLOUDY_COMPOSER_VENDOR` to:
     ```shell
-    COMPOSER_VENDOR="vendor"
+    CLOUDY_COMPOSER_VENDOR="vendor"
     ```
 8. Open _live_dev_porter.core.yml_ and change `config_path_base` to:
     ```shell
