@@ -22,7 +22,6 @@ page_order:
     - workflows
     - remote_install_alt
   developers:
-    - logging
     - php
   troubleshooting:
     - installation
