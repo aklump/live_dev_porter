@@ -1,3 +1,7 @@
+- bug: in ATS, ldp process create_test_content.sh did not work
+- rewrite how remote environment checks work, so we don't get a traffic issue with too many connections too quickly, e.g. ATS Dreamhost
+- ldp db, lando not running, then give a message "try starting lando"
+- Invalid configuration: when running config test due to json schema invalid.
 - remove the `master_dir` idea, treat it as '.'; it will be more readible to just use `master_files`
 - need a way to be able to write "Deny from all" to web/.htaccess at the start of ldp pull, then reverse when complete to prevent the Drupal bug that breaks if site is visited during import.
 

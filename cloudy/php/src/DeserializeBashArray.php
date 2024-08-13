@@ -23,7 +23,7 @@ namespace AKlump\Cloudy;
 class DeserializeBashArray {
 
   public function __invoke(string $serialized_bash_array): array {
-    if (preg_match('#declare -\S+ (\S+)=\'\(\)\'$#', $serialized_bash_array)) {
+    if (preg_match('#declare -\S+ \S+=(\(\)|\'\(\)\')$#', $serialized_bash_array)) {
       return [];
     }
 

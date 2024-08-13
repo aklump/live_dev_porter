@@ -343,9 +343,11 @@ case $COMMAND in
         echo_title "Select from (Pre)Processors"
       fi
 
-      processor_list=()
+      declare -a processor_list=()
       processor=$(get_command_arg 0)
-      if [[ ! "$processor" ]]; then
+      if [[ "$processor" ]]; then
+        processor_list=("$processor")
+      else
         if [[ "$WORKFLOW_ID_ARG" ]]; then
           eval $(get_config_as -a workflow_preprocessors "workflows.$WORKFLOW_ID.preprocessors")
           eval $(get_config_as -a workflow_processors "workflows.$WORKFLOW_ID.processors")

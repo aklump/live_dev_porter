@@ -22,7 +22,7 @@ fi
 declare -xr CLOUDY_PACKAGE_ID="$CLOUDY_PACKAGE_ID"
 write_log_debug "\$CLOUDY_PACKAGE_ID is \"$CLOUDY_PACKAGE_ID\""
 
-declare -xr CLOUDY_TMPDIR="$(mktemp -d -t "$CLOUDY_PACKAGE_ID")"
+declare -xr CLOUDY_TMPDIR="$(mktemp -d "${TMPDIR:-/tmp}/$CLOUDY_PACKAGE_ID.XXXXXXXXXX")"
 write_log_debug "\$CLOUDY_TMPDIR is \"$CLOUDY_TMPDIR\""
 
 # I don't think this needs to be developer-configurable.

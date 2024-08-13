@@ -8,39 +8,39 @@ environments:
       pull: develop
       export: archive
       import: develop
-    databases:
-      drupal:
-        plugin: lando
-        service: database
+#    databases:
+#      drupal:
+#        plugin: lando
+#        service: database
     files:
       install: install/default/scaffold
       secrets: private/default/secrets
       public: web/sites/default/files
       private: private/default/files
-  local:
-    label: Local Scaffold Source
-    write_access: false
-    plugin: default
-    base_path: /alpha/bravo/app
-    files:
-      install: .
-      secrets: .
-  live:
-    label: Dreamhost
-    write_access: false
-    plugin: default
-    base_path: /foo/bar/baz/app
-    ssh: foo@bar.com
-    databases:
-      drupal:
-        plugin: env
-        path: .env
-        var: DATABASE_URL
-    files:
-      install: .
-      secrets: .
-      public: web/sites/default/files
-      private: private/default/files
+#  local:
+#    label: Local Scaffold Source
+#    write_access: false
+#    plugin: default
+#    base_path: /alpha/bravo/app
+#    files:
+#      install: .
+#      secrets: .
+#  live:
+#    label: Dreamhost
+#    write_access: false
+#    plugin: default
+#    base_path: /foo/bar/baz/app
+#    ssh: foo@bar.com
+#    databases:
+#      drupal:
+#        plugin: env
+#        path: .env
+#        var: DATABASE_URL
+#    files:
+#      install: .
+#      secrets: .
+#      public: web/sites/default/files
+#      private: private/default/files
 workflows:
   archive:
     databases:

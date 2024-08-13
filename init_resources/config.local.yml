@@ -1,5 +1,5 @@
 local: dev
-remote: live
+#remote: live
 #other:
 #  - local
 #shell_commands:
