@@ -17,7 +17,7 @@
 
 # Allow the developer to override the cache path
 if [[ ! "$CLOUDY_CACHE_DIR" ]]; then
-  declare -rx CLOUDY_CACHE_DIR="$CLOUDY_BASEPATH/.$(path_filename "$CLOUDY_PACKAGE_CONTROLLER")/.cache"
+  declare -rx CLOUDY_CACHE_DIR="$CLOUDY_BASEPATH/.$CLOUDY_PACKAGE_ID/.cache"
 fi
 write_log_debug "\$CLOUDY_CACHE_DIR is \"$CLOUDY_CACHE_DIR\""
 

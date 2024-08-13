@@ -13,10 +13,21 @@ source "$CLOUDY_CORE_DIR/inc/cloudy.define_variables.sh"
  # @global string $CLOUDY_INSTALLED_AS
  # @global string $CLOUDY_LOG
  # @global string $CLOUDY_TMPDIR
+ # @global string $CLOUDY_PACKAGE_ID
  ##
 
-declare -xr CLOUDY_TMPDIR="$(mktemp -d -t "$(path_filename "$CLOUDY_PACKAGE_CONTROLLER")")"
+if [[ ! "$CLOUDY_PACKAGE_ID" ]]; then
+  CLOUDY_PACKAGE_ID="$(path_filename "$CLOUDY_PACKAGE_CONTROLLER")"
+fi
+declare -xr CLOUDY_PACKAGE_ID="$CLOUDY_PACKAGE_ID"
+write_log_debug "\$CLOUDY_PACKAGE_ID is \"$CLOUDY_PACKAGE_ID\""
+
+declare -xr CLOUDY_TMPDIR="$(mktemp -d -t "$CLOUDY_PACKAGE_ID")"
 write_log_debug "\$CLOUDY_TMPDIR is \"$CLOUDY_TMPDIR\""
+
+# I don't think this needs to be developer-configurable.
+declare -xr CLOUDY_INIT_RULES="$(path_make_absolute 'init_resources/cloudy_init_rules.yml' "$ROOT")"
+write_log_debug "\$CLOUDY_INIT_RULES is \"$CLOUDY_INIT_RULES\""
 
 # Expand some vars from our controlling script.
 if [[ "$CLOUDY_PACKAGE_CONFIG" ]] && ! path_is_absolute "$CLOUDY_PACKAGE_CONFIG"; then

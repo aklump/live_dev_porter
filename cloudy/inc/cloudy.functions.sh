@@ -32,23 +32,6 @@ if [ $? -gt 0 ]; then
     }
 fi
 
-##
- # Replace path tokens with runtime values.
- #
- # @global $CLOUDY_BASEPATH
- # @param string The path containing one or more tokens
- #
- # @echo The path with values in place of tokens.
- ##
-function _cloudy_resolve_path_tokens() {
-  local path="$1"
-
-  path="${path/\$CLOUDY_BASEPATH/$CLOUDY_BASEPATH}"
-  path="${path/\$CLOUDY_CORE_DIR/$CLOUDY_CORE_DIR}"
-  path="${path/#\~\//$HOME/}"
-  echo "$path"
-}
-
 declare -a _cloudy_test_paths__array=()
 ##
  # Test an array of paths.
@@ -196,8 +179,8 @@ function _cloudy_bootstrap_translations() {
   write_log_debug "\$CLOUDY_LANGUAGE is $CLOUDY_LANGUAGE"
 
   # todo may not need to do these two?
-  CLOUDY_SUCCESS=$(translate "Completed successfully.")
-  CLOUDY_FAILED=$(translate "Failed.")
+  CLOUDY_SUCCESS=$(translate "${CLOUDY_SUCCESS:-Completed successfully.}")
+  CLOUDY_FAILED=$(translate "${CLOUDY_FAILED:-Failed}")
 }
 
 function _cloudy_bootstrap() {

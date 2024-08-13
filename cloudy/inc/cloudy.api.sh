@@ -1178,133 +1178,64 @@ function implement_cloudy_basic() {
     esac
 }
 
-# Performs an initialization (setup default config, etc.)
-#
-# You must set up an init command in your core config file.
-# Then call this function from inside `on_boot`, e.g.
-# @code
-# [[ "$(get_command)" == "init" ]] && handle_init
-# ...do your extra work here...
-# exit_with...
-# @endcode
-#
-# You should only call this function if you need to do something additional in
-# your init step, where you don't want to exit.  If not, you should use
-# exit_with_init, instead.
-#
-# The translation service is not yet bootstrapped in on_pre_config, so if you
-# want to alter the strings printed you can do something like this:
-# @code
-# if [[ "$(get_command)" == "init" ]]; then
-#     CLOUDY_FAILED="Initialization failed."
-#     CLOUDY_SUCCESS="Initialization complete."
-#     exit_with_init
-# fi
-# @endcode
-#
-# @return 0 On success.
-# @return 1 if the init fails
+##
+ # Run the Init API for a package.
+ #
+ # You must set up an init command in your core config file.
+ # Then call this function from inside `on_boot`, e.g.
+ # @code
+ # [[ "$(get_command)" == "init" ]] && handle_init
+ # ...do your extra work here...
+ # exit_with...
+ # @endcode
+ #
+ # You should only call this function if you need to do something additional in
+ # your init step, where you don't want to exit.  If not, you should use
+ # exit_with_init, instead.
+ #
+ # The translation service is not yet bootstrapped in on_pre_config, so if you
+ # want to alter the strings printed you can do something like this:
+ # @code
+ # if [[ "$(get_command)" == "init" ]]; then
+ #     CLOUDY_FAILED="Initialization failed."
+ #     CLOUDY_SUCCESS="Initialization complete."
+ #     exit_with_init
+ # fi
+ # @endcode
+ #
+ # @global string $CLOUDY_INIT_RULES
+ #
+ # @return 1 If $CLOUDY_BASEPATH is empty or does not exist
+ # @return 2 If $CLOUDY_INIT_RULES is empty.
+ # @return 3 If $CLOUDY_INIT_RULES does not exist.
+ # @return 5 If a legacy (unsupported) token is used.
+ # @return 6 If any file copy failes; see log for more info.
+ ##
 function handle_init() {
-    local init_source_dir="$(dirname "$CLOUDY_PACKAGE_CONTROLLER")/init"
-    [ -d "$init_source_dir" ] || fail_because "Missing initialization source directory: $init_source_dir"
-    local path_to_files_map="$init_source_dir/cloudypm.files_map.txt"
-    [ -f "$path_to_files_map" ] || fail_because "Missing required initialization file: $path_to_files_map."
-    local from_map=()
-    local to_map=()
-    local init_config_dir
-    local from
-    local to
-    local token_support
-    local token_match
-    local uninterpolated_token
+  ([[ ! "$CLOUDY_BASEPATH" ]] || [ ! -d "$CLOUDY_BASEPATH" ]) && fail_because "\$CLOUDY_BASEPATH must be set before you can initialize" && return 1
+  ! [[ "$CLOUDY_INIT_RULES" ]] && fail_because "\$CLOUDY_INIT_RULES is empty" && return 2
+  ! [ -f "$CLOUDY_INIT_RULES" ] && fail_because "Missing required initialization file: $CLOUDY_INIT_RULES." && return 3
 
-    # Token support is detected by checking if CLOUDY_BASEPATH has been set yet or not.
-    # If this is called too early then the configuration is not loaded and token
-    # support will not be supported.
-    [[ "$CLOUDY_BASEPATH" ]] && token_support=true || token_support=false
+  # Check for legacy code usage, and suggest upgrade. @see changelog for version 2.0.0
+  # TODO Move this to review_code...
+  grep \${config_path_base} "$CLOUDY_INIT_RULES" > /dev/null
+  if [[ $? -eq 0 ]]; then
+    fail_because "The token \"{APP_ROOT}\" must be used; \"\${config_path_base}\" is no longer supported; in $CLOUDY_INIT_RULES" && return 5
+  fi
+  . "$PHP_FILE_RUNNER" "$CLOUDY_CORE_DIR/php/functions/handle_init.php" "$CLOUDY_INIT_RULES"
 
-    # @see changelog for version 2.0.0
-    grep \${config_path_base} "$path_to_files_map" > /dev/null
-    if [[ $? -eq 0 ]]; then
-      fail_because "The token \"{APP_ROOT}\" must be used; \"\${config_path_base}\" is no longer supported; in $path_to_files_map"
-    fi
+  if has_failed; then
+    list_clear
+    for reason in "${CLOUDY_FAILURES[@]}" ; do
+      write_log_error "$reason"
+      list_add_item "$reason"
+    done
+    echo_red_highlight "Some problems occurred"
+    echo_red_list
+    return 6
+  fi
 
-    token_match='\{.+\}'
-    while read -r from to || [[ -n "$line" ]]; do
-      if [[ "$token_support" == true ]]; then
-        to="$(_cloudy_resolve_path_tokens "$to")"
-      fi
-      if [[ "$from" == "*" ]]; then
-          to="${to%\*}"
-          init_config_dir="${to%/}"
-      else
-          from_map=("${from_map[@]}" "$from")
-          to_map=("${to_map[@]}" "$to")
-      fi
-
-      if [[ "$to" =~ $token_match ]]; then
-        uninterpolated_token="${BASH_REMATCH[0]}"
-        fail_because "Uninterpolated token $uninterpolated_token found in $(basename $path_to_files_map); check docs for supported tokens."
-        if [[ "$token_support" == false ]]; then
-          write_log_error "Uninterpolated token $uninterpolated_token found in $(basename $path_to_files_map)"
-          write_log_debug "${FUNCNAME[0]}() must be called from your app's on_boot() event handler for token support.  Did you call it too soon?"
-        fi
-      fi
-    done < $path_to_files_map
-
-    [[ "$init_config_dir" ]] || fail_because "Missing default initialization directory; should be defined in: $(basename $path_to_files_map)."
-
-    if ! has_failed; then
-        for basename in $(ls $init_source_dir); do
-            [[ "$basename" == cloudypm* ]] && continue
-            source_path="$init_source_dir/$basename"
-            destination_path="$init_config_dir/$basename"
-            p="$(path_make_absolute "$destination_path" "$ROOT")" && destination_path="$p"
-            if [[ "$basename" == 'gitignore' ]]; then
-              # Merge into the cloudy PM git ignore.
-              destination_path="$(realpath "$ROOT/../../../opt/.gitignore")"
-            fi
-
-            local i=0
-            for special_file in "${from_map[@]}"; do
-               if [[ "$special_file" == "$basename" ]];then
-                 destination_path="${to_map[$i]}"
-                 p="$(path_make_absolute "$destination_path" "$ROOT")" && destination_path="$p"
-               fi
-               let i++
-            done
-
-            #
-            # Handle files already existing; do not install.
-            #
-            if [ -e "$destination_path" ]; then
-              fail_because "Could not install \"$basename\""
-              fail_because "Path exists: $destination_path"
-
-            #
-            # Handle cloudy PM gitignore
-            #
-            elif [[ "$basename" == 'gitignore' ]]; then
-                [ -d $(dirname "$destination_path") ] || mkdir -p $(dirname $destination_path)
-                touch "$destination_path" && cat "$source_path" >> "$destination_path" && sort -u "$destination_path" -o "$destination_path" && succeed_because "$destination_path merged."
-
-            #
-            # Handle directories.
-            #
-            elif [ -d "$source_path" ]; then
-                cp -R "$source_path" "$destination_path" && succeed_because "$(realpath $destination_path) installed." || fail_because "Could not copy $basename."
-
-            #
-            # Handle files.
-            #
-            elif [ -f "$source_path" ]; then
-                mkdir -p $(dirname $destination_path)
-                cp "$source_path" "$destination_path" && succeed_because "$(realpath $destination_path) created." || fail_because "Could not copy $basename."
-            fi
-        done
-    fi
-    has_failed && return 1
-    return 0
+  return 0
 }
 
 # Performs an initialization (setup default config, etc.) and exits.
@@ -1334,29 +1265,26 @@ function exit_with_init() {
  # @return nothing.
  #
 function exit_with_cache_clear() {
-    local cloudy_dir="${1:-$CLOUDY_CORE_DIR}"
-    local clear
-    [[ ! "${cloudy_dir}" ]] && exit_with_failure "Invalid cache directory ${cloudy_dir}"
-    event_dispatch "clear_cache" "$cloudy_dir" || exit_with_failure "Clearing caches failed"
-    if dir_has_files "$cloudy_dir/cache"; then
+    local _clear
+    local _stash
+    event_dispatch "clear_cache" "$CLOUDY_CACHE_DIR" || exit_with_failure "Clearing caches failed."
+    if dir_has_files "$CLOUDY_CACHE_DIR"; then
 
         # We should not delete cpm on general cache clear.
-        if [ -d "$cloudy_dir/cache/cpm" ]; then
-            stash=$(tempdir)
-            mv "$cloudy_dir/cache/cpm" "$stash/cpm"
+        if [ -d "$CLOUDY_CACHE_DIR/cpm" ]; then
+            _stash=$(tempdir)
+            mv "$CLOUDY_CACHE_DIR/cpm" "$_stash/cpm"
         fi
-
-        clear=$(rm -rv "$cloudy_dir/cache/"*)
+        _clear=$(rm -rv "$CLOUDY_CACHE_DIR/"*)
         status=$?
-
-        if [[ "$stash" ]]; then
-            mv "$stash/cpm" "$cloudy_dir/cache/cpm"
+        if [[ "$_stash" ]]; then
+            mv "$_stash/cpm" "$CLOUDY_CACHE_DIR/cpm"
         fi
 
-        [ $status -eq 0 ] || exit_with_failure "Could not remove all cached files in $cloudy_dir"
-        file_list=($clear)
-        for i in "${file_list[@]}"; do
-           succeed_because "$(echo_green "$(basename $i)")"
+        [ $status -eq 0 ] || exit_with_failure "Could not remove all cached files in $CLOUDY_CACHE_DIR"
+        file_list=($_clear)
+        for filepath in "${file_list[@]}"; do
+           succeed_because "$(path_make_relative "$filepath" "$CLOUDY_CACHE_DIR")"
         done
         exit_with_success "Caches have been cleared."
     fi
@@ -2384,5 +2312,27 @@ function path_make_canonical() {
   fi
   path="$(cd "$path"; pwd -L)"
   [[ "$_basename" ]] &&  path="${path%%/}/$_basename" || path="${path%%/}"
+  echo "$path"
+}
+
+##
+ # Replace path tokens with runtime values.
+ #
+ # @global string $CLOUDY_BASEPATH
+ # @global string $CLOUDY_CORE_DIR
+ # @global string $CLOUDY_PACKAGE_ID
+ # @global string $HOME
+ #
+ # @param string The path containing one or more tokens
+ #
+ # @echo The path with values in place of tokens.
+ ##
+function path_resolve_tokens() {
+  local path="$1"
+
+  path="${path//\$CLOUDY_PACKAGE_ID/$CLOUDY_PACKAGE_ID}"
+  path="${path//\$CLOUDY_BASEPATH/$CLOUDY_BASEPATH}"
+  path="${path//\$CLOUDY_CORE_DIR/$CLOUDY_CORE_DIR}"
+  path="${path/#\~\//$HOME/}"
   echo "$path"
 }

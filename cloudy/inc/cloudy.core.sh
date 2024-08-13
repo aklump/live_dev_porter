@@ -22,6 +22,8 @@
  ##
 source "$CLOUDY_CORE_DIR/inc/bootstrap/variables.sh"
 source "$CLOUDY_CORE_DIR/inc/bootstrap/basepath.sh"
+
+# Review legacy situations.
 source "$CLOUDY_CORE_DIR/inc/review_code/cloudy_package_controller.sh"
 has_failed && exit_with_failure
 

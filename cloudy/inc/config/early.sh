@@ -31,6 +31,8 @@ function _cloudy_early_config__read_shell_command() {
   local command="$1"
   local path_to_config="$2"
 
+  [ ! -e "$path_to_config" ] && return 0
+
   command_path="$(grep "  $command:" "$path_to_config")"
   # Check if commented out
   command_path="$(_cloudy_ltrim_yaml_array_item "$command_path")"
@@ -44,7 +46,7 @@ if [[ ! "$CLOUDY_PHP" ]]; then
   _cloudy_read_unprocessed_additional_config_paths "$CLOUDY_PACKAGE_CONFIG"
   [ $? -ne 0 ] && fail_because "Cannot load or parse $CLOUDY_PACKAGE_CONFIG" && exit_with_failure
   for config_file in "${_cloudy_unprocessed_additional_config_paths__array[@]}"; do
-    config_file="$(_cloudy_resolve_path_tokens "$config_file")"
+    config_file="$(path_resolve_tokens "$config_file")"
     # TODO Resolve relative config file paths to absolute file? This may be unnecessary if we decide to require absolute paths.
     custom_php=$(_cloudy_early_config__read_shell_command php "$config_file")
     if [[ "$custom_php" ]]; then

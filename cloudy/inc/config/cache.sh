@@ -39,8 +39,13 @@ else
   for file in "${config_files[@]}"; do
     if [[ "$file" ]]; then
       if [[ ! -f "$file" ]]; then
-        fail_because "Missing configuration file path: \"$file\"."
-        write_log_error "Missing configuration file path: \"$file\"."
+        # Be aware that we cannot fail at this point for additional config, only
+        # for the base config, because during an init command, such file may not
+        # yet exist, therefore we log it only and do not fail the operation.
+        if [[ "$CLOUDY_PACKAGE_CONFIG" == "$file" ]]; then
+          fail_because "\$CLOUDY_PACKAGE_CONFIG not found at: \"$file\"."
+        fi
+        write_log_error "Configuration not found at: \"$file\"."
       else
         echo "$(realpath "$file") $(_cloudy_get_file_mtime "$file")" >>"$CACHED_CONFIG_MTIME_FILEPATH"
       fi

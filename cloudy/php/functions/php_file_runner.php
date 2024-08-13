@@ -32,6 +32,8 @@ $read_only_vars['CLOUDY_COMPOSER_VENDOR'] = getenv('CLOUDY_COMPOSER_VENDOR');
 $read_only_vars['CLOUDY_CORE_DIR'] = getenv('CLOUDY_CORE_DIR');
 require_once $read_only_vars['CLOUDY_CORE_DIR'] . '/php/bootstrap.php';
 
+$read_only_vars['CLOUDY_PACKAGE_ID'] = getenv('CLOUDY_PACKAGE_ID');
+$read_only_vars['CLOUDY_INIT_RULES'] = getenv('CLOUDY_INIT_RULES');
 $read_only_vars['CLOUDY_CONFIG_JSON'] = getenv('CLOUDY_CONFIG_JSON');
 $read_only_vars['CLOUDY_RUNTIME_ENV'] = getenv('CLOUDY_RUNTIME_ENV');
 $read_only_vars['CLOUDY_CACHE_DIR'] = getenv('CLOUDY_CACHE_DIR');

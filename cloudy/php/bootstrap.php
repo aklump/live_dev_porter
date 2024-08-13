@@ -15,6 +15,7 @@ require_once __DIR__ . '/cloudy.functions.php';
  */
 $_constants = [
   'ROOT',
+  'CLOUDY_PACKAGE_ID',
   'CLOUDY_CORE_DIR',
   'CLOUDY_BASEPATH',
   'CLOUDY_COMPOSER_VENDOR',

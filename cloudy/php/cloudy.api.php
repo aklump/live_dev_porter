@@ -370,3 +370,31 @@ function path_make_pretty(string $path): string {
 
   return $path;
 }
+
+/**
+ * Replace path tokens with runtime values.
+ *
+ * @param string $path
+ *
+ * @return string
+ * @global string $CLOUDY_PACKAGE_ID
+ * @global string $HOME
+ * @global string $CLOUDY_BASEPATH
+ * @global string $CLOUDY_CORE_DIR
+ */
+function path_resolve_tokens(string $path): string {
+  $path_prefix_tokens = [
+    '~' => $_SERVER['HOME'] ?? NULL,
+    '$CLOUDY_PACKAGE_ID' => CLOUDY_PACKAGE_ID,
+    '$CLOUDY_CORE_DIR' => CLOUDY_CORE_DIR,
+    '$CLOUDY_BASEPATH' => CLOUDY_BASEPATH,
+  ];
+  $path_prefix_tokens = array_filter($path_prefix_tokens);
+  foreach ($path_prefix_tokens as $token => $replacement) {
+    $replacement = rtrim($replacement, DIRECTORY_SEPARATOR);
+    $path = str_replace($token, $replacement, $path);
+  }
+
+  return $path;
+}
+

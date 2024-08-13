@@ -12,7 +12,7 @@ local _file_list
 
 declare -a _file_list=()
 for _path in "${paths[@]}"; do
-  _path=$(_cloudy_resolve_path_tokens "$_path")
+  _path=$(path_resolve_tokens "$_path")
   [[ "$_path" != null ]] && _p="$(path_make_absolute "$_path" "$config_path_base")" && _path="$_p"
 
   # This will expand a glob finder.

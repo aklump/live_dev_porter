@@ -13,34 +13,13 @@ use Ckr\Util\ArrayMerger;
 use Symfony\Component\Yaml\Yaml;
 
 /**
- * @param string $path
- *
- * @return string
- * @const string $CLOUDY_BASEPATH
- */
-function _cloudy_resolve_path_tokens(string $path): string {
-  $path_prefix_tokens = [
-    '~' => $_SERVER['HOME'] ?? NULL,
-    '$CLOUDY_CORE_DIR' => CLOUDY_CORE_DIR,
-    '$CLOUDY_BASEPATH' => CLOUDY_BASEPATH,
-  ];
-  $path_prefix_tokens = array_filter($path_prefix_tokens);
-  foreach ($path_prefix_tokens as $token => $replacement) {
-    $replacement = rtrim($replacement, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
-    $path = preg_replace('#^' . preg_quote($token, '#') . '/?#', $replacement, $path, 1);
-  }
-
-  return $path;
-}
-
-/**
  * Resolve globs in absolute or relative paths.
  *
  * @param string $path_or_glob
  *
  * @return string[]
  *
- * @see _cloudy_resolve_path_tokens
+ * @see path_resolve_tokens
  */
 function _cloudy_resolve_path_globs(string $path_or_glob): array {
   $paths = [$path_or_glob];

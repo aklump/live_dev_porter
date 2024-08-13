@@ -51,7 +51,7 @@ else {
 
 $_additional_config = [];
 foreach ($config['additional_config'] as &$path_or_glob) {
-  $path_or_glob = _cloudy_resolve_path_tokens($path_or_glob);
+  $path_or_glob = path_resolve_tokens($path_or_glob);
   if (!path_is_absolute($path_or_glob)) {
     $path_or_glob = path_make_absolute($path_or_glob, $config['config_path_base']);
   }
