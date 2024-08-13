@@ -26,7 +26,7 @@ final class SchemaBuilder {
 
   public function __construct(array $config, RuntimeConfigInterface $cloudy_config) {
     $this->config = $cloudy_config->all();
-    $this->jsonSchemaSource = __DIR__ . '/../../json_schema/config.schema.json';
+    $this->jsonSchemaSource = $config['ROOT']  . '/json_schema/config.schema.json';
     $this->jsonSchemaDist = $config['CACHE_DIR'] . '/config.schema.json';
   }
 

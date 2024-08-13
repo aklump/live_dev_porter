@@ -1,5 +1,36 @@
 #!/usr/bin/env bash
 
+
+##
+ # Check if a directory has been initialized for Live Dev Porter.
+ #
+ # @param string The path to the directory to check
+ #
+ # @return 0 If it's been initialized
+ # @return 1 If not.
+ ##
+function ldp_dir_is_initialized() {
+  local directory="$1/.$CLOUDY_PACKAGE_ID/"
+
+  # @see init_resources/cloudy_init_rules.yml for directory composition.
+  [ ! -e "$directory" ] && return 1
+
+  # Make sure we rtrim all slashes or our comparisons below will fail.
+  directory=${directory%%/}
+
+  # Scan the config directory for any files that indicate it's already been
+  # initialized, we're very conservative looking for any unknown file, rather
+  # than looking for known files.  This will be safer if things change over
+  # time in that projects are less likely to get reinitialized.
+  local _installation_basedir="$CLOUDY_BASEPATH/.$CLOUDY_PACKAGE_ID"
+  local _cache_subpath="$(path_make_relative "$CLOUDY_CACHE_DIR" "$_installation_basedir")"
+  local _ignored_cache_dir="$directory/${_cache_subpath%%/}"
+
+  [[ -e "$directory" ]] && _contents=$(find "$directory" -mindepth 1 -maxdepth 1 ! -path "$_ignored_cache_dir" ! -name .DS_Store)
+  ! [[ -z "${_contents// }" ]] && return 0
+  return 1
+}
+
 #
 # @see class_method_caller.php
 # @see call_php_class_method_echo_or_fail for another version.

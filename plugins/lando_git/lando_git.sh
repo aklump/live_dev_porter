@@ -30,7 +30,7 @@ function lando_git_on_clear_cache() {
     [[ ! -f "$filepath" ]] && continue
     sandbox_directory "$(dirname $filepath)"
     if chmod 0600 "$filepath" && rm "$filepath"; then
-      succeed_because "$(path_make_relative "$filepath" "$CLOUDY_BASEPATH")"
+      succeed_because "$(path_make_relative "$filepath" "$CLOUDY_CACHE_DIR")"
     else
       fail_because "Failed to delete $filepath"
     fi

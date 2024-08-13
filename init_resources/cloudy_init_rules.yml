@@ -1,0 +1,4 @@
+copy_map:
+  - [ ./config*.yml, $CLOUDY_BASEPATH/.$CLOUDY_PACKAGE_ID/ ]
+  - [ ./config.gitignore, $CLOUDY_BASEPATH/.$CLOUDY_PACKAGE_ID/.gitignore ]
+  - [ ./processors, $CLOUDY_BASEPATH/.$CLOUDY_PACKAGE_ID/processors ]

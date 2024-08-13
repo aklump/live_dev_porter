@@ -61,11 +61,20 @@ function on_exit_with_failure() {
 }
 
 function on_boot() {
-  CONFIG_DIR="$CLOUDY_BASEPATH/.live_dev_porter"
   # TODO Search code and replace CACHE_DIR?
   CACHE_DIR="$CLOUDY_CACHE_DIR"
-  if [[ "$(get_command)" == "init" ]]; then
-    handle_init || exit_with_failure "${CLOUDY_FAILED:-Initialization failed.}"
+  local _command="$(get_command)"
+  local _contents
+
+  # Check if we're trying to initialize -- it will be handled custom below --
+  # and if already initialized throw an error.  The only allowable file in the
+  # config_dir, before initialization is the cache dir.
+  CONFIG_DIR="$CLOUDY_BASEPATH/.live_dev_porter"
+  if [[ "init" == "$_command" ]]; then
+    CLOUDY_FAILED="Failed to initialize."
+    CLOUDY_SUCCESS="Successfully initialized."
+    ldp_dir_is_initialized "$PWD" && fail_because "$PWD is already initialized; see $(path_make_pretty "$CONFIG_DIR")" && write_log_error "Init failed because $CONFIG_DIR must not contain any files or folders, except $(path_make_relative "$CLOUDY_CACHE_DIR" "$CONFIG_DIR") when initializing a new project." && exit_with_failure
+    return 0
   fi
 
   # Do not write code below this line.
@@ -94,6 +103,22 @@ validate_input || exit_with_failure "Input validation failed."
 
 COMMAND=$(get_command)
 case $COMMAND in
+    "clear-cache")
+      exit_with_cache_clear
+      ;;
+
+    "config-fix")
+      # Caching and config changes should usually be handled separately due to
+      # their differing needs and impacts on performance. Regenerate config data
+      # only when changes occur to the original config.yml to prevent
+      # unnecessary system load. However, cache-config synchronicity may require
+      # joint management.  The user may want to force a config-derivate file
+      # rebuild without editing the configuration files.
+      . "$SOURCE_DIR/snippets/_rebuild_config.sh"
+      has_failed && exit_with_failure
+      exit_with_cache_clear
+      ;;
+
     "version")
       eval $(get_config_as title 'title')
       eval $(get_config_as version 'version')
@@ -111,12 +136,14 @@ case $COMMAND in
       ;;
 
     "init")
-      source "$SOURCE_DIR/init.sh"
+      handle_init
+      has_failed && exit_with_failure
       for plugin in "${ACTIVE_PLUGINS[@]}"; do
         plugin_implements $plugin init && call_plugin $plugin init
       done
       has_failed && exit_with_failure
-      exit_with_success "Initialization complete."
+      echo_green_highlight "$CLOUDY_SUCCESS"
+      exit_with_cache_clear
       ;;
 
     "config")
@@ -151,6 +178,7 @@ case $COMMAND in
 esac
 
 eval $(get_config_as LOCAL_ENV_ID 'local')
+[[ ! "$LOCAL_ENV_ID" ]] && ! ldp_dir_is_initialized "$PWD" && fail_because "Perhaps you have not yet initialized your project?"
 exit_with_failure_if_empty_config 'LOCAL_ENV_ID' 'local'
 
 # We will scream if the local base path does not exist, this is because it's
@@ -259,17 +287,6 @@ fi
 
 # Handle other commands.
 case $COMMAND in
-    "config-fix")
-      # Caching and config changes should usually be handled separately due to
-      # their differing needs and impacts on performance. Regenerate config data
-      # only when changes occur to the original config.yml to prevent
-      # unnecessary system load. However, cache-config synchronicity may require
-      # joint management.  The user may want to force a config-derivate file
-      # rebuild without editing the configuration files.
-      . "$SOURCE_DIR/snippets/_rebuild_config.sh"
-      has_failed && exit_with_failure
-      exit_with_success
-      ;;
 
     "config-test")
       echo_title "Test Configuration"
@@ -731,7 +748,7 @@ case $COMMAND in
     ;;
 
     "info")
-      source "$SOURCE_DIR/info.sh"
+      source "$SOURCE_DIR/commands/info.sh"
       for plugin in "${ACTIVE_PLUGINS[@]}"; do
         plugin_implements $plugin info && call_plugin $plugin info
       done

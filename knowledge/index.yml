@@ -21,8 +21,6 @@ page_order:
     - troubleshooting
     - workflows
     - remote_install_alt
-  developers:
-    - php
   troubleshooting:
     - installation
     - remote_environment
@@ -30,3 +28,5 @@ page_order:
   security:
     - sanitation
     - code
+  developers:
+    - php

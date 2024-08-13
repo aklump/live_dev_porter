@@ -14,9 +14,10 @@ Simplifies the management and transfer of assets between website environments.
 
 **Visit <https://aklump.github.io/live_dev_porter> for full documentation.**
 
+{{ composer.install|raw }}
+
 ## Quick Start
 
-1. Require in your project using `composer require {{ composer.require }}`
 2. Ensure execute permissions: `chmod u+x ./vendor/bin/ldp`
 3. Initialize your project using `./vendor/bin/ldp init`
 4. (To migrate from Loft Deploy jump below...)
