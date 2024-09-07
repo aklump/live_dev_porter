@@ -12,4 +12,6 @@ class ProcessorModes {
   const PHP = 2;
 
   const YAML = 3;
+
+  const TXT = 4;
 }

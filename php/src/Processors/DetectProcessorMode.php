@@ -8,22 +8,22 @@ use Symfony\Component\Yaml\Yaml;
 class DetectProcessorMode {
 
   /**
-   * @param string $contents
+   * @param string $bitstream
    *
    * @return int
    *   The detected mode or -1 if failure.
    *
    * @see \AKlump\LiveDevPorter\Processors\ProcessorModes
    */
-  public function __invoke(string $contents): int {
-    if (preg_match('#^\s*<\?php#', $contents)) {
+  public function __invoke(string $bitstream): int {
+    if (preg_match('#^\s*<\?php#', $bitstream)) {
       return ProcessorModes::PHP;
     }
-    elseif (preg_match('#^.+=.*\n#', $contents)) {
+    elseif (preg_match('#^.+=.*\n#', $bitstream)) {
       return ProcessorModes::ENV;
     }
     try {
-      Yaml::parse($contents);
+      Yaml::parse($bitstream);
 
       return ProcessorModes::YAML;
     }
@@ -31,7 +31,7 @@ class DetectProcessorMode {
       // Purposefully left blank.
     }
 
-    return -1;
+    return ProcessorModes::TXT;
   }
 
 }

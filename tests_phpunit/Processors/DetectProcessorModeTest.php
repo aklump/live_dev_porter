@@ -14,6 +14,12 @@ final class DetectProcessorModeTest extends TestCase {
 
   use TestWithFilesTrait;
 
+  public function testDetectText() {
+    $filepath = $this->getTestFileFilepath('crontab.bak');
+    $contents = file_get_contents($filepath);
+    $this->assertSame(ProcessorModes::TXT, (new DetectProcessorMode())($contents));
+  }
+
   public function testDetectPHP() {
     $filepath = $this->getTestFileFilepath('settings.php');
     $contents = file_get_contents($filepath);

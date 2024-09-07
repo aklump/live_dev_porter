@@ -30,7 +30,7 @@ class RedactorEnvTest extends TestCase {
     $replacement = $redactor->getReplacement();
     $this->assertStringContainsString(sprintf("DATABASE_URL=mysql://drupal8:%s@database/drupal8", $replacement), $contents);
     $this->assertStringNotContainsString('rock$ol1D', $contents);
-    $this->assertSame(sprintf('DATABASE_URL.pass has been redacted%s', PHP_EOL), $messages);
+    $this->assertStringContainsString('DATABASE_URL.pass has been redacted', $messages);
   }
 
   public function testCanRedactWithEmptyStringInEnvFile() {

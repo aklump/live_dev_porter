@@ -13,6 +13,8 @@ use AKlump\LiveDevPorter\Lexers\TokenAdapter;
 
 class Redactor {
 
+  const ICON = '🛡️ ';
+
   /**
    * @var string
    */
@@ -74,16 +76,16 @@ class Redactor {
   /**
    * Optionally, control what values are redacted.
    *
-   * @param array $pointerRegex
+   * @param array $pointer_regex
    *   An array of regex expressions, which are case-insensitive to be used to
-   *   match what values are redacted.
+   *   match what values are redacted.  Delimiters must not be used.
    *
    * @return $this
    *
    * @see self::getDefaultPointerRegex()
    */
-  public function find(array $pointerRegex): self {
-    $this->pointerRegex = $pointerRegex;
+  public function find(array $pointer_regex): self {
+    $this->pointerRegex = $pointer_regex;
 
     return $this;
   }
@@ -143,6 +145,7 @@ class Redactor {
     $context = [
       'message' => $this->message,
       'pointer_regex' => $this->getPointerRegex(),
+      'replacement' => $this->replacement,
     ];
     switch ($this->mode) {
       case ProcessorModes::YAML:
@@ -160,6 +163,9 @@ class Redactor {
 
       case ProcessorModes::ENV:
         $this->redactInBash($this->contents, $context);
+        break;
+      case ProcessorModes::TXT:
+        $this->redactInText($this->contents, $context);
         break;
 
       default:
@@ -184,7 +190,7 @@ class Redactor {
       $pointer = implode('.', $context['pointer']);
       if ($this->shouldValueBeRedacted("$pointer.$k", $context['pointer_regex'])) {
         $data[$k] = $this->replacement;
-        $context['message'] .= sprintf('%s has been redacted%s', $pointer, PHP_EOL);
+        $context['message'] .= sprintf('%s%s has been redacted%s', self::ICON, $pointer, PHP_EOL);
       }
       if (is_array($data[$k])) {
         $this->redactInArray($data[$k], $context);
@@ -223,7 +229,18 @@ class Redactor {
         }
         $replace = preg_replace('#(=>.+?)(\w+)#', '$1' . $this->replacement, $find);
         $php_code = str_replace($find, $replace, $php_code);
-        $context['message'] .= sprintf('%s has been redacted%s', $pointer, PHP_EOL);
+        $context['message'] .= sprintf('%s%s has been redacted%s', self::ICON, $pointer, PHP_EOL);
+      }
+    }
+  }
+
+  private function redactInText(string &$text, array &$context) {
+    $context += ['message' => ''];
+    foreach ($context['pointer_regex'] as $pointer_regex) {
+      $count = 0;
+      $text = preg_replace("#$pointer_regex#i", $context['replacement'], $text, 1, $count);
+      if ($count > 0) {
+        $context['message'] .= sprintf('%s%s has been redacted%s', self::ICON, $pointer_regex, PHP_EOL);
       }
     }
   }
@@ -267,7 +284,7 @@ class Redactor {
         }
         $replace = preg_replace('#([^=]+=)(.*)#', '$1' . $replacement, $find);
         $bash_code = str_replace($find, $replace, $bash_code);
-        $context['message'] .= sprintf('%s has been redacted%s', $pointer, PHP_EOL);
+        $context['message'] .= sprintf('%s%s has been redacted%s', self::ICON, $pointer, PHP_EOL);
       }
     }
   }

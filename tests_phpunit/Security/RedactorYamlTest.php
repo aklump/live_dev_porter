@@ -10,7 +10,7 @@ use Symfony\Component\Yaml\Yaml;
 
 /**
  * @covers \AKlump\LiveDevPorter\Security\Redactor
- * @uses \AKlump\LiveDevPorter\Processors\DetectProcessorMode
+ * @uses   \AKlump\LiveDevPorter\Processors\DetectProcessorMode
  */
 class RedactorYamlTest extends TestCase {
 
@@ -30,6 +30,7 @@ class RedactorYamlTest extends TestCase {
     $this->assertSame($replacement, $data['secret']);
     $this->assertSame($replacement, $data['private_key']);
   }
+
   public function testBareBonesWithDefaultsAutoMode() {
     $path = $this->getTestFileFilepath('redact_passwords.yml');
     $contents = file_get_contents($path);
@@ -82,7 +83,10 @@ class RedactorYamlTest extends TestCase {
     $this->assertSame('PASSWORD', $data['foo']['pass']);
     $this->assertSame('EHje89ZJzgvOO3o1zPhd', $data['foo']['bar']['password']);
     $this->assertSame('REDACTED', $data['secret']);
-    $this->assertSame(sprintf('foo.pass has been redacted%ssecret has been redacted%s', PHP_EOL, PHP_EOL), $redactor->getMessage());
+
+    $message = $redactor->getMessage();
+    $this->assertStringContainsString('foo.pass has been redacted', $message);
+    $this->assertStringContainsString('secret has been redacted', $message);
   }
 
 }

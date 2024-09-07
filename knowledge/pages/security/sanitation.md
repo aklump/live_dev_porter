@@ -73,16 +73,16 @@ class RemoveSecrets extends \AKlump\LiveDevPorter\Processors\ProcessorBase {
 
     // We will apply sanitizing to the ".env" file.
     if ($this->getBasename() === '.env') {
-    
+
       // This argument is passed by reference and is mutated by $redactor.
       $redactor = (new \AKlump\LiveDevPorter\Security\Redactor($this->loadedFile['contents']));
-      
+
       // The default replacement will be used for these two keys.
       $redactor->find(['CLIENT_SECRET', 'HASH_SALT'])->redact();
-      
+
       // A custom "PASSWORD" replacement will be used.
       $redactor->find(['DATABASE_URL'])->replaceWith('PASSWORD')->redact();
-      
+
       // This will contain messages about what, if anything has been redacted.  Or be an empty string if no redaction occurred.
       $message = $redactor->getMessage();
       if (!$message || $this->saveFile() !== FALSE) {
@@ -95,5 +95,20 @@ class RemoveSecrets extends \AKlump\LiveDevPorter\Processors\ProcessorBase {
     throw new \AKlump\LiveDevPorter\Processors\ProcessorSkippedException();
   }
 
+}
+```
+
+### Redacting in a Text File
+
+```php
+if ($this->getBasename() === 'crontab.bak') {
+  // A text file "crontab.bak", we can use a regex find and replace.
+  $message = (new \AKlump\LiveDevPorter\Security\Redactor($this->loadedFile['contents'], \AKlump\LiveDevPorter\Processors\ProcessorModes::TXT))
+    ->find(['seao.org/cron/.+'])
+    ->replaceWith('seao.org/cron/{TOKEN_REDACTED}')
+    ->redact()
+    ->getMessage();
+  
+  // Continue as above...
 }
 ```
