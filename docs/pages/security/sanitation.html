@@ -99,16 +99,16 @@ DATABASE_URL=mysql://drupal8:PASSWORD@database/drupal8
 
     // We will apply sanitizing to the ".env" file.
     if ($this-&gt;getBasename() === '.env') {
-    
+
       // This argument is passed by reference and is mutated by $redactor.
       $redactor = (new \AKlump\LiveDevPorter\Security\Redactor($this-&gt;loadedFile['contents']));
-      
+
       // The default replacement will be used for these two keys.
       $redactor-&gt;find(['CLIENT_SECRET', 'HASH_SALT'])-&gt;redact();
-      
+
       // A custom "PASSWORD" replacement will be used.
       $redactor-&gt;find(['DATABASE_URL'])-&gt;replaceWith('PASSWORD')-&gt;redact();
-      
+
       // This will contain messages about what, if anything has been redacted.  Or be an empty string if no redaction occurred.
       $message = $redactor-&gt;getMessage();
       if (!$message || $this-&gt;saveFile() !== FALSE) {
@@ -123,6 +123,18 @@ DATABASE_URL=mysql://drupal8:PASSWORD@database/drupal8
 
 }
 </code></pre>
+<h3>Redacting in a Text File</h3>
+<pre><code class="php">if ($this-&gt;getBasename() === 'crontab.bak') {
+  // A text file "crontab.bak", we can use a regex find and replace.
+  $message = (new \AKlump\LiveDevPorter\Security\Redactor($this-&gt;loadedFile['contents'], \AKlump\LiveDevPorter\Processors\ProcessorModes::TXT))
+    -&gt;find(['seao.org/cron/.+'])
+    -&gt;replaceWith('seao.org/cron/{TOKEN_REDACTED}')
+    -&gt;redact()
+    -&gt;getMessage();
+  
+  // Continue as above...
+}
+</code></pre>
     </article>
   </div>
 </main>
@@ -130,9 +142,9 @@ DATABASE_URL=mysql://drupal8:PASSWORD@database/drupal8
   <footer class="footer d-flex justify-content-center">
     <div class="flex-column justify-content-center">
               Version:
-        <strong>0.0.170</strong>
+        <strong>0.0.171</strong>
         &bull;
-            Last Update: <strong>8/13/2024</strong>
+            Last Update: <strong>9/7/2024</strong>
     </div>
   </footer>
 
