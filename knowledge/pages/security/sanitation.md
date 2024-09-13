@@ -51,6 +51,7 @@ DATABASE_URL=mysql://drupal8:rock$ol1D@database/drupal8
 ```
 
 After being sanitized:
+
 ```shell
 FOO=BAR
 HASH_SALT=REDACTED
@@ -100,12 +101,14 @@ class RemoveSecrets extends \AKlump\LiveDevPorter\Processors\ProcessorBase {
 
 ### Redacting in a Text File
 
+When redacting in a text file, **you must provide a RegExp that captures one group**, which is the portion that will be replaced. In the following example the redacted output will contain `example.com/cron/{TOKEN_REDACTED}`.
+
 ```php
 if ($this->getBasename() === 'crontab.bak') {
   // A text file "crontab.bak", we can use a regex find and replace.
   $message = (new \AKlump\LiveDevPorter\Security\Redactor($this->loadedFile['contents'], \AKlump\LiveDevPorter\Processors\ProcessorModes::TXT))
-    ->find(['seao.org/cron/.+'])
-    ->replaceWith('seao.org/cron/{TOKEN_REDACTED}')
+    ->find(['example.com/cron/(.+)'])
+    ->replaceWith('{TOKEN_REDACTED}')
     ->redact()
     ->getMessage();
   

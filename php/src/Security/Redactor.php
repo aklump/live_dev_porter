@@ -4,6 +4,7 @@ namespace AKlump\LiveDevPorter\Security;
 
 use AKlump\LiveDevPorter\Processors\DetectProcessorMode;
 use AKlump\LiveDevPorter\Processors\ProcessorModes;
+use InvalidArgumentException;
 use ReflectionClass;
 use RuntimeException;
 use Symfony\Component\Yaml\Yaml;
@@ -236,11 +237,26 @@ class Redactor {
 
   private function redactInText(string &$text, array &$context) {
     $context += ['message' => ''];
+    $bad_pattern_message = 'Regexp "%s" must capture one group that identifies the portion to be replaced, e.g. /foo?password=([^&#]+)';
+
     foreach ($context['pointer_regex'] as $pointer_regex) {
       $count = 0;
-      $text = preg_replace("#$pointer_regex#i", $context['replacement'], $text, 1, $count);
+      $text = preg_replace_callback("#$pointer_regex#i", function ($matches) use ($context, $pointer_regex, $bad_pattern_message) {
+        if (!isset($matches[1])) {
+          throw new InvalidArgumentException(sprintf($bad_pattern_message, $pointer_regex));
+        }
+
+        return str_replace($matches[1], $context['replacement'], $matches[0]);
+      }, $text, 1, $count);
       if ($count > 0) {
         $context['message'] .= sprintf('%s%s has been redacted%s', self::ICON, $pointer_regex, PHP_EOL);
+      }
+      else {
+        // Check that there is one group in our regex.
+        $has_one_group = (bool) preg_match('/^\([^()]*\)$/', $pointer_regex);
+        if (!$has_one_group) {
+          throw new InvalidArgumentException(sprintf($bad_pattern_message, $pointer_regex));
+        }
       }
     }
   }
