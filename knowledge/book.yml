@@ -1,2 +1,46 @@
 title: 'Live Dev Porter'
 uuid: c3f459f9-25ff-4ffb-b805-170cd8e64ce3
+chapters:
+  -
+    id: general
+    title: General
+    pages:
+      - readme
+      - changelog
+      - connection_problems
+      - databases
+      - environment_roles
+      - environments
+      - file_groups
+      - import
+      - lando
+      - local_build_files
+      - loft_deploy_migrations
+      - plugins
+      - processor_development
+      - processors
+      - pull
+      - push
+      - remote
+      - source_control
+      - troubleshooting
+      - workflows
+      - remote_install_alt
+  -
+    id: developers
+    title: Developers
+    pages:
+      - php
+  -
+    id: troubleshooting
+    title: Troubleshooting
+    pages:
+      - installation
+      - remote_environment
+      - validation
+  -
+    id: security
+    title: Security
+    pages:
+      - sanitation
+      - code
