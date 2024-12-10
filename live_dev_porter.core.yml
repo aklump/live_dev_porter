@@ -8,7 +8,7 @@ additional_config:
   - '$CLOUDY_BASEPATH/.live_dev_porter/config.local.yml'
 additional_bootstrap: null
 default_command: help
-max_database_rollbacks_to_keep: 15
+max_database_rollbacks_to_keep: 5
 backup_remote_db_on_push: true
 delete_pull_dumpfiles: true
 compress_dumpfiles: true
