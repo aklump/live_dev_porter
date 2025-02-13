@@ -59,15 +59,15 @@ workflows:
           - 'old_*'
           - sessions
           - watchdog
-      file_groups:
-        - install
-        - secrets
-        - public
-        - private
-      processors:
-        - FileGroupHandler::process
-        - prepare_db_for_dev.sh
-        - replace_dumpfile.sh
+    file_groups:
+      - install
+      - secrets
+      - public
+      - private
+    processors:
+      - FileGroupHandler::process
+      - prepare_db_for_dev.sh
+      - replace_dumpfile.sh
 file_groups:
   install:
     include:
