@@ -116,7 +116,7 @@ commands:
     help: 'Import a dumpfile to the local database.'
     arguments:
       filepath:
-        help: 'A an absolute (or relative to the working directory) path to an existing export file.  Alternately, it may be a portion of a filename used to search through existing files, or simply omitted and you will be shown files to choose from.'
+        help: 'An absolute (or relative to the working directory) path to an existing export file.  Alternately, it may be a portion of a filename used to search through existing files, or simply omitted and you will be shown files to choose from.'
     options:
       id:
         type: string
