@@ -101,6 +101,12 @@ s="${BASH_SOURCE[0]}";while [ -h "$s" ];do dir="$(cd -P "$(dirname "$s")" && pwd
 # Input validation.
 validate_input || exit_with_failure "Input validation failed."
 
+if has_option "verbose" && [[ "$CLOUDY_LOG" ]]; then
+  echo
+  echo "🐞 See log for more info: $CLOUDY_LOG"
+  echo
+fi
+
 COMMAND=$(get_command)
 case $COMMAND in
     "clear-cache")

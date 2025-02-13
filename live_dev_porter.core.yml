@@ -121,6 +121,11 @@ commands:
       id:
         type: string
         help: 'Indicate the database ID to import into, this can be omitted when only one database is defined, or when you want the first (default) database to be used.'
+      verbose:
+        type: boolean
+        help: 'Run in verbose mode; helps troubleshoot connections.'
+        aliases:
+          - v
   export:
     help: 'Export the local database.'
     arguments:
