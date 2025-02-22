@@ -106,7 +106,6 @@ function lando_on_database_name() {
   [[ "$db_name" ]] && echo "$db_name" && return 0
   echo "Lando cannot determine the database name" && return 1
 }
-
 function lando_on_db_shell() {
   call_plugin mysql db_shell "$@"
 }
@@ -117,8 +116,8 @@ function lando_on_import_db() {
   call_plugin mysql import_db "$@"
 }
 function lando_on_pull_db() {
-  call_plugin mysql pull_db "$@"
+  call_remote_database_plugin pull_db "$@"
 }
 function lando_on_push_db() {
-  call_plugin mysql push_db "$@"
+  call_remote_database_plugin push_db "$@"
 }

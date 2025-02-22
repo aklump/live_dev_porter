@@ -117,8 +117,8 @@ function drupal_on_import_db() {
   call_plugin mysql import_db "$@"
 }
 function drupal_on_pull_db() {
-  call_plugin mysql pull_db "$@"
+  call_remote_database_plugin pull_db "$@"
 }
 function drupal_on_push_db() {
-  call_plugin mysql push_db "$@"
+  call_remote_database_plugin push_db "$@"
 }

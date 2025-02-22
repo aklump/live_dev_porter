@@ -26,7 +26,21 @@
         "minLength": 1
       }
     },
-    "database__mysql": {
+    "plugin_backups__database": {
+      "type": "object",
+      "required": [
+        "path"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "description": "Path to the database backup for this environment.",
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "plugin_mysql__database": {
       "type": "object",
       "required": [
         "plugin",
@@ -259,7 +273,10 @@
                 ".+": {
                   "oneOf": [
                     {
-                      "$ref": "#/$defs/database__mysql"
+                      "$ref": "#/$defs/plugin_mysql__database"
+                    },
+                    {
+                      "$ref": "#/$defs/plugin_backups__database"
                     },
                     {
                       "type": "object",

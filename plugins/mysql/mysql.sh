@@ -101,6 +101,9 @@ function mysql_on_configtest() {
     # environment should never be checked by this test.
     [[ "$environment_id" == "$LOCAL_ENV_ID" ]] && continue
 
+    # No tests when this plugin is in use.
+    environment_uses_backups_plugin "$environment_id" && continue
+
     eval $(get_config_as env_label "environments.$environment_id.label")
     remote_base_path="$(environment_path_resolve $environment_id)"
 

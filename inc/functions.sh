@@ -292,22 +292,63 @@ function execute_workflow_processors() {
 # $... Additional arguments exclusively will be passed to the plugin function.
 #
 function call_plugin() {
-  local plugin=$1
-  local function_tail=$2
-  local args=("${@:3}")
+  local plugin="$1"
+  local plugin_hook="$2"
+  local plugin_args=("${@:3}")
 
   local func_name
-  func_name=$(_plugin_get_func_name "$plugin" "$function_tail")
-  ! plugin_implements $plugin $function_tail && fail_because "Plugin \"$plugin\" does not define a function called $func_name()" && return 1
+  func_name=$(_plugin_get_func_name "$plugin" "$plugin_hook")
+  ! plugin_implements $plugin $plugin_hook && fail_because "Plugin \"$plugin\" does not define a function called $func_name()" && return 1
   write_log_debug "Calling plugin with: $func_name"
-  $func_name "${args[@]}"
+  $func_name "${plugin_args[@]}"
+}
+
+##
+ # Calls the correct remote database plugin for a given call.
+ #
+ # @param string The plugin hook, e.g., pull_db
+ ##
+function call_remote_database_plugin() {
+  local plugin_hook=$1
+  local database_id="$2"
+  local plugin_args=("${@:1}")
+
+  local plugin
+  local result
+
+  [[ ! "$REMOTE_ENV_ID" ]] && fail_because "Empty value for \$REMOTE_ENV_ID" && return 1
+
+  # This is the default handler for remote environments.  It may be replaced if
+  # the remote environment is using the backups plugin...
+  plugin="mysql"
+
+  # ... check if the remote environment is using the filepath plugin for the
+  # database, which means that a local copy of the dumpfile already exists.
+  environment_uses_backups_plugin "$REMOTE_ENV_ID" && plugin="backups"
+
+  call_plugin "$plugin" "${plugin_args[@]}"
+}
+
+##
+ # Load a plugin that is not currently active.
+ #
+ # @param string The name of the plugin.
+ #
+ # @return 1 If the plugin cannot be found.
+ ##
+function load_plugin() {
+  local plugin="$1"
+
+  [ -f "$PLUGINS_DIR/$plugin/$plugin.sh" ] || return 1
+  source "$PLUGINS_DIR/$plugin/$plugin.sh"
+  write_log_debug "$plugin plugin loaded"
 }
 
 function _plugin_get_func_name() {
-  local plugin=$1
-  local function_tail=$2
+  local plugin="$1"
+  local plugin_hook="$2"
 
-  echo "${plugin}_on_${function_tail}"
+  echo "${plugin}_on_${plugin_hook}"
 }
 
 # Test if a given plugin implements a hook.
@@ -317,12 +358,24 @@ function _plugin_get_func_name() {
 #
 # Returns 0 if .
 function plugin_implements() {
-  local plugin=$1
-  local function_tail=$2
+  local plugin="$1"
+  local plugin_hook="$2"
 
-  [ -f "$PLUGINS_DIR/$plugin/$plugin.sh" ] || return 1
-  source "$PLUGINS_DIR/$plugin/$plugin.sh"
-  function_exists "$(_plugin_get_func_name "$plugin" "$function_tail")"
+  load_plugin "$plugin" || return $?
+  function_exists "$(_plugin_get_func_name "$plugin" "$plugin_hook")"
+}
+
+##
+ # Check if an environment is using the backups plugin.
+ #
+ # @return 0 If it is, 1 otherwise
+ ##
+function environment_uses_backups_plugin() {
+  local $environment_id
+
+  backups_get_database_filepath "$environment_id" "$database_id" &>/dev/null
+  [[ "$?" -ne 1 ]] && return 0
+  return 1
 }
 
 function implement_route_access() {
