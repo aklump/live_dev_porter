@@ -8,3 +8,4 @@ chmod u+x $__DIR__/ldp
 chmod u+x $__DIR__/run_multi_php_unit_tests.sh
 chmod u+x $__DIR__/run_unit_tests.sh
 chmod u+x $__DIR__/../vendor/bin/phpunit
+chmod u+x $__DIR__/../vendor/bin/phpswap
