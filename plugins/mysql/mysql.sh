@@ -172,13 +172,18 @@ function mysql_prune_rollback_files() {
     rollback_files=("${rollback_files[@]}" "$i")
   done
 
-  stop_at_index=$((${#rollback_files[@]}-$keep_files_count))
-  echo_task "Delete all but $keep_files_count most recent backups."
-  write_log_debug "Delete all but $keep_files_count most recent backups."
-  for (( i = 0; i < $stop_at_index; i++ )); do
-    sandbox_directory "$(dirname "${rollback_files[i]}")"
-    ! rm "${rollback_files[i]}" && fail_because "Could not delete ${rollback_files[i]}" && echo_task_failed && return 1
-  done
+  if [ ${#rollback_files[@]} -gt $keep_files_count ]; then
+    stop_at_index=$((${#rollback_files[@]}-$keep_files_count))
+    echo_task "Delete all but $keep_files_count most recent backups."
+    write_log_debug "Delete all but $keep_files_count most recent backups."
+    for (( i = 0; i < $stop_at_index; i++ )); do
+      [[ ! "${rollback_files[i]}" ]] && continue
+      sandbox_directory "$(dirname "${rollback_files[i]}")"
+      ! rm "${rollback_files[i]}" && fail_because "Could not delete ${rollback_files[i]}" && echo_task_failed && return 1
+    done
+  else
+    write_log_debug "Backup file count (${#rollback_files[@]}) does not exceed the limit. Nothing to delete"
+  fi
   echo_task_completed
   return 0
 }
