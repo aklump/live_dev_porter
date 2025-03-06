@@ -33,6 +33,8 @@ https://mysqldump.guru/how-to-install-and-run-mysqldump.html
 
 https://github.com/Homebrew/homebrew-core/issues/180498
 
+Pick one of these:
 ```shell
+brew install mysql@8.4
 brew install mysql-client@8.4
 ```
