@@ -9,6 +9,18 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.175] - 2025-03-05
+
+### Fixed
+
+- An issue introduced in 0.0.173 that broke database pulls.
+
+## [0.0.173] - 2025-02-21
+
+### Added
+
+- A backups plugin for pulling from database backup files.
+
 ## [0.0.171] - 2024-09-06
 
 ### Added
