@@ -4,9 +4,9 @@
   <!-- Required meta tags -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-      <link rel="stylesheet" href="../../dist/node_modules/bootstrap/dist/css/bootstrap.css?ver=0.0.173">
-      <link rel="stylesheet" href="../../dist/dist/bootstrap_theme.css?ver=0.0.173">
-      <link rel="stylesheet" href="../../dist/node_modules/bootstrap-icons/font/bootstrap-icons.min.css?ver=0.0.173">
+      <link rel="stylesheet" href="../../dist/node_modules/bootstrap/dist/css/bootstrap.css?ver=0.0.174">
+      <link rel="stylesheet" href="../../dist/dist/bootstrap_theme.css?ver=0.0.174">
+      <link rel="stylesheet" href="../../dist/node_modules/bootstrap-icons/font/bootstrap-icons.min.css?ver=0.0.174">
     <title>Troubleshooting Installation | Live Dev Porter</title>
 </head>
 <body class="my-5">
@@ -42,14 +42,28 @@
   <div class="row mb-5 pt-5">
     <article class="col">
       <h1 class="mb-4 text-primary">Troubleshooting Installation</h1>
-      <h2>Failed due to missing configuration; please add "local"</h2>
+      <h2>Manually delete .live_dev_porter/.cache</h2>
+<p>This cannot hurt and may fix some issues.</p>
+<h2>Failed due to missing configuration; please add "local"</h2>
 <p>Update to the newest version of Live Dev Porter.</p>
+<h2>Failed to bootstrap...Cannot find Composer dependencies</h2>
+<ol>
+<li>Open the log file</li>
+<li>Search for <code>CLOUDY_PACKAGE_CONTROLLER</code></li>
+<li>Open that file</li>
+<li>Add the following line:</li>
+</ol>
+<pre><code class="shell">CLOUDY_COMPOSER_VENDOR="/PATH/TO/COMPOSER/vendor"
+</code></pre>
 <h2>mysqldump: command not found</h2>
 <p>https://mysqldump.guru/how-to-install-and-run-mysqldump.html</p>
 <h2>Mac</h2>
 <p>https://github.com/Homebrew/homebrew-core/issues/180498</p>
-<pre><code class="shell">brew install mysql-client@8.4
-</code></pre>
+<p>Pick one of these:
+<code>`</code>shell
+brew install mysql@8.4
+brew install mysql-client@8.4
+<code>`</code></p>
     </article>
   </div>
 </main>
@@ -57,9 +71,9 @@
   <footer class="footer d-flex justify-content-center">
     <div class="flex-column justify-content-center">
               Version:
-        <strong>0.0.173</strong>
+        <strong>0.0.174</strong>
         &bull;
-                    Last Update: <strong>2/21/2025</strong>
+                    Last Update: <strong>3/5/2025</strong>
           </div>
   </footer>
 
@@ -501,9 +515,9 @@
   </div>
 </div>
 
-  <script src="../../dist/node_modules/bootstrap/dist/js/bootstrap.min.js?ver=0.0.173"></script>
-  <script src="../../dist/lunr.js?ver=0.0.173"></script>
-  <script src="../../dist/knowledge.min.js?ver=0.0.173"></script>
+  <script src="../../dist/node_modules/bootstrap/dist/js/bootstrap.min.js?ver=0.0.174"></script>
+  <script src="../../dist/lunr.js?ver=0.0.174"></script>
+  <script src="../../dist/knowledge.min.js?ver=0.0.174"></script>
 
 </body>
 </html>
