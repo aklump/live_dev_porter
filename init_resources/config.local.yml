@@ -3,6 +3,9 @@ local: dev
 #other:
 #  - local
 #shell_commands:
-#  mysqldump: /usr/local/bin/mysqldump
-#  mysql: /usr/local/bin/mysql
-#  php: /usr/local/bin/php
+#  cp: /bin/cp
+#  gzip: /usr/bin/gzip
+#  mysql: /usr/local/opt/mysql-client@8.4/bin/mysql
+#  mysqldump: /usr/local/opt/mysql-client@8.4/bin/mysqldump
+#  php: /Applications/MAMP//bin/php/php8.2.26/bin/php
+#  scp: /usr/bin/scp -O
