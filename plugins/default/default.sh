@@ -240,9 +240,9 @@ function default_on_push_files() {
       ! default_mkdir "$REMOTE_ENV_ID" "$destination_path" && fail_because "Could not create directory: $destination_path"
       has_failed && return 1
 
-      has_option v && echo "$rsync_options"
       write_log "rsync $rsync_options "$source_path/" "${REMOTE_ENV_AUTH}$destination_path/""
       echo_task "Push files group \"$FILES_GROUP_ID\" to: $destination"
+      has_option v && echo_yellow "rsync $rsync_options \"$source_path/\" \"${REMOTE_ENV_AUTH}$destination_path/\""
       rsync $rsync_options "$source_path/" "${REMOTE_ENV_AUTH}$destination_path/" || fail
 
       if has_failed; then
@@ -337,9 +337,9 @@ function default_on_pull_files() {
       fi
       has_failed && return 1
 
-      has_option v && echo "$rsync_options"
       write_log "rsync $rsync_options "${REMOTE_ENV_AUTH}$source_path/" "$destination_path/""
       echo_task "Pull files group \"$FILES_GROUP_ID\" to: $destination"
+      has_option v && echo_yellow "rsync $rsync_options \"${REMOTE_ENV_AUTH}$source_path/\" \"$destination_path/\""
       rsync $rsync_options "${REMOTE_ENV_AUTH}$source_path/" "$destination_path/" || fail
 
       if has_failed; then
