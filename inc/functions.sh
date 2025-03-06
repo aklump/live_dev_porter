@@ -373,6 +373,7 @@ function plugin_implements() {
 function environment_uses_backups_plugin() {
   local $environment_id
 
+  load_plugin "backups"
   backups_get_database_filepath "$environment_id" "$database_id" &>/dev/null
   [[ "$?" -ne 1 ]] && return 0
   return 1
