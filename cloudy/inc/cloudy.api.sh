@@ -2161,7 +2161,11 @@ function yaml_get_json() {
  # @echo A new UUID
  #
 function create_uuid() {
-  echo $(uuidgen)
+  if command -v uuidgen &> /dev/null; then
+    uuidgen
+  else
+    cat /proc/sys/kernel/random/uuid
+  fi
 }
 
 ##
