@@ -1,3 +1,10 @@
+## Critical
+
+## Normal
+
+- `ldp import` should pause before continuing to the processors
+- `ldp import` should ask if a backup is desired since you may be trying to replace a broken database and backing that up would be stupid, and would cause the oldest, probably good backup to be deleted.
+
 - bug: in ATS, ldp process create_test_content.sh did not work
 - rewrite how remote environment checks work, so we don't get a traffic issue with too many connections too quickly, e.g. ATS Dreamhost
 - ldp db, lando not running, then give a message "try starting lando"
@@ -43,3 +50,4 @@ echo $json
 
 
 ```
+## Complete

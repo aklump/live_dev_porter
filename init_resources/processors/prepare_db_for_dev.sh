@@ -11,10 +11,10 @@
 [[ "$COMMAND" != "pull" ]] && [[ "$COMMAND" != "import" ]] && exit 255
 
 # Determine where the drush script is and make sure we have one.
-if $(which lando > /dev/null); then
-  drush_script="lando drush"
-elif $(which drush > /dev/null); then
-  drush_script="drush"
+if command -v lando > /dev/null; then
+  DRUSH="lando drush"
+elif command -v drush > /dev/null; then
+  DRUSH="drush"
 else
   echo "drush is missing" && exit 1
 fi
@@ -23,18 +23,19 @@ fi
 cd web || exit 1
 
 # Do this first to prevent drush warnings.
-$drush_script cache-rebuild -y >/dev/null
+$DRUSH cache-rebuild -y >/dev/null
 
 # Sanitize the local database for security.
-! $drush_script sql-sanitize -y  > /dev/null && echo "Failed to sanitize DB" && exit 1
+# @url https://www.drush.org/13.x/commands/sql_sanitize/
+! $DRUSH sql-sanitize -y  > /dev/null && echo "Failed to sanitize DB" && exit 1
 
 # Set the passwords for use with Check Pages testing.
-$drush_script upwd uber --password=pass
+$DRUSH upwd uber --password=pass
 
 # Enable/disable modules.
-! $drush_script pm-disable -y securelogin, antispam > /dev/null && echo "Failed to disable production modules." && exit 1
-! $drush_script pm-enable -y reroute_email > /dev/null && echo "Failed to enable development modules." && exit 1
+! $DRUSH pm-disable -y securelogin, antispam > /dev/null && echo "Failed to disable production modules." && exit 1
+! $DRUSH pm-enable -y reroute_email > /dev/null && echo "Failed to enable development modules." && exit 1
 
 # Finally clear caches and make drupal happy
-$drush_script cache-rebuild -y
+$DRUSH cache-rebuild -y
 exit 0
