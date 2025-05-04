@@ -1,7 +1,7 @@
 title: 'Live Dev Porter'
 name: 'Live Dev Porter'
 description: 'Simplifies the management and transfer of assets between website environments.'
-version: 0.0.176
+version: 0.0.177
 author: 'Aaron Klump <sourcecode@intheloftstudios.com>'
 additional_config:
   - '$CLOUDY_BASEPATH/.live_dev_porter/config.yml'
