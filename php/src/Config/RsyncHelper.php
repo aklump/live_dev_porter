@@ -54,7 +54,7 @@ class RsyncHelper {
       $ruleset[] = ($filter_type === self::TYPE_INCLUDE ? '- *' : '+ *');
 
       $path = sprintf('%s/rsync_ruleset.%s.txt', $this->dist, $group_id);
-      $file_contents = implode(PHP_EOL, $ruleset);
+      $file_contents = implode(PHP_EOL, $ruleset) . PHP_EOL;
       $save_result = file_put_contents($path, $file_contents);
       if (FALSE === $save_result) {
         throw new RuntimeException(sprintf('Failed to save %s', $path));
