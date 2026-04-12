@@ -73,6 +73,7 @@ function get_cloudy_config(): RuntimeConfigInterface {
   $config['PLUGINS_DIR'] = $getenv('PLUGINS_DIR');
   $config['SOURCE_DIR'] = $getenv('SOURCE_DIR');
   $config['CLOUDY_TMPDIR'] = $getenv('CLOUDY_TMPDIR');
+  $config['PROCESSOR_OPTIONS'] = $getenv('PROCESSOR_OPTIONS');
   $cloudy_config = json_decode($getenv('CLOUDY_CONFIG_JSON'), TRUE) ?? [];
   if (!$cloudy_config) {
     throw new \RuntimeException(sprintf('Missing or empty environment variable CLOUDY_CONFIG_JSON; try calling clear-cache.'));
@@ -91,7 +92,6 @@ try {
   list($class, $method) = explode('::', "$callback::");
   $method = (string) $method;
   $class_args = ClassMethodCaller::expressConstants($class_args);
-
   $caller = new ClassMethodCaller($cloudy_config);
   $method_arguments = array_slice($argv, 3);
   $result = $caller($class, $method, $class_args, $method_arguments);

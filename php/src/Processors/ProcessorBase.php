@@ -42,6 +42,11 @@ abstract class ProcessorBase {
   protected $output;
 
   /**
+   * @var false|string[]
+   */
+  protected $processorOptions;
+
+  /**
    * @var array
    */
   private $config;
@@ -58,6 +63,7 @@ abstract class ProcessorBase {
     $this->filesGroupId = $processor_config['FILES_GROUP_ID'] ?? '';
     $this->config['FILEPATH'] = $processor_config['FILEPATH'] ?? '';
     $this->shortpath = $processor_config['SHORTPATH'] ?? '';
+    $this->processorOptions = $this->deserializeProcessorOptions($processor_config['PROCESSOR_OPTIONS'] ?? '');
   }
 
   /**
@@ -223,6 +229,34 @@ abstract class ProcessorBase {
 
   protected function query(string $statement) {
     // TODO Copy the code from processor_support.sh
+  }
+
+  private function deserializeProcessorOptions(string $string): array {
+    $options = array_filter(explode('&', $string));
+    if (empty($options)) {
+      return [];
+    }
+    $options = array_map(function ($item) {
+      // Convert name-only to boolean true.
+      if (strpos($item, '=') === FALSE) {
+        return "$item=1";
+      }
+
+      return $item;
+    }, $options);
+    $string = implode('&', $options);
+    parse_str($string, $options);
+
+    return array_filter($options);
+  }
+
+  /**
+   * Get CLI options passed to command.
+   *
+   * @return array|string[] The options that may have been passed to the command.
+   */
+  protected function getProcessorOptions(): array {
+    return $this->processorOptions;
   }
 
 }

@@ -208,6 +208,9 @@ commands:
       processor:
         help: 'The value as you would add it to a workflow (basename or class::method).'
     options:
+      processor:
+        type: string
+        help: 'query string pass to the processor.  e.g., "key1=value1&key2=value2" to be accessed as getProcessorOptions'
       config:
         type: boolean
         help: 'Edit the environment variables sent to the processor.'

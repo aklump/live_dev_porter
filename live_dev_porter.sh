@@ -370,6 +370,10 @@ case $COMMAND in
         fi
       fi
 
+      # Create a CSV string of the CLI options so we can pass them on to the
+      # processor scripts.
+      PROCESSOR_OPTIONS="$(get_option processor)"
+
       echo_title "Results"
       for processor in "${processor_list[@]}"; do
         processor_result=''
@@ -388,7 +392,7 @@ case $COMMAND in
           fi
         else
           echo_task "$processor"
-          php_query="autoload=$CONFIG_DIR/processors/&COMMAND=$COMMAND&LOCAL_ENV_ID=$LOCAL_ENV_ID&REMOTE_ENV_ID=$REMOTE_ENV_ID&DATABASE_ID=$DATABASE_ID&DATABASE_NAME=$DATABASE_NAME&FILES_GROUP_ID=$FILES_GROUP_ID&FILEPATH=$FILEPATH&SHORTPATH=$SHORTPATH&IS_WRITEABLE_ENVIRONMENT=$IS_WRITEABLE_ENVIRONMENT"
+          php_query="autoload=$CONFIG_DIR/processors/&COMMAND=$COMMAND&LOCAL_ENV_ID=$LOCAL_ENV_ID&REMOTE_ENV_ID=$REMOTE_ENV_ID&DATABASE_ID=$DATABASE_ID&DATABASE_NAME=$DATABASE_NAME&FILES_GROUP_ID=$FILES_GROUP_ID&FILEPATH=$FILEPATH&SHORTPATH=$SHORTPATH&IS_WRITEABLE_ENVIRONMENT=$IS_WRITEABLE_ENVIRONMENT&PROCESSOR_OPTIONS=$PROCESSOR_OPTIONS"
           processor_class=$(call_php_class_method "\AKlump\LiveDevPorter\Helpers\ResolveClassShortname::__invoke($processor,'\AKlump\LiveDevPorter\Processors')")
           processor_output=$(cd "$CLOUDY_BASEPATH";. "$PHP_FILE_RUNNER" "$ROOT/php/class_method_caller.php" "$processor_class" "$php_query")
           processor_result=$?
