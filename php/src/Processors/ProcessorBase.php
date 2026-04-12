@@ -160,15 +160,15 @@ abstract class ProcessorBase {
     return ['filepath' => $this->config['FILEPATH']] + pathinfo($this->config['FILEPATH']);
   }
 
-  public function getExtension(): string {
+  protected function getExtension(): string {
     return $this->getFileInfo()['extension'] ?? '';
   }
 
-  public function getFilepath(): string {
+  protected function getFilepath(): string {
     return $this->getFileInfo()['filepath'] ?? '';
   }
 
-  public function getBasename(): string {
+  protected function getBasename(): string {
     return $this->getFileInfo()['basename'] ?? '';
   }
 

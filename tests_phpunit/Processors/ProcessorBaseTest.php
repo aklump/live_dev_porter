@@ -19,12 +19,23 @@ class ProcessorBaseTest extends TestCase {
       'FILEPATH' => $this->getTestFileFilepath($expected),
     ];
     $obj = new ProcessorBaseTestable($processor_config);
-    $this->assertSame($expected, $obj->getBasename());
-    $this->assertSame($processor_config['FILEPATH'], $obj->getFilepath());
-    $this->assertSame('yml', $obj->getExtension());
+    $this->assertSame($expected, $obj->getBasenamePublic());
+    $this->assertSame($processor_config['FILEPATH'], $obj->getFilepathPublic());
+    $this->assertSame('yml', $obj->getExtensionPublic());
   }
 }
 
 class ProcessorBaseTestable extends ProcessorBase {
 
+  public function getBasenamePublic() {
+    return $this->getBasename();
+  }
+
+  public function getFilepathPublic() {
+    return $this->getFilepath();
+  }
+
+  public function getExtensionPublic() {
+    return $this->getExtension();
+  }
 }
