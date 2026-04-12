@@ -23,6 +23,9 @@ foreach ($php_class_filepaths as $php_class_filepath) {
   catch (ReflectionException $e) {
     continue;
   }
+  if ($ref->isAbstract()) {
+    continue;
+  }
   $methods = $ref->getMethods(ReflectionMethod::IS_PUBLIC);
   foreach ($methods as $method) {
     $method = $method->getShortName();
