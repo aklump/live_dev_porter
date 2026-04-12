@@ -79,6 +79,23 @@ abstract class ProcessorBase {
   }
 
   /**
+   * Get host project basepath.
+   *
+   * @return string The basepath of the project where Live Dev Porter is installed.
+   */
+  protected function getHostProjectBasePath(): string {
+    $basepath = getenv('CLOUDY_BASEPATH');
+    if (empty($basepath)) {
+      throw new ProcessorFailedException('Failed to determine the host project basepath.');
+    }
+    if (!file_exists($basepath)) {
+      throw new ProcessorFailedException(sprintf('The host project basepath "%s" does not exist.', $basepath));
+    }
+
+    return $basepath;
+  }
+
+  /**
    * Get source environment info.
    *
    * @return array
