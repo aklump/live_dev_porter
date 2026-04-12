@@ -169,16 +169,12 @@ case $COMMAND in
         exit_with_cache_clear
       fi
 
-      # Otherwise, to the editor.
-      editor="$VISUAL"
-      if [[ ! "$editor" ]]; then
-        editor="${EDITOR:-nano}"
-      fi
       config_file="$CONFIG_DIR/config.yml"
       if has_option 'local'; then
         config_file="$CONFIG_DIR/config.local.yml"
       fi
-      $editor $config_file && exit_with_cache_clear
+      echo "$config_file"
+      exit_with_success "Open and edit that file"
       ;;
 
 esac
