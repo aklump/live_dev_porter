@@ -339,23 +339,19 @@ case $COMMAND in
       echo_slim_table
       echo "Use \"--config\" to change these values."
 
-      if  [[ "$WORKFLOW_ID_ARG" ]]; then
-        echo_title "Workflow \"$WORKFLOW_ID\" Uses the Following:"
-      else
-        echo_title "Select from (Pre)Processors"
-      fi
-
       declare -a processor_list=()
       processor=$(get_command_arg 0)
       if [[ "$processor" ]]; then
         processor_list=("$processor")
       else
         if [[ "$WORKFLOW_ID_ARG" ]]; then
+          echo_title "Workflow \"$WORKFLOW_ID\" Uses the Following:"
           eval $(get_config_as -a workflow_preprocessors "workflows.$WORKFLOW_ID.preprocessors")
           eval $(get_config_as -a workflow_processors "workflows.$WORKFLOW_ID.processors")
           processor_list=("${workflow_preprocessors[@]}" "${workflow_processors[@]}")
           choose__array=("${processor_list[@]}" "ALL")
         else
+          echo_title "Select from (Pre)Processors"
           processor_list=($(. "$PHP_FILE_RUNNER" "$ROOT/php/get_processors.php" "$CONFIG_DIR"))
           choose__array=("${processor_list[@]}")
         fi
@@ -370,7 +366,6 @@ case $COMMAND in
       # processor scripts.
       PROCESSOR_OPTIONS="$(get_option processor)"
 
-      echo_title "Results"
       for processor in "${processor_list[@]}"; do
         processor_result=''
         processor_output=''
@@ -378,7 +373,7 @@ case $COMMAND in
           # We can only check for .sh files because the php argument will be
           # "class::method", not the basepath.
           processor_path="$CONFIG_DIR/processors/$processor"
-          echo_task "$(path_make_relative "$processor_path" "$CONFIG_DIR")"
+          echo_title "Processor: $(path_make_relative "$processor_path" "$CONFIG_DIR")"
           if [[ ! -f "$processor_path" ]]; then
             processor_output="\"$(path_make_relative "$processor_path" "$PWD")\" is not there."
             processor_result=128
@@ -387,7 +382,7 @@ case $COMMAND in
             processor_result=$?
           fi
         else
-          echo_task "$processor"
+          echo_title "Processor: $processor"
           php_query="autoload=$CONFIG_DIR/processors/&COMMAND=$COMMAND&LOCAL_ENV_ID=$LOCAL_ENV_ID&REMOTE_ENV_ID=$REMOTE_ENV_ID&DATABASE_ID=$DATABASE_ID&DATABASE_NAME=$DATABASE_NAME&FILES_GROUP_ID=$FILES_GROUP_ID&FILEPATH=$FILEPATH&SHORTPATH=$SHORTPATH&IS_WRITEABLE_ENVIRONMENT=$IS_WRITEABLE_ENVIRONMENT&PROCESSOR_OPTIONS=$PROCESSOR_OPTIONS"
           processor_class=$(call_php_class_method "\AKlump\LiveDevPorter\Helpers\ResolveClassShortname::__invoke($processor,'\AKlump\LiveDevPorter\Processors')")
           processor_output=$(cd "$CLOUDY_BASEPATH";. "$PHP_FILE_RUNNER" "$ROOT/php/class_method_caller.php" "$processor_class" "$php_query")
@@ -396,16 +391,13 @@ case $COMMAND in
 
         if [[ "$processor_result" ]]; then
           if [[ $processor_result -eq 255 ]]; then
-            echo_task_completed
             succeed_because "$processor exited with 255 -- NOT APPLICABLE."
           elif [[ $processor_result -eq 128 ]]; then
-            echo_task_failed
+            echo_scream "Failed"
             fail_because "Invalid processor $processor -- NOT FOUND."
           elif [[ $processor_result -ne 0 ]]; then
-            echo_task_failed
+            echo_scream "Failed"
             fail_because "$processor exited with $processor_result -- FAILED."
-          else
-            echo_task_completed
           fi
         fi
 

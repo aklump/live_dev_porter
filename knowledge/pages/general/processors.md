@@ -109,4 +109,27 @@ final class RemoveSecrets extends ProcessorBase {
 
 ```
 
+## Batch Processors
+
+A single processor can operate in batch if it returns an instance of `\AKlump\LiveDevPorter\Processors\ProcessorState`.  Here's a conceptual minimum.
+
+```php
+use AKlump\LiveDevPorter\Processors\ProcessorBase;
+use AKlump\LiveDevPorter\Processors\ProcessorState;
+
+abstract class MyProcessor extends ProcessorBase {
+
+  protected $progress = 0;
+
+  public function __invoke() {
+    // Echo something to show progress.  You must use \n if you want a newline.
+    print '.';
+    
+    // Once this hits 1.0, the processor will no longer be called.
+    $this->progress += 0.05;
+
+    return new ProcessorState($this->progress);
+  }
+}
+```
 

@@ -32,7 +32,12 @@ foreach ($php_class_filepaths as $php_class_filepath) {
     if ('__construct' === $method) {
       continue;
     }
-    $items[] = $ref->getShortName() . '::' . $method;
+    if ('__invoke' === $method) {
+      $items[] = $ref->getShortName();
+    }
+    else {
+      $items[] = $ref->getShortName() . '::' . $method;
+    }
   }
 }
 

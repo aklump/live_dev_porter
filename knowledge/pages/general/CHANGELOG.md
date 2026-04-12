@@ -9,6 +9,20 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.178] - 2026-04-12
+
+### Added
+
+- Integration with https://github.com/aklump/fixture-framework for using fixtures as processors
+- Ability to pass options to processors using `--processor=`, e.g. `--processor=foo&bar=0&baz=lorem`, etc. Value is query string.
+- Access processor options with `\AKlump\LiveDevPorter\Processors\ProcessorBase::getProcessorOptions`
+- Add method to get the base_path via `\AKlump\LiveDevPorter\Processors\ProcessorBase::getHostProjectBasePath`
+
+### Changed
+
+- `ldp config` now prints the config path instead of opening the file in the editor for better portability
+- Minimum PHP is now 8.1
+
 ## [0.0.177] - 2025-05-03
 
 ### Fixed

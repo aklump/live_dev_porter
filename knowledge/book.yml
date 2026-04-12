@@ -31,6 +31,7 @@ chapters:
     title: Developers
     pages:
       - php
+      - fixture_framework
   -
     id: troubleshooting
     title: Troubleshooting
@@ -44,3 +45,8 @@ chapters:
     pages:
       - sanitation
       - code
+  -
+    id: servers
+    title: Servers
+    pages:
+      - migrating

@@ -3,6 +3,8 @@
 namespace AKlump\LiveDevPorter\Php;
 
 use AKlump\LiveDevPorter\Config\RuntimeConfig;
+use AKlump\LiveDevPorter\Processors\ProcessorBase;
+use AKlump\LiveDevPorter\Processors\ProcessorState;
 
 class ClassMethodCaller {
 
@@ -35,6 +37,9 @@ class ClassMethodCaller {
     // different in different situations.  Is the method static? Is the method
     // __invoke(), etc.  This next bit routes things appropriately.
     try {
+      if (empty($method) && method_exists($class, '__invoke')) {
+        $method = '__invoke';
+      }
       $method_reflection = new \ReflectionMethod("$class::$method");
     }
     catch (\ReflectionException $exception) {
@@ -42,21 +47,40 @@ class ClassMethodCaller {
     }
     if ($method_reflection->isStatic()) {
       // Static methods do not receive any configuration.
-      $result = call_user_func_array([$class, $method], $method_arguments);
+      $final_output = call_user_func_array([
+        $class,
+        $method,
+      ], $method_arguments);
     }
-    elseif ('__invoke' === $method) {
+    elseif ('__invoke' === $method && !is_a($class, ProcessorBase::class, TRUE)) {
       $instance = new $class($this->config);
-      $result = call_user_func_array([
+      $final_output = call_user_func_array([
         $instance,
         $method,
       ], array_merge($args, $method_arguments));
     }
     else {
       $args[] = $this->config;
-      $result = (new $class(...$args))->$method($method_arguments);
+      $processor = new $class(...$args);
+      $final_output = '';
+
+      // This allows processors to process in batches.
+      do {
+        ob_start();
+        $result = $processor->$method($method_arguments);
+        if ($result instanceof ProcessorState) {
+          $processor_output = ob_get_clean();
+          fwrite(STDERR, $processor_output);
+          $is_processing = $result->getProgressRatio() < 1.0;
+        }
+        else {
+          $final_output = ob_get_clean();
+          $is_processing = FALSE;
+        }
+      } while (TRUE === $is_processing);
     }
 
-    return $result;
+    return $final_output;
   }
 
   /**

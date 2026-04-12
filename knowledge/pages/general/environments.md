@@ -13,4 +13,10 @@ This item is where _file_groups_ are mapped to actual directories in the environ
 
 Database connections are defined in the environment.
 
+## Setup a New Environment
 
+1. ldp config
+
+### Links
+
+[remote](@remote)

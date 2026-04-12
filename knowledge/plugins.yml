@@ -1,4 +1,10 @@
 composer: { }
+snippets:
+  -
+    group: example_code
+    extract_tags: true
+    source:
+      - ./example_code/*
 funding:
   dot_github: ../
   channels:
