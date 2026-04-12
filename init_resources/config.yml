@@ -53,8 +53,13 @@ workflows:
         exclude_table_data:
           - 'cache*'
           - batch
+          - cache
+          - cache_*
+          - config_export
           - config_import
           - config_snapshot
+          - field_deleted_data_*
+          - flood
           - key_value_expire
           - 'old_*'
           - sessions
