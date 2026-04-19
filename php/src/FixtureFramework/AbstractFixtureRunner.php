@@ -61,14 +61,11 @@ abstract class AbstractFixtureRunner extends ProcessorBase {
 
   public function __invoke(): ProcessorState {
 
-    // TODO Should this be configurable?
-    $silent = FALSE;
-
     /**
      * First run, load the fixtures.
      */
     if (!$this->fixturesLoaded) {
-      $this->loadFixtures($silent);
+      $this->loadFixtures();
     }
 
     /**
@@ -83,7 +80,7 @@ abstract class AbstractFixtureRunner extends ProcessorBase {
      * Run one fixture.
      */
     if (!empty($fixture)) {
-      $this->runFixture($fixture, $silent);
+      $this->runFixture($fixture, FALSE);
     }
 
     /**
@@ -107,7 +104,7 @@ abstract class AbstractFixtureRunner extends ProcessorBase {
     return $this->getHostProjectBasePath() . '/vendor/';
   }
 
-  private function loadFixtures(bool $silent) {
+  private function loadFixtures() {
     $flush = (bool) ($this->getProcessorOptions()['flush'] ?? FALSE);
     $filter = $this->getProcessorOptions()['filter'] ?? '';
 
@@ -120,9 +117,11 @@ abstract class AbstractFixtureRunner extends ProcessorBase {
     require_once $vendor_dir . '/autoload.php';
 
     try {
+      // Any output from this causes problems with JSON parsing so the quiet
+      // flag must not change to TRUE!!!!!
       $this->fixtureIndex = (new DiscoverFixtureDefinitions())($vendor_dir, [
         'AKlump\LiveDevPorter\Fixture',
-      ], $flush, $silent, $filter);
+      ], $flush, TRUE, $filter);
       $this->fixturesLoaded = TRUE;
       $this->totalFixtures = count($this->fixtureIndex);
       $this->contextStore = new RunContextStore();
