@@ -13,4 +13,12 @@ if (file_exists($processors_dir) && is_dir($processors_dir)) {
   $class_loader->addPsr4('AKlump\LiveDevPorter\Processors\\', [
     $processors_dir,
   ]);
+
+  // Dynamically create the autoloading for any classes in the src directory.
+  $src_dir = getenv('CLOUDY_BASEPATH') . '/.live_dev_porter/src/';
+  if (is_dir($src_dir)) {
+    $class_loader->addPsr4('AKlump\LiveDevPorter\\', [
+      $src_dir,
+    ]);
+  }
 }
