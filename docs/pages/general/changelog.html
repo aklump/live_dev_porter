@@ -4,9 +4,9 @@
   <!-- Required meta tags -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-      <link rel="stylesheet" href="../../dist/node_modules/bootstrap/dist/css/bootstrap.css?ver=0.0.176">
-      <link rel="stylesheet" href="../../dist/dist/bootstrap_theme.css?ver=0.0.176">
-      <link rel="stylesheet" href="../../dist/node_modules/bootstrap-icons/font/bootstrap-icons.min.css?ver=0.0.176">
+      <link rel="stylesheet" href="../../dist/node_modules/bootstrap/dist/css/bootstrap.css?ver=0.0.178">
+      <link rel="stylesheet" href="../../dist/dist/bootstrap_theme.css?ver=0.0.178">
+      <link rel="stylesheet" href="../../dist/node_modules/bootstrap-icons/font/bootstrap-icons.min.css?ver=0.0.178">
     <title>Changelog | Live Dev Porter</title>
 </head>
 <body class="my-5">
@@ -33,7 +33,7 @@
       </div>
       <div class="header__tags me-3">  </div>
       <div class="header__page-numbers flex-shrink-1">2
-        / 27</div>
+        / 29</div>
     </div>
   </div>
 </header>
@@ -44,6 +44,24 @@
       <h1 class="mb-4 text-primary">Changelog</h1>
       <p>All notable changes to this project will be documented in this file.</p>
 <p>The format is based on <a href="https://keepachangelog.com/en/1.0.0/">Keep a Changelog</a>, and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semantic Versioning</a>.</p>
+<h2>[0.0.178] - 2026-04-19</h2>
+<h3>Added</h3>
+<ul>
+<li>Integration with https://github.com/aklump/fixture-framework for using fixtures as processors</li>
+<li>Ability to pass options to processors using <code>--processor=</code>, e.g. <code>--processor=foo&amp;bar=0&amp;baz=lorem</code>, etc. Value is query string.</li>
+<li>Access processor options with <code>\AKlump\LiveDevPorter\Processors\ProcessorBase::getProcessorOptions</code></li>
+<li>Add method to get the base_path via <code>\AKlump\LiveDevPorter\Processors\ProcessorBase::getHostProjectBasePath</code></li>
+</ul>
+<h3>Changed</h3>
+<ul>
+<li><code>ldp config</code> now prints the config path instead of opening the file in the editor for better portability</li>
+<li>Minimum PHP is now 8.1</li>
+</ul>
+<h2>[0.0.177] - 2025-05-03</h2>
+<h3>Fixed</h3>
+<ul>
+<li>Added trailing EOL to rsync rules sets to fix issue in Mac OS rsync.</li>
+</ul>
 <h2>[0.0.175] - 2025-03-05</h2>
 <h3>Fixed</h3>
 <ul>
@@ -122,9 +140,9 @@
   <footer class="footer d-flex justify-content-center">
     <div class="flex-column justify-content-center">
               Version:
-        <strong>0.0.176</strong>
+        <strong>0.0.178</strong>
         &bull;
-                    Last Update: <strong>3/27/2025</strong>
+                    Last Update: <strong>4/19/2026</strong>
           </div>
   </footer>
 
@@ -330,36 +348,50 @@
               bg-info rounded-pill badge-sm"></span></a>
     </li>
   
-                                                          <li data-page="installation" value="23">
+                                    <li data-page="fixture_framework" value="23">
+      <a class="js-page-link" href="../developers/fixture_framework.html">Fixture Framework Integration<span
+              class="js-search-score
+              badge
+              bg-info rounded-pill badge-sm"></span></a>
+    </li>
+  
+                                                          <li data-page="installation" value="24">
       <a class="js-page-link" href="../troubleshooting/installation.html">Troubleshooting Installation<span
               class="js-search-score
               badge
               bg-info rounded-pill badge-sm"></span></a>
     </li>
   
-                                    <li data-page="remote_environment" value="24">
+                                    <li data-page="remote_environment" value="25">
       <a class="js-page-link" href="../troubleshooting/remote_environment.html">Remote Environment<span
               class="js-search-score
               badge
               bg-info rounded-pill badge-sm"></span></a>
     </li>
   
-                                    <li data-page="validation" value="25">
+                                    <li data-page="validation" value="26">
       <a class="js-page-link" href="../troubleshooting/validation.html">Validation Errors<span
               class="js-search-score
               badge
               bg-info rounded-pill badge-sm"></span></a>
     </li>
   
-                                                          <li data-page="sanitation" value="26">
+                                                          <li data-page="sanitation" value="27">
       <a class="js-page-link" href="../security/sanitation.html">Sanitation of Vulnerable Data<span
               class="js-search-score
               badge
               bg-info rounded-pill badge-sm"></span></a>
     </li>
   
-                                    <li data-page="code" value="27">
+                                    <li data-page="code" value="28">
       <a class="js-page-link" href="../security/code.html">Provided Sanitization Code<span
+              class="js-search-score
+              badge
+              bg-info rounded-pill badge-sm"></span></a>
+    </li>
+  
+                                                          <li data-page="migrating" value="29">
+      <a class="js-page-link" href="../servers/migrating.html">Migrate to Another Server<span
               class="js-search-score
               badge
               bg-info rounded-pill badge-sm"></span></a>
@@ -462,30 +494,41 @@
       <a class="js-page-link" href="../developers/php.html">Using PHP in the Codebase</a>
     </li>
   
+                                <li data-page="fixture_framework" value="23">
+      <a class="js-page-link" href="../developers/fixture_framework.html">Fixture Framework Integration</a>
+    </li>
+  
                   </ol>
               <h2 class="h4 mt-4">Troubleshooting</h2>
         <ol>
-                                <li data-page="installation" value="23">
+                                <li data-page="installation" value="24">
       <a class="js-page-link" href="../troubleshooting/installation.html">Troubleshooting Installation</a>
     </li>
   
-                                <li data-page="remote_environment" value="24">
+                                <li data-page="remote_environment" value="25">
       <a class="js-page-link" href="../troubleshooting/remote_environment.html">Remote Environment</a>
     </li>
   
-                                <li data-page="validation" value="25">
+                                <li data-page="validation" value="26">
       <a class="js-page-link" href="../troubleshooting/validation.html">Validation Errors</a>
     </li>
   
                   </ol>
               <h2 class="h4 mt-4">Security</h2>
         <ol>
-                                <li data-page="sanitation" value="26">
+                                <li data-page="sanitation" value="27">
       <a class="js-page-link" href="../security/sanitation.html">Sanitation of Vulnerable Data</a>
     </li>
   
-                                <li data-page="code" value="27">
+                                <li data-page="code" value="28">
       <a class="js-page-link" href="../security/code.html">Provided Sanitization Code</a>
+    </li>
+  
+                  </ol>
+              <h2 class="h4 mt-4">Servers</h2>
+        <ol>
+                                <li data-page="migrating" value="29">
+      <a class="js-page-link" href="../servers/migrating.html">Migrate to Another Server</a>
     </li>
   
                   </ol>
@@ -551,6 +594,8 @@
                                                 <a class="list-group-item list-group-item-action"
                  data-tags="[]" href="../developers/php.html">Using PHP in the Codebase</a>
                                                 <a class="list-group-item list-group-item-action"
+                 data-tags="[]" href="../developers/fixture_framework.html">Fixture Framework Integration</a>
+                                                <a class="list-group-item list-group-item-action"
                  data-tags="[]" href="../troubleshooting/installation.html">Troubleshooting Installation</a>
                                                 <a class="list-group-item list-group-item-action"
                  data-tags="[]" href="../troubleshooting/remote_environment.html">Remote Environment</a>
@@ -560,15 +605,17 @@
                  data-tags="[]" href="../security/sanitation.html">Sanitation of Vulnerable Data</a>
                                                 <a class="list-group-item list-group-item-action"
                  data-tags="[]" href="../security/code.html">Provided Sanitization Code</a>
+                                                <a class="list-group-item list-group-item-action"
+                 data-tags="[]" href="../servers/migrating.html">Migrate to Another Server</a>
                               </ul>
       </div>
     </div>
   </div>
 </div>
 
-  <script src="../../dist/node_modules/bootstrap/dist/js/bootstrap.min.js?ver=0.0.176"></script>
-  <script src="../../dist/lunr.js?ver=0.0.176"></script>
-  <script src="../../dist/knowledge.min.js?ver=0.0.176"></script>
+  <script src="../../dist/node_modules/bootstrap/dist/js/bootstrap.min.js?ver=0.0.178"></script>
+  <script src="../../dist/lunr.js?ver=0.0.178"></script>
+  <script src="../../dist/knowledge.min.js?ver=0.0.178"></script>
 
 </body>
 </html>
