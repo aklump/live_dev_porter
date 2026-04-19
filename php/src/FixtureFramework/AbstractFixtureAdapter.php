@@ -2,8 +2,6 @@
 
 namespace AKlump\LiveDevPorter\FixtureFramework;
 
-use AKlump\FixtureFramework\Fixture;
-use AKlump\FixtureFramework\FixtureInterface;
 use AKlump\FixtureFramework\FixtureRunner;
 use AKlump\FixtureFramework\Helper\GetFixtures;
 use AKlump\FixtureFramework\Helper\GetFixtureIdByClassname;
@@ -12,7 +10,7 @@ use AKlump\LiveDevPorter\Processors\ProcessorBase;
 
 abstract class AbstractFixtureAdapter extends ProcessorBase {
 
-  public function setUp(): void {
+  public function __invoke(): void {
     $this->tryCanProcess();
 
     // The vendor directory is required for the fixture framework, as that is
