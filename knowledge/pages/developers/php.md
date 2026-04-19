@@ -29,3 +29,9 @@ Notice the arguments must be serialized as CSV or a query string. However the va
 * _class_method_caller.php_
 * `\AKlump\LiveDevPorter\Php\ClassMethodCaller`
 
+## PSR-4 Autoloading
+
+When writing PHP code for your project be aware of the following autoloading rules:
+
+* `AKlump\LiveDevPorter\` is mapped to `/.live_dev_porter/src/`
+* `AKlump\LiveDevPorter\Processors\` is mapped to `/.live_dev_porter/processors/` and `/.live_dev_porter/` (as well as `/.live_dev_porter/src/Processors/`)
