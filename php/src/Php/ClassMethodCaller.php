@@ -30,7 +30,7 @@ class ClassMethodCaller {
    *   or an indexed array.
    * @param array $this ->config->all()
    *
-   * @return void
+   * @return mixed
    */
   public function __invoke(string $class, string $method, array $args, array $method_arguments) {
     // For various legacy reasons, the routing of config and arguments is
@@ -74,7 +74,8 @@ class ClassMethodCaller {
           $is_processing = $result->getProgressRatio() < 1.0;
         }
         else {
-          $final_output = ob_get_clean();
+          $final_output = $result;
+          ob_end_clean();
           $is_processing = FALSE;
         }
       } while (TRUE === $is_processing);
