@@ -8,22 +8,24 @@ Simplifies the management and transfer of assets between website environments.
 
 **Visit <https://aklump.github.io/live_dev_porter> for full documentation.**
 
-## Install with Composer
+##        Install with Composer
 
-1. This package requires some unpublished packages.  You must add the following to _composer.json_ in
-   the `repositories` array:
-
-    ```json
-    {
-     "type": "composer",
-     "url": "https://packages.intheloftstudios.com"
-    }
-    ```
-1. Require this package:
+1. This package requires some unpublished packages:
    
-    ```
-    composer require aklump/live-dev-porter:^0.0
-    ```
+   ```shell
+   composer config repositories.9024aba2baa64b08169c0ca94a832bc7 composer https://packages.intheloftstudios.com
+   ```
+2. Require the latest stable version:
+   
+   ```shell
+   composer require aklump/live-dev-porter:^0.0
+   ```
+3. ... or require the dev channel:
+   
+   ```shell
+   composer config minimum-stability dev
+   composer require aklump/live-dev-porter:@dev
+   ```
 
 ## Quick Start
 

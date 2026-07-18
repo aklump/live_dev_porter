@@ -10,7 +10,7 @@
   },
   "autoload-dev": {
     "psr-4": {
-      "AKlump\\LiveDevPorter\\Tests\\": "tests_phpunit/"
+      "AKlump\\LiveDevPorter\\Tests\\": "tests_phpunit/src/"
     }
   },
   "minimum-stability": "dev",

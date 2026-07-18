@@ -217,7 +217,7 @@ abstract class ProcessorBase {
    *
    * @throws \AKlump\LiveDevPorter\Processors\ProcessorFailedException If the file could not be saved.
    */
-  protected function saveFile(string $move = NULL) {
+  protected function saveFile(?string $move = NULL) {
     $this->validateFileIsLoaded();
     $is_moving = $move !== NULL && $move !== $this->config['FILEPATH'];
     if (!$is_moving && $this->loadedFile['contents'] === $this->loadedFile['original']) {

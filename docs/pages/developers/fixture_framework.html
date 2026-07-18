@@ -4,11 +4,11 @@
   <!-- Required meta tags -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-      <link rel="stylesheet" href="../../dist/node_modules/bootstrap/dist/css/bootstrap.css?ver=0.0.179">
-      <link rel="stylesheet" href="../../dist/dist/bootstrap_theme.css?ver=0.0.179">
-      <link rel="stylesheet" href="../../dist/node_modules/bootstrap-icons/font/bootstrap-icons.min.css?ver=0.0.179">
-    <title>Fixture Framework Integration | Live Dev Porter</title>
-</head>
+      <link rel="stylesheet" href="../../dist/node_modules/bootstrap/dist/css/bootstrap.css?ver=0.0.181">
+      <link rel="stylesheet" href="../../dist/dist/bootstrap_theme.css?ver=0.0.181">
+      <link rel="stylesheet" href="../../dist/node_modules/bootstrap-icons/font/bootstrap-icons.min.css?ver=0.0.181">
+        <title>Fixture Framework Integration | Live Dev Porter</title>
+  </head>
 <body class="my-5">
 
 <header class="header bg-light fixed-top p-2 pt-1">
@@ -47,6 +47,7 @@
 <h3>Fixture Runner Class</h3>
 <p>This has the advantage of only requiring one processor to manage all fixtures, simplifying the configuration and maintenance of fixtures. It also leverages the fixture framework's built-in sorting and filtering capabilities, making it easier to manage complex fixture sets.</p>
 <p><code>.live_dev_porter/processors/Fixtures.php</code></p>
+<p><strong>File:</strong> <code>Fixtures.php</code></p>
 <pre><code class="php">&lt;?php
 
 namespace AKlump\LiveDevPorter\Processors;
@@ -76,6 +77,7 @@ final class Fixtures extends \AKlump\LiveDevPorter\FixtureFramework\AbstractFixt
 </ul>
 <h3>Fixture Adapter Class</h3>
 <p>Instead of creating one fixture runner processor, create one a processor that extends <code>\AKlump\LiveDevPorter\FixtureFramework\AbstractFixtureAdapter</code> for each fixture class. These adapters connect their corresponding fixture to the Live Dev Porter processor workflow.</p>
+<p><strong>File:</strong> <code>FixtureAdapter.php</code></p>
 <pre><code class="php">&lt;?php
 
 namespace AKlump\LiveDevPorter\Processors;
@@ -116,6 +118,7 @@ final class Permissions extends AbstractFixtureAdapter {
 <h2>Fixture Class</h2>
 <p>A fixture contains the actual work to be performed. Live Dev Porter provides a processor adapter that invokes it.</p>
 <p>Create a Fixture class per <a href="https://github.com/aklump/fixture-framework">aklump/fixture-framework</a> in <code>.live_dev_porter/src/Fixture</code></p>
+<p><strong>File:</strong> <code>Fixture.php</code></p>
 <pre><code class="php">&lt;?php
 
 namespace AKlump\LiveDevPorter\Fixture;
@@ -149,6 +152,7 @@ class Permissions extends \AKlump\FixtureFramework\AbstractFixture {
 <p>When a fixture runs, Live Dev Porter sets the working directory to the host project base path before execution begins. @see <code>\AKlump\LiveDevPorter\Processors\ProcessorBase::getHostProjectBasePath();</code></p>
 <h2>Traits for Simplicity</h2>
 <p>Traits are optional, but they can reduce boilerplate in adapter classes by consolidating shared behavior.</p>
+<p><strong>File:</strong> <code>LocaldevFixtureTrait.php</code></p>
 <pre><code class="php">&lt;?php
 
 namespace AKlump\LiveDevPorter\Traits;
@@ -201,9 +205,9 @@ trait LocaldevFixtureTrait {
   <footer class="footer d-flex justify-content-center">
     <div class="flex-column justify-content-center">
               Version:
-        <strong>0.0.179</strong>
+        <strong>0.0.181</strong>
         &bull;
-                    Last Update: <strong>4/19/2026</strong>
+                    Last Update: <strong>7/18/2026</strong>
           </div>
   </footer>
 
@@ -674,9 +678,9 @@ trait LocaldevFixtureTrait {
   </div>
 </div>
 
-  <script src="../../dist/node_modules/bootstrap/dist/js/bootstrap.min.js?ver=0.0.179"></script>
-  <script src="../../dist/lunr.js?ver=0.0.179"></script>
-  <script src="../../dist/knowledge.min.js?ver=0.0.179"></script>
+  <script src="../../dist/node_modules/bootstrap/dist/js/bootstrap.min.js?ver=0.0.181"></script>
+  <script src="../../dist/lunr.js?ver=0.0.181"></script>
+  <script src="../../dist/knowledge.min.js?ver=0.0.181"></script>
 
 </body>
 </html>

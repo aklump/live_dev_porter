@@ -35,6 +35,7 @@ verbose=''
 if [[ "${*}" == *'-v'* ]]; then
   verbose='-v'
 fi
-! ./vendor/bin/phpswap use 8.1 $verbose './vendor/bin/phpunit -c phpunit.xml' && failed "     PHP 8.1 tests failed.     " && exit 1
-! ./vendor/bin/phpswap use 8.2 $verbose './vendor/bin/phpunit -c phpunit.xml' && failed "     PHP 8.2 tests failed.     " && exit 1
-! ./vendor/bin/phpswap use 8.3 $verbose './vendor/bin/phpunit -c phpunit.xml' && failed "     PHP 8.3 tests failed.     " && exit 1
+! ./vendor/bin/phpswap use 8.1 $verbose './vendor/bin/phpunit -c tests_phpunit/phpunit.xml' && failed "     PHP 8.1 tests failed.     " && exit 1
+! ./vendor/bin/phpswap use 8.2 $verbose './vendor/bin/phpunit -c tests_phpunit/phpunit.xml' && failed "     PHP 8.2 tests failed.     " && exit 1
+! ./vendor/bin/phpswap use 8.3 $verbose './vendor/bin/phpunit -c tests_phpunit/phpunit.xml' && failed "     PHP 8.3 tests failed.     " && exit 1
+! ./vendor/bin/phpswap use 8.4 $verbose './vendor/bin/phpunit -c tests_phpunit/phpunit.xml' && failed "     PHP 8.3 tests failed.     " && exit 1

@@ -1,5 +1,7 @@
 <?php
 
+namespace AKlump\LiveDevPorter\Tests;
+
 use AKlump\LiveDevPorter\Processors\PhpTrait;
 use AKlump\LiveDevPorter\Processors\ProcessorFailedException;
 use PHPUnit\Framework\TestCase;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Security;
+namespace AKlump\LiveDevPorter\Tests\Security;
 
 use AKlump\LiveDevPorter\Security\Redactor;
 use PHPUnit\Framework\TestCase;

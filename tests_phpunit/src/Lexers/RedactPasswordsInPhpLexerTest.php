@@ -1,6 +1,6 @@
 <?php
 
-namespace Lexers;
+namespace AKlump\LiveDevPorter\Tests\Lexers;
 
 use AKlump\LiveDevPorter\Lexers\RedactPasswordsInPhpLexer;
 use PHPUnit\Framework\TestCase;

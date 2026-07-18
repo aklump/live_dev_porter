@@ -1,6 +1,6 @@
 <?php
 
-namespace Lexers;
+namespace AKlump\LiveDevPorter\Tests\Lexers;
 
 use AKlump\LiveDevPorter\Lexers\TokenAdapter;
 use PHPUnit\Framework\TestCase;

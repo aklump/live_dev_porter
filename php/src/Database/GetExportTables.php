@@ -20,7 +20,7 @@ class GetExportTables {
    */
   protected $provider;
 
-  public function __construct(RuntimeConfigInterface $config, TableListProviderInterface $list_provider = NULL) {
+  public function __construct(RuntimeConfigInterface $config, ?TableListProviderInterface $list_provider = NULL) {
     $this->config = $config;
     $this->provider = $list_provider;
   }

@@ -40,7 +40,7 @@ class ClassMethodCaller {
       if (empty($method) && method_exists($class, '__invoke')) {
         $method = '__invoke';
       }
-      $method_reflection = new \ReflectionMethod("$class::$method");
+      $method_reflection = new \ReflectionMethod($class, $method);
     }
     catch (\ReflectionException $exception) {
       throw new \Exception($exception->getMessage(), self::CLASS_NOT_EXISTS, $exception);

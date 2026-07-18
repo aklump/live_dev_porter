@@ -7,7 +7,7 @@ use AKlump\LiveDevPorter\Config\SchemaBuilder;
 use AKlump\LiveDevPorter\Tests\TestingTraits\TestWithFilesTrait;
 use PHPUnit\Framework\TestCase;
 
-define('ROOT', __DIR__ . '/../../');
+define('ROOT', __DIR__ . '/../../../');
 
 /**
  * @covers \AKlump\LiveDevPorter\Config\SchemaBuilder
