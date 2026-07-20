@@ -22,7 +22,7 @@ function _cloudy_php_error_handler_get_level($error_code) {
     E_USER_WARNING => 'warning',
     E_NOTICE => 'info',
     E_USER_NOTICE => 'info',
-    E_STRICT => 'debug',
+    2048 => 'debug',
   ];
   if (!isset($_cloudy_php_error_handler_levels[$error_code])) {
     return 'warning';
