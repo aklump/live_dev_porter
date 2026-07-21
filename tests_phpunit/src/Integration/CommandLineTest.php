@@ -1,10 +1,10 @@
 <?php
 
-namespace Integration;
+namespace AKlump\LiveDevPorter\Tests\Integration;
 
+use AKlump\LiveDevPorter\Tests\TestingTraits\TestWithCLITrait;
 use AKlump\LiveDevPorter\Tests\TestingTraits\TestWithFilesTrait;
 use PHPUnit\Framework\TestCase;
-use AKlump\LiveDevPorter\Tests\TestingTraits\TestWithCLITrait;
 
 /**
  * @coversNothing

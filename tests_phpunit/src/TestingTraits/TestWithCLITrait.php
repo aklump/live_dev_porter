@@ -21,7 +21,7 @@ trait TestWithCLITrait {
    * @see $this->ldpOutput
    */
   protected function ldp(string $command): int {
-    $wdir = __DIR__ . '/../../';
+    $wdir = __DIR__ . '/../../../';
     $command = sprintf('export CLOUDY_LOG="%s";cd %s;bin/ldp %s', $this->getTestLogfile(), $wdir, $command);
     exec($command, $output, $exit_code);
     $this->ldpOutput = implode(PHP_EOL, $output);

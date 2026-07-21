@@ -58,7 +58,7 @@ trait TestWithFilesTrait {
   }
 
   private function getTestFilesDirectory() {
-    $basepath = __DIR__ . '/../test_files/';
+    $basepath = __DIR__ . '/../../test_files/';
     if ($basepath && !file_exists($basepath)) {
       mkdir($basepath, 0755, TRUE);
     }

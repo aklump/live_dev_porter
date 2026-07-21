@@ -1,6 +1,6 @@
 <?php
 
-namespace Processors;
+namespace AKlump\LiveDevPorter\Tests\Processors;
 
 use AKlump\LiveDevPorter\Processors\DetectProcessorMode;
 use AKlump\LiveDevPorter\Processors\ProcessorModes;

@@ -51,7 +51,7 @@ class Redactor {
    * @see \AKlump\LiveDevPorter\Processors\DetectProcessorMode
    * @see \AKlump\LiveDevPorter\Processors\ProcessorModes
    */
-  public function __construct(string &$contents, int $mode = NULL) {
+  public function __construct(string &$contents, ?int $mode = NULL) {
     $this->contents = &$contents;
     $this->message = '';
     if (NULL === $mode) {

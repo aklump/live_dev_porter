@@ -1,6 +1,6 @@
 <?php
 
-namespace Security;
+namespace AKlump\LiveDevPorter\Tests\Security;
 
 use AKlump\LiveDevPorter\Processors\ProcessorModes;
 use AKlump\LiveDevPorter\Security\Redactor;

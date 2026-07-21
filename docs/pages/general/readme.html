@@ -4,11 +4,11 @@
   <!-- Required meta tags -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-      <link rel="stylesheet" href="../../dist/node_modules/bootstrap/dist/css/bootstrap.css?ver=0.0.179">
-      <link rel="stylesheet" href="../../dist/dist/bootstrap_theme.css?ver=0.0.179">
-      <link rel="stylesheet" href="../../dist/node_modules/bootstrap-icons/font/bootstrap-icons.min.css?ver=0.0.179">
-    <title>Live Dev Porter | Live Dev Porter</title>
-</head>
+      <link rel="stylesheet" href="../../dist/node_modules/bootstrap/dist/css/bootstrap.css?ver=0.0.181">
+      <link rel="stylesheet" href="../../dist/dist/bootstrap_theme.css?ver=0.0.181">
+      <link rel="stylesheet" href="../../dist/node_modules/bootstrap-icons/font/bootstrap-icons.min.css?ver=0.0.181">
+        <title>Live Dev Porter</title>
+  </head>
 <body class="my-5">
 
 <header class="header bg-light fixed-top p-2 pt-1">
@@ -48,16 +48,17 @@
 <p><strong>Visit <a href="https://aklump.github.io/live_dev_porter">https://aklump.github.io/live_dev_porter</a> for full documentation.</strong></p>
 <h2>Install with Composer</h2>
 <ol>
-<li><p>This package requires some unpublished packages.  You must add the following to <em>composer.json</em> in
-the <code>repositories</code> array:</p>
-<pre><code class="json"> {
-  "type": "composer",
-  "url": "https://packages.intheloftstudios.com"
- }
+<li><p>This package requires some unpublished packages:</p>
+<pre><code class="shell">composer config repositories.9024aba2baa64b08169c0ca94a832bc7 composer https://packages.intheloftstudios.com
 </code></pre>
 </li>
-<li><p>Require this package:</p>
-<pre><code> composer require aklump/live-dev-porter:^0.0
+<li><p>Require the latest stable version:</p>
+<pre><code class="shell">composer require aklump/live-dev-porter:^0.0
+</code></pre>
+</li>
+<li><p>... or require the dev channel:</p>
+<pre><code class="shell">composer config minimum-stability dev
+composer require aklump/live-dev-porter:@dev
 </code></pre>
 </li>
 </ol>
@@ -146,9 +147,9 @@ the <code>repositories</code> array:</p>
   <footer class="footer d-flex justify-content-center">
     <div class="flex-column justify-content-center">
               Version:
-        <strong>0.0.179</strong>
+        <strong>0.0.181</strong>
         &bull;
-                    Last Update: <strong>4/19/2026</strong>
+                    Last Update: <strong>7/20/2026</strong>
           </div>
   </footer>
 
@@ -618,9 +619,9 @@ the <code>repositories</code> array:</p>
   </div>
 </div>
 
-  <script src="../../dist/node_modules/bootstrap/dist/js/bootstrap.min.js?ver=0.0.179"></script>
-  <script src="../../dist/lunr.js?ver=0.0.179"></script>
-  <script src="../../dist/knowledge.min.js?ver=0.0.179"></script>
+  <script src="../../dist/node_modules/bootstrap/dist/js/bootstrap.min.js?ver=0.0.181"></script>
+  <script src="../../dist/lunr.js?ver=0.0.181"></script>
+  <script src="../../dist/knowledge.min.js?ver=0.0.181"></script>
 
 </body>
 </html>
