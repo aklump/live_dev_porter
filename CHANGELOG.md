@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.182] - 2026-07-31
+
+### Changed
+
+- 🚨BREAKING CHANGE! `\AKlump\LiveDevPorter\FixtureFramework\AbstractFixtureAdapter::getGlobalOptions` must now return an instance of RunOptions, not an array
+
 ## [0.0.178] - 2026-04-19
 
 ### Added
