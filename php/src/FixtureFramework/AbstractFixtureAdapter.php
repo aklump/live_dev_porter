@@ -2,10 +2,10 @@
 
 namespace AKlump\LiveDevPorter\FixtureFramework;
 
-use AKlump\FixtureFramework\FixtureRunner;
-use AKlump\FixtureFramework\Helper\GetFixtures;
-use AKlump\FixtureFramework\Helper\GetFixtureIdByClassname;
-use AKlump\LiveDevPorter\Fixture\Cache;
+use AKlump\FixtureFramework\Discovery\DiscoverFixtureDefinitions;
+use AKlump\FixtureFramework\Runtime\FixtureRunner;
+use AKlump\FixtureFramework\Helper\GetFixtureIdByClass;
+use AKlump\FixtureFramework\Runtime\RunOptions;
 use AKlump\LiveDevPorter\Processors\ProcessorBase;
 
 abstract class AbstractFixtureAdapter extends ProcessorBase {
@@ -25,7 +25,7 @@ abstract class AbstractFixtureAdapter extends ProcessorBase {
     $silent = FALSE;
 
     try {
-      $fixtures = (new GetFixtures())($vendor_dir, [
+      $fixtures = (new DiscoverFixtureDefinitions())($vendor_dir, [
         (new \ReflectionClass($this->getFixtureClass()))->getNamespaceName(),
       ], $flush, $silent, $this->getFixtureId());
     }
@@ -35,7 +35,7 @@ abstract class AbstractFixtureAdapter extends ProcessorBase {
     }
 
     try {
-      $runner = new FixtureRunner($fixtures, $this->getGlobalOptions());
+      $runner = new FixtureRunner($fixtures);
       $base_path = $this->getHostProjectBasePath();
       $stash = getcwd();
 
@@ -67,7 +67,7 @@ abstract class AbstractFixtureAdapter extends ProcessorBase {
    * @throws \ReflectionException
    */
   protected function getFixtureId(): string {
-    return (new GetFixtureIdByClassname())($this->getFixtureClass());
+    return (new GetFixtureIdByClass())($this->getFixtureClass());
   }
 
   /**
@@ -92,12 +92,12 @@ abstract class AbstractFixtureAdapter extends ProcessorBase {
   }
 
   /**
-   * @return array The value for $global_options
+   * @return RunOptions The value for $global_options
    *
    * @see \AKlump\FixtureFramework\FixtureRunner::__construct
    */
-  protected function getGlobalOptions(): array {
-    return [];
+  protected function getGlobalOptions(): RunOptions {
+    return new RunOptions();
   }
 
   /**

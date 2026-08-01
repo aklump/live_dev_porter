@@ -15,7 +15,7 @@ use AKlump\FixtureFramework\Exception\FixtureException;
 trait DrupalFixtureTrait {
 
   protected function cacheRebuild(): void {
-    $drush = $this->options->require('drush');
+    $drush = $this->options()->require('drush');
     system("$drush cache:rebuild -y", $result_code);
     if ($result_code !== 0) {
       throw new FixtureException("Failed to rebuild cache.");
@@ -30,7 +30,7 @@ trait DrupalFixtureTrait {
    * @return void
    */
   protected function enableModules(array $modules) {
-    $drush = $this->options->require('drush');
+    $drush = $this->options()->require('drush');
     $enabled = $this->getEnabledModules();
     $modules = array_diff($modules, $enabled);
     if (empty($modules)) {
@@ -54,7 +54,7 @@ trait DrupalFixtureTrait {
       return;
     }
     $modules = implode(',', $modules);
-    $drush = $this->options->require('drush');
+    $drush = $this->options()->require('drush');
     system("$drush pm:uninstall \"$modules\" -y");
   }
 
@@ -66,7 +66,7 @@ trait DrupalFixtureTrait {
    * @throws FixtureException If the command to retrieve the enabled modules fails.
    */
   protected function getEnabledModules(): array {
-    $drush = $this->options->require('drush');
+    $drush = $this->options()->require('drush');
     $command = "$drush pm:list --status=enabled --format=json";
     exec($command, $output, $result_code);
     if ($result_code !== 0) {

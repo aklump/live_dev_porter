@@ -2,15 +2,13 @@
 
 namespace AKlump\LiveDevPorter\FixtureFramework;
 
-use AKlump\FixtureFramework\Fixture;
 use AKlump\FixtureFramework\FixtureInterface;
 use AKlump\FixtureFramework\Runtime\FixtureRunner;
-use AKlump\FixtureFramework\Helper\FixtureInstantiator;
-use AKlump\FixtureFramework\Helper\GetFixtures;
-use AKlump\FixtureFramework\Helper\GetFixtureIdByClassname;
+use AKlump\FixtureFramework\Runtime\FixtureInstantiator;
 use AKlump\FixtureFramework\Discovery\DiscoverFixtureDefinitions;
 use AKlump\FixtureFramework\Runtime\RunContextStore;
 use AKlump\FixtureFramework\Runtime\RunContextValidator;
+use AKlump\FixtureFramework\Runtime\RunOptions;
 use AKlump\LiveDevPorter\Processors\ProcessorBase;
 use AKlump\LiveDevPorter\Processors\ProcessorFailedException;
 use AKlump\LiveDevPorter\Processors\ProcessorSkippedException;
@@ -25,21 +23,26 @@ abstract class AbstractFixtureRunner extends ProcessorBase {
   protected $totalFixtures = 0;
 
   /**
-   * @var \AKlump\FixtureFramework\RunContextStore
+   * @var RunContextStore
    */
   protected $contextStore;
 
   /**
-   * @var \AKlump\FixtureFramework\RunContextValidator
+   * @var RunContextValidator
    */
   protected $contextValidator;
 
   /**
-   * @return array The value for $global_options
+   * @var \AKlump\FixtureFramework\Runtime\FixtureInstantiator
+   */
+  protected FixtureInstantiator $instantiator;
+
+  /**
+   * @return RunOptions The value for $global_options
    *
    * @see \AKlump\FixtureFramework\FixtureRunner::__construct
    */
-  abstract protected function getGlobalOptions(): array;
+  abstract protected function getGlobalOptions(): RunOptions;
 
   /**
    * Can this processor/fixture been applied?
@@ -124,8 +127,10 @@ abstract class AbstractFixtureRunner extends ProcessorBase {
       ], $flush, TRUE, $filter);
       $this->fixturesLoaded = TRUE;
       $this->totalFixtures = count($this->fixtureIndex);
+      // Resetting these values.
       $this->contextStore = new RunContextStore();
       $this->contextValidator = new RunContextValidator();
+      $this->instantiator = new FixtureInstantiator($this->getGlobalOptions(), $this->contextValidator);
     }
     catch (\Exception $e) {
       throw new ProcessorFailedException('Error ordering fixtures: ' . $e->getMessage());
@@ -140,7 +145,7 @@ abstract class AbstractFixtureRunner extends ProcessorBase {
     // run context, or values produced by earlier fixtures. A fixture record
     // only contains static metadata and is not sufficient for decisions that
     // depend on the live fixture instance.
-    $fixture = (new FixtureInstantiator())($fixture_record, $this->getGlobalOptions(), $this->contextStore, $this->contextValidator);
+    $fixture = $this->instantiator->__invoke($fixture_record, $this->contextStore);
 
     try {
       $this->tryCanProcessFixture($fixture);
