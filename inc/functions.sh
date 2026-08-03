@@ -526,14 +526,21 @@ function implement_configtest() {
 function remote_ssh() {
   # DO NOT ECHO ANYTHING IN THIS METHOD AS IT WILL SCREW UP THE JSON PARSING!
   local environment_id="$1"
+  local env_auth
+  local verbose=""
+  local remote_command
 
   env_auth=$(get_ssh_auth "$environment_id")
   [[ "$env_auth" ]] || return 1
-  write_log_debug "ssh -t -o BatchMode=yes "$env_auth" "${@:2}""
+
+  shift
+  remote_command="$*"
+
+  write_log_debug "ssh -t -o BatchMode=yes $env_auth '$remote_command'"
   if has_option "verbose"; then
     verbose=" -vvv"
   fi
-  ssh$verbose -t -o BatchMode=yes "$env_auth" "${@:2}"
+  ssh$verbose -t -o BatchMode=yes "$env_auth" "$remote_command"
 }
 
 function echo_time_heading() {
