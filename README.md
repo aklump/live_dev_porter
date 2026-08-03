@@ -18,7 +18,7 @@ Simplifies the management and transfer of assets between website environments.
 2. Require the latest stable version:
    
    ```shell
-   composer require aklump/live-dev-porter:">=0.0.183 <0.1"
+   composer require aklump/live-dev-porter:">=0.0.184 <0.1"
    ```
 3. ... or require the dev channel:
    
