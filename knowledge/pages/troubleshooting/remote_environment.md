@@ -33,3 +33,27 @@ When LDP tries to connect to the remote server, the remote server should send ba
 ### Invalid PHP: $CLOUDY_PHP cannot be set; PHP not found.
 
 This may mean that you are explicitly setting `$CLOUDY_PHP` on your remote server, (e.g. in .profile) and that file is not getting source.  I'm not yet sure how to fix this.
+
+## Composer dependencies require a PHP version ">= ...". You are running ...
+
+If a remote command such as `ldp pull` fails, and you see something like the above in the log `ldp pull -vvv`, then you have a problem with the version of PHP that is being used by Live Dev Porter.
+
+Make sure the correct PHP binary is available in `PATH` for LDP remote commands.
+
+Do not rely only on `.bash_profile` or `.profile`; those may not be loaded for non-interactive remote commands. LDP remote commands rely on the remote shell environment, so place the PHP `PATH` export in `.bashrc`:
+
+```bash
+export PATH="/usr/local/php84/bin:$PATH"
+```
+Then confirm:
+```bash
+ssh -T user@example.com 'bash -lc "command -v php && php -v"'
+```
+
+And then you can load it by doing this inside of .bash_profile
+
+```bash
+if [[ -f "$HOME/.bashrc" ]]; then
+  . "$HOME/.bashrc"
+fi
+```
